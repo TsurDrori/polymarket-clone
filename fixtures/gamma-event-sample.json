@@ -1,0 +1,71 @@
+{
+  "__note": "Hand-assembled from live gamma-api.polymarket.com responses captured on 2026-04-16. Real field names, real data types, real values. clobTokenIds / conditionId are placeholders — re-fetch at runtime from the live API.",
+  "__source": "https://gamma-api.polymarket.com/events?closed=false&limit=2&order=volume24hr&ascending=false",
+
+  "events": [
+    {
+      "id": "30615",
+      "ticker": "2026-fifa-world-cup-winner-595",
+      "slug": "2026-fifa-world-cup-winner-595",
+      "title": "2026 FIFA World Cup Winner",
+      "description": "This market will resolve according to the national team that wins the 2026 FIFA World Cup.",
+      "startDate": "2025-07-02T22:28:24.564603Z",
+      "creationDate": "2025-07-02T22:28:24.564583Z",
+      "endDate": "2026-07-20T00:00:00Z",
+      "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/2026-fifa-world-cup-winner.png",
+      "icon":  "https://polymarket-upload.s3.us-east-2.amazonaws.com/2026-fifa-world-cup-winner.png",
+      "active": true,
+      "closed": false,
+      "archived": false,
+      "new": false,
+      "featured": true,
+      "restricted": true,
+      "liquidity": 146533969.94397,
+      "volume": 664853240.5935609,
+      "volume24hr": 10495045.822628,
+      "volume1wk": 65000000,
+      "volume1mo": 180000000,
+      "volume1yr": 664853240.5935609,
+      "openInterest": 0,
+      "enableOrderBook": true,
+      "liquidityClob": 146533969.94397,
+      "negRisk": true,
+      "commentCount": 523,
+      "showAllOutcomes": true,
+      "showMarketImages": true,
+      "automaticallyActive": true,
+      "markets": [
+        {
+          "id": "558934",
+          "question": "Will Spain win the 2026 FIFA World Cup?",
+          "conditionId": "0x<<hex-64>>",
+          "slug": "will-spain-win-the-2026-fifa-world-cup-963",
+          "groupItemTitle": "Spain",
+          "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/will-spain-win-the-2026-fifa-world-cup.jpg",
+          "icon": "https://polymarket-upload.s3.us-east-2.amazonaws.com/will-spain-win-the-2026-fifa-world-cup.jpg",
+          "endDate": "2026-07-20T00:00:00Z",
+          "outcomes": "[\"Yes\", \"No\"]",
+          "outcomePrices": "[\"0.1715\", \"0.8285\"]",
+          "clobTokenIds": "[\"<<tokenId-yes>>\", \"<<tokenId-no>>\"]",
+          "volume": "13653342.234196156",
+          "volume24hr": 250000,
+          "liquidity": "1471302.24933",
+          "lastTradePrice": 0.172,
+          "bestBid": 0.171,
+          "bestAsk": 0.172,
+          "oneDayPriceChange": 0.003,
+          "spread": 0.001,
+          "acceptingOrders": true,
+          "closed": false
+        }
+      ],
+      "tags": [
+        { "id": "100350", "slug": "soccer",              "label": "Soccer" },
+        { "id": "1",      "slug": "sports",              "label": "Sports" },
+        { "id": "102232", "slug": "fifa-world-cup",      "label": "FIFA World Cup" },
+        { "id": "102999", "slug": "2026-fifa-world-cup", "label": "2026 FIFA World Cup" },
+        { "id": "90000",  "slug": "hide-from-new",       "label": "Hide From New" }
+      ]
+    }
+  ]
+}

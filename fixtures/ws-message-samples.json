@@ -1,0 +1,62 @@
+{
+  "__note": "Real WebSocket messages captured from wss://ws-subscriptions-clob.polymarket.com/ws/market on 2026-04-16 after subscribing to an active sports market. IDs shortened.",
+
+  "subscribePayload": {
+    "assets_ids": ["<<tokenId-yes>>", "<<tokenId-no>>"],
+    "type": "market"
+  },
+
+  "onFirstConnect_bookMessage_isWrappedInArray": true,
+  "bookSample": [
+    {
+      "market": "0x<<conditionId>>",
+      "asset_id": "<<tokenId-yes>>",
+      "timestamp": "1776372786965",
+      "hash": "05aa0b82a1eb...",
+      "bids": [],
+      "asks": [
+        { "price": "0.999", "size": "199999" },
+        { "price": "0.998", "size": "5000" },
+        { "price": "0.995", "size": "30000" }
+      ],
+      "tick_size": "0.001",
+      "event_type": "book",
+      "last_trade_price": "0.999"
+    }
+  ],
+
+  "priceChangeSample_isPlainObject_notArrayWrapped": true,
+  "priceChange": {
+    "market": "0x<<conditionId>>",
+    "price_changes": [
+      {
+        "asset_id": "<<tokenId-yes>>",
+        "price": "0.999",
+        "size": "783029.71",
+        "side": "BUY",
+        "hash": "0626076cdcb2...",
+        "best_bid": "0.999",
+        "best_ask": "1"
+      },
+      {
+        "asset_id": "<<tokenId-no>>",
+        "price": "0.001",
+        "size": "783029.71",
+        "side": "SELL",
+        "hash": "e55d1b989278...",
+        "best_bid": "0",
+        "best_ask": "0.001"
+      }
+    ],
+    "timestamp": "1776372810991",
+    "event_type": "price_change"
+  },
+
+  "notes": [
+    "All numeric fields in WS messages are JSON STRINGS, not numbers (unlike Gamma REST where lastTradePrice/bestBid/bestAsk are numbers).",
+    "The first message after subscribing is an array of book snapshots (one per subscribed asset_id).",
+    "Subsequent price_change messages arrive as plain objects.",
+    "Send PING every ~10s to keep the connection alive; server responds PONG.",
+    "custom_feature_enabled:true is NOT required for book/price_change — only for the optional best_bid_ask/new_market/market_resolved events."
+  ]
+}
