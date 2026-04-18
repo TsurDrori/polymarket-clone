@@ -1,0 +1,77 @@
+:root,
+[data-theme="dark"] {
+  --bg-page: #15191D;
+  --bg-surface: #1E2428;
+  --bg-surface-alt: #242B32;
+  --border: #2E3841;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #DEE3E7;
+  --text-muted: #7B8996;
+  --text-subtle: #586879;
+
+  --accent-yes: #3DB468;
+  --accent-no: #CB3131;
+
+  --radius-card: 15px;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* breakpoints exist as documentation only — @media queries use the values directly */
+  --bp-sm: 600px;
+  --bp-md: 1024px;
+  --bp-lg: 1200px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+html,
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes flash-up {
+  0% {
+    background-color: rgba(61, 180, 104, 0.4);
+    transform: translateY(-1px);
+  }
+  100% {
+    background-color: rgba(61, 180, 104, 0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes flash-down {
+  0% {
+    background-color: rgba(203, 49, 49, 0.4);
+    transform: translateY(1px);
+  }
+  100% {
+    background-color: rgba(203, 49, 49, 0);
+    transform: translateY(0);
+  }
+}
