@@ -1,0 +1,14 @@
+.track {
+  height: 4px;
+  width: 100%;
+  background: var(--bg-surface-alt);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: var(--accent-yes);
+  border-radius: inherit;
+  transition: width 200ms ease-out;
+}

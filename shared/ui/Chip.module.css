@@ -1,0 +1,30 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border-radius: 9999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+
+.chip:hover {
+  background: var(--bg-surface-alt);
+}
+
+.chip[data-active="true"] {
+  background: var(--text-primary);
+  color: var(--bg-page);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
