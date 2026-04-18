@@ -1,0 +1,15 @@
+.price {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 0 2px;
+  will-change: background-color, transform;
+}
+
+.flashUp {
+  animation: flash-up 600ms ease-out;
+}
+
+.flashDown {
+  animation: flash-down 600ms ease-out;
+}
