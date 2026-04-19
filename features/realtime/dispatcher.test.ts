@@ -14,26 +14,28 @@ afterEach(() => {
 });
 
 describe("dispatcher", () => {
-  it("enqueues book snapshots from array-wrapped messages", async () => {
+  it("derives snapshot prices from the best ask in array-wrapped book messages", async () => {
     const { handleMessage } = await import("./dispatcher");
 
     handleMessage(JSON.stringify(samples.bookSample));
 
     expect(enqueue).toHaveBeenCalledTimes(1);
     expect(enqueue).toHaveBeenCalledWith("<<tokenId-yes>>", {
-      price: 0.999,
+      price: 0.995,
+      bestBid: 0,
+      bestAsk: 0.995,
       ts: 1776372786965,
     });
   });
 
-  it("enqueues each price_change entry with bid and ask values", async () => {
+  it("uses top-of-book values instead of price_change.price for live UI ticks", async () => {
     const { handleMessage } = await import("./dispatcher");
 
     handleMessage(JSON.stringify(samples.priceChange));
 
     expect(enqueue).toHaveBeenCalledTimes(2);
     expect(enqueue).toHaveBeenNthCalledWith(1, "<<tokenId-yes>>", {
-      price: 0.999,
+      price: 1,
       bestBid: 0.999,
       bestAsk: 1,
       ts: 1776372810991,
@@ -43,6 +45,36 @@ describe("dispatcher", () => {
       bestBid: 0,
       bestAsk: 0.001,
       ts: 1776372810991,
+    });
+  });
+
+  it("refreshes snapshot prices even when book messages omit last_trade_price", async () => {
+    const { handleMessage } = await import("./dispatcher");
+
+    handleMessage(
+      JSON.stringify([
+        {
+          event_type: "book",
+          asset_id: "token-book-only",
+          timestamp: "1776372817000",
+          bids: [
+            { price: "0.42", size: "100" },
+            { price: "0.39", size: "50" },
+          ],
+          asks: [
+            { price: "0.47", size: "25" },
+            { price: "0.44", size: "80" },
+          ],
+        },
+      ]),
+    );
+
+    expect(enqueue).toHaveBeenCalledTimes(1);
+    expect(enqueue).toHaveBeenCalledWith("token-book-only", {
+      price: 0.44,
+      bestBid: 0.42,
+      bestAsk: 0.44,
+      ts: 1776372817000,
     });
   });
 

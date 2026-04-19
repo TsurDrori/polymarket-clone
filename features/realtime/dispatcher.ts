@@ -5,6 +5,8 @@ type BookMessage = {
   asset_id?: string;
   timestamp?: string | number;
   last_trade_price?: string | number;
+  bids?: Array<{ price?: string | number; size?: string | number }>;
+  asks?: Array<{ price?: string | number; size?: string | number }>;
 };
 
 type PriceChangeEntry = {
@@ -35,27 +37,74 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const getTimestamp = (value: string | number | undefined): number =>
   Number(value) || Date.now();
 
-const getOptionalNumber = (value: string | number | undefined): number => {
+const getNumber = (value: string | number | undefined): number | null => {
   const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : 0;
+  return Number.isFinite(numeric) ? numeric : null;
 };
 
 const isKnownMessage = (value: unknown): value is KnownMessage =>
   isRecord(value) && typeof value.event_type === "string";
+
+const getBestBid = (
+  levels: ReadonlyArray<{ price?: string | number }> | undefined,
+): number => {
+  let bestBid = 0;
+
+  for (const level of levels ?? []) {
+    const price = getNumber(level.price);
+
+    if (price === null) {
+      continue;
+    }
+
+    bestBid = Math.max(bestBid, price);
+  }
+
+  return bestBid;
+};
+
+const getBestAsk = (
+  levels: ReadonlyArray<{ price?: string | number }> | undefined,
+): number => {
+  let bestAsk = Number.POSITIVE_INFINITY;
+
+  for (const level of levels ?? []) {
+    const price = getNumber(level.price);
+
+    if (price === null || price < 0) {
+      continue;
+    }
+
+    bestAsk = Math.min(bestAsk, price);
+  }
+
+  return Number.isFinite(bestAsk) ? bestAsk : 0;
+};
 
 export const applyBook = (message: BookMessage): void => {
   if (!message.asset_id) {
     return;
   }
 
-  const price = Number(message.last_trade_price);
+  const bestBid = getBestBid(message.bids);
+  const bestAsk = getBestAsk(message.asks);
+  const lastTradePrice = getNumber(message.last_trade_price);
+  let displayPrice: number | undefined;
 
-  if (Number.isNaN(price) || price === 0) {
+  if (bestAsk > 0) {
+    displayPrice = bestAsk;
+  } else if (lastTradePrice !== null && lastTradePrice > 0) {
+    displayPrice = lastTradePrice;
+  }
+
+  if (displayPrice === undefined && bestBid === 0 && bestAsk === 0) {
     return;
   }
 
   enqueue(message.asset_id, {
-    price,
+    ...(displayPrice !== undefined ? { price: displayPrice } : {}),
+    bestBid,
+    bestAsk,
     ts: getTimestamp(message.timestamp),
   });
 };
@@ -72,17 +121,22 @@ export const applyPriceChange = (message: PriceChangeMessage): void => {
       continue;
     }
 
-    const price = Number(change.price);
+    const bestBid = getNumber(change.best_bid);
+    const bestAsk = getNumber(change.best_ask);
 
-    if (Number.isNaN(price)) {
+    if (bestBid === null && bestAsk === null) {
       continue;
     }
 
-    enqueue(change.asset_id, {
-      price,
-      bestBid: getOptionalNumber(change.best_bid),
-      bestAsk: getOptionalNumber(change.best_ask),
+    const nextTick = {
+      ...(bestBid !== null ? { bestBid } : {}),
+      ...(bestAsk !== null ? { bestAsk } : {}),
+      ...(bestAsk !== null && bestAsk > 0 ? { price: bestAsk } : {}),
       ts,
+    };
+
+    enqueue(change.asset_id, {
+      ...nextTick,
     });
   }
 };
@@ -92,9 +146,9 @@ export const applyLastTradePrice = (message: LastTradePriceMessage): void => {
     return;
   }
 
-  const price = Number(message.price);
+  const price = getNumber(message.price);
 
-  if (Number.isNaN(price)) {
+  if (price === null) {
     return;
   }
 
