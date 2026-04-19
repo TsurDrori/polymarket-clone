@@ -581,7 +581,34 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .heroRow {
+    grid-template-columns: minmax(0, 1fr) 270px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .spotlightCard {
+    height: 483px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .spotlightBody {
+    grid-template-columns: minmax(268px, 1fr) minmax(0, 1fr);
+    align-items: start;
+    min-height: 0;
+  }
+
+  .spotlightCopy,
+  .sourceSection,
+  .chartPanel,
+  .chartFigure {
+    min-height: 0;
+  }
+}
+
+@media (min-width: 1280px) {
   .heroRow {
     grid-template-columns: minmax(0, 907px) minmax(320px, 1fr);
     align-items: start;

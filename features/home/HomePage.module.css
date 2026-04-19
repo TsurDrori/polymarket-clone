@@ -3,7 +3,7 @@
   gap: 18px;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1280px) {
   .root {
     padding-inline: 24px;
   }
