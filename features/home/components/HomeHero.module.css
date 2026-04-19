@@ -184,6 +184,7 @@
 .sourceSection {
   display: flex;
   min-height: 0;
+  padding-bottom: 10px;
 }
 
 .railList {
@@ -232,7 +233,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
-  padding: 5px 0;
+  padding: 4px 0;
   color: inherit;
 }
 
@@ -254,7 +255,7 @@
   font-weight: 400;
   display: -webkit-box;
   overflow: hidden;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
@@ -481,20 +482,20 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 0;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--border-soft);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-soft) 92%, white);
-  color: var(--text-secondary);
-  font-size: 15px;
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .footerChipButton svg {
-  color: var(--text-muted);
+  color: currentColor;
 }
 
 .footerChipButton:hover svg {
@@ -510,7 +511,7 @@
 }
 
 .footerChipButton:hover {
-  background: color-mix(in srgb, var(--bg-soft) 96%, white);
+  background: color-mix(in srgb, var(--bg-soft) 94%, white);
 }
 
 .footerChipGroup {
