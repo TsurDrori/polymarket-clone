@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { PolymarketEvent, PolymarketMarket, PolymarketTag } from "@/features/events/types";
 import {
+  buildCryptoFacets,
+  buildCryptoSections,
   getCryptoCoin,
   getCryptoMarketType,
   getCryptoTimeBucket,
@@ -71,5 +73,41 @@ describe("crypto filters", () => {
     ]);
 
     expect(getCryptoCoin(event)).toBe("ethereum");
+  });
+
+  it("builds explicit crypto facets and coin sections with safe fallbacks", () => {
+    const bitcoinOne = buildEvent([
+      { id: "1", slug: "crypto", label: "Crypto" },
+      { id: "2", slug: "bitcoin", label: "Bitcoin" },
+      { id: "3", slug: "up-or-down", label: "Up / Down" },
+    ]);
+    const bitcoinTwo = {
+      ...buildEvent([
+        { id: "4", slug: "crypto", label: "Crypto" },
+        { id: "5", slug: "bitcoin", label: "Bitcoin" },
+      ]),
+      id: "event-2",
+      volume24hr: 7_500,
+    };
+    const noCoin = {
+      ...buildEvent([
+        { id: "6", slug: "crypto", label: "Crypto" },
+        { id: "7", slug: "hit-price", label: "Hit Price" },
+      ]),
+      id: "event-3",
+      volume24hr: 2_000,
+    };
+
+    const facets = buildCryptoFacets([bitcoinOne, bitcoinTwo, noCoin]);
+    const sections = buildCryptoSections([bitcoinOne, bitcoinTwo, noCoin]);
+
+    expect(facets[0]).toMatchObject({
+      slug: "coin:bitcoin",
+      label: "Bitcoin",
+      count: 2,
+    });
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.title).toBe("Bitcoin");
+    expect(sections[0]?.events).toHaveLength(2);
   });
 });

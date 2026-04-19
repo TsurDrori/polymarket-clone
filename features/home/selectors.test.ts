@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PolymarketEvent, PolymarketMarket, PolymarketTag } from "@/features/events/types";
 import {
+  buildHomePageModel,
   collectTrendingTopics,
   getPrimaryMarket,
   selectBreakingItems,
@@ -169,5 +170,29 @@ describe("getPrimaryMarket", () => {
     );
 
     expect(market?.id).toBe("b");
+  });
+});
+
+describe("buildHomePageModel", () => {
+  it("keeps the homepage payload bounded for the server-rendered surface", () => {
+    const events = Array.from({ length: 24 }, (_, index) =>
+      buildEvent(
+        `Market ${index + 1}`,
+        [{ id: `tag-${index}`, slug: "politics", label: "Politics" }],
+        {
+          id: `event-${index + 1}`,
+          featured: index === 0,
+          volume24hr: 10_000 - index,
+        },
+      ),
+    );
+
+    const model = buildHomePageModel(events);
+
+    expect(model.heroEvent?.id).toBe("event-1");
+    expect(model.featuredEvents).toHaveLength(4);
+    expect(model.breakingItems).toHaveLength(4);
+    expect(model.topicSummaries.length).toBeLessThanOrEqual(6);
+    expect(model.exploreEvents).toHaveLength(18);
   });
 });

@@ -7,17 +7,39 @@ import {
 } from "@/features/realtime/atoms";
 import { useFlash, useLivePrice } from "@/features/realtime/hooks";
 import { cn } from "@/shared/lib/cn";
+import { formatCents, formatPct } from "@/shared/lib/format";
 import styles from "./PriceCell.module.css";
+
+type PriceCellFormatter = (price: number) => string;
 
 type PriceCellProps = {
   tokenId: string;
-  format: (price: number) => string;
   className?: string;
+} & (
+  | {
+      format: PriceCellFormatter;
+      formatKind?: never;
+    }
+  | {
+      format?: never;
+      formatKind: "cents" | "pct";
+    }
+);
+
+const FORMATTERS: Record<"cents" | "pct", PriceCellFormatter> = {
+  cents: formatCents,
+  pct: formatPct,
 };
 
-function PriceCellInner({ tokenId, format, className }: PriceCellProps) {
+function PriceCellInner({
+  tokenId,
+  format,
+  formatKind,
+  className,
+}: PriceCellProps) {
   const { price } = useLivePrice(tokenId);
   const { seq, dir } = useFlash(tokenId);
+  const formatter = format ?? FORMATTERS[formatKind];
 
   useEffect(() => {
     retainTokenAtoms(tokenId);
@@ -37,7 +59,7 @@ function PriceCellInner({ tokenId, format, className }: PriceCellProps) {
         className,
       )}
     >
-      {format(price)}
+      {formatter(price)}
     </span>
   );
 }

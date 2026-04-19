@@ -1,5 +1,5 @@
-:root,
-[data-theme="dark"] {
+:root {
+  color-scheme: dark;
   --bg-page: #15191D;
   --bg-surface: #1E2428;
   --bg-surface-alt: #242B32;
@@ -15,11 +15,31 @@
 
   --radius-card: 15px;
   --font-sans: var(--font-inter), system-ui, sans-serif;
+  --surface-shadow: 0 20px 44px rgba(0, 0, 0, 0.18);
 
   /* breakpoints exist as documentation only — @media queries use the values directly */
   --bp-sm: 600px;
   --bp-md: 1024px;
   --bp-lg: 1200px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg-page: #F4F7FA;
+    --bg-surface: #FFFFFF;
+    --bg-surface-alt: #EEF3F7;
+    --border: #D7E0E8;
+
+    --text-primary: #10161C;
+    --text-secondary: #31404D;
+    --text-muted: #657485;
+    --text-subtle: #7B8996;
+
+    --accent-yes: #19824B;
+    --accent-no: #C13A3A;
+    --surface-shadow: 0 18px 40px rgba(16, 22, 28, 0.06);
+  }
 }
 
 *,
@@ -30,6 +50,7 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
 }
 
 button {
@@ -52,6 +73,12 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(61, 180, 104, 0.08), transparent 22%),
+    linear-gradient(180deg, var(--bg-page), var(--bg-page));
 }
 
 @keyframes flash-up {

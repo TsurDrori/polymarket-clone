@@ -19,6 +19,14 @@ export type TopicSummary = {
   eventCount: number;
 };
 
+export type HomePageModel = {
+  heroEvent?: PolymarketEvent;
+  featuredEvents: PolymarketEvent[];
+  breakingItems: BreakingItem[];
+  topicSummaries: TopicSummary[];
+  exploreEvents: PolymarketEvent[];
+};
+
 const GENERIC_TOPIC_SLUGS = new Set([
   "featured",
   "games",
@@ -171,4 +179,30 @@ export const collectTrendingTopics = (
         left.label.localeCompare(right.label),
     )
     .slice(0, limit);
+};
+
+export const buildHomePageModel = (
+  events: ReadonlyArray<PolymarketEvent>,
+  {
+    sideEventLimit = 4,
+    breakingLimit = 4,
+    topicLimit = 6,
+    exploreLimit = 18,
+  }: {
+    sideEventLimit?: number;
+    breakingLimit?: number;
+    topicLimit?: number;
+    exploreLimit?: number;
+  } = {},
+): HomePageModel => {
+  const featured = selectFeaturedEvents(events, sideEventLimit + 1);
+  const [heroEvent, ...featuredEvents] = featured;
+
+  return {
+    heroEvent,
+    featuredEvents,
+    breakingItems: selectBreakingItems(events, breakingLimit),
+    topicSummaries: collectTrendingTopics(events, topicLimit),
+    exploreEvents: events.slice(0, exploreLimit),
+  };
 };

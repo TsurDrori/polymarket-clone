@@ -22,13 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark" className={inter.variable}>
+    <html lang="en" className={inter.variable}>
       <body>
-        <Providers>
-          <Header />
-          {children}
-          <Footer />
-        </Providers>
+        <Header />
+        <Providers>{children}</Providers>
+        <Footer />
       </body>
     </html>
   );

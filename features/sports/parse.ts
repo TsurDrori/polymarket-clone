@@ -6,6 +6,12 @@ export type SportsLeague = {
   label: string;
 };
 
+export type SportsLeagueGroup = SportsLeague & {
+  count: number;
+  totalVolume: number;
+  events: PolymarketEvent[];
+};
+
 const LEAGUE_PRIORITY: readonly SportsLeague[] = [
   { slug: "nba", label: "NBA" },
   { slug: "mlb", label: "MLB" },
@@ -76,6 +82,55 @@ export const getSportsLeague = (event: PolymarketEvent): SportsLeague => {
     label: fallbackTag?.label ?? "Sports",
   };
 };
+
+const buildLeagueGroups = (
+  events: ReadonlyArray<PolymarketEvent>,
+): SportsLeagueGroup[] => {
+  const groups = new Map<string, SportsLeagueGroup>();
+
+  for (const event of events) {
+    const league = getSportsLeague(event);
+    const existing = groups.get(league.slug);
+    if (existing) {
+      existing.count += 1;
+      existing.totalVolume += event.volume24hr || event.volume;
+      existing.events.push(event);
+      continue;
+    }
+
+    groups.set(league.slug, {
+      ...league,
+      count: 1,
+      totalVolume: event.volume24hr || event.volume,
+      events: [event],
+    });
+  }
+
+  return [...groups.values()].sort(
+    (left, right) =>
+      right.totalVolume - left.totalVolume ||
+      right.count - left.count ||
+      left.label.localeCompare(right.label),
+  );
+};
+
+export const buildSportsLeagueSections = (
+  events: ReadonlyArray<PolymarketEvent>,
+  {
+    sectionLimit = 3,
+    eventLimit = 6,
+  }: {
+    sectionLimit?: number;
+    eventLimit?: number;
+  } = {},
+): SportsLeagueGroup[] =>
+  buildLeagueGroups(events)
+    .filter((group) => group.events.length >= 2)
+    .slice(0, sectionLimit)
+    .map((group) => ({
+      ...group,
+      events: group.events.slice(0, eventLimit),
+    }));
 
 export const pickMoneylineMarket = (
   event: PolymarketEvent,

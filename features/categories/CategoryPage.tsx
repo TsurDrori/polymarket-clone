@@ -1,54 +1,100 @@
-import { listEvents } from "@/features/events/api/gamma";
 import { EventGrid } from "@/features/events/components/EventGrid";
-import { collectTrendingTopics } from "@/features/home/selectors";
-import { Hydrator } from "@/features/realtime/Hydrator";
-import { isEventVisible } from "@/shared/lib/tags";
 import styles from "./CategoryPage.module.css";
+import type { PolymarketEvent } from "../events/types";
 
-type Props = {
-  tagSlug: string;
-  title: string;
-  description: string;
+export type CategoryFacet = {
+  slug: string;
+  label: string;
+  meta?: string;
 };
 
-export async function CategoryPage({ tagSlug, title, description }: Props) {
-  const events = await listEvents({
-    tagSlug,
-    limit: 20,
-    order: "volume_24hr",
-    ascending: false,
-  });
-  const visible = events.filter(isEventVisible);
-  const topics = collectTrendingTopics(visible, 10);
+export type CategorySection = {
+  id: string;
+  title: string;
+  description: string;
+  events: ReadonlyArray<PolymarketEvent>;
+};
 
-  if (visible.length === 0) {
+type Props = {
+  eyebrow?: string;
+  title: string;
+  description: string;
+  facets?: ReadonlyArray<CategoryFacet>;
+  sections?: ReadonlyArray<CategorySection>;
+  events?: ReadonlyArray<PolymarketEvent>;
+  marketTitle?: string;
+  marketDescription?: string;
+  emptyMessage?: string;
+};
+
+export function CategoryPage({
+  eyebrow = "Category",
+  title,
+  description,
+  facets = [],
+  sections = [],
+  events = [],
+  marketTitle = "All markets",
+  marketDescription = "Active markets sorted by 24-hour volume.",
+  emptyMessage = "No markets to show right now.",
+}: Props) {
+  const visibleSections = sections.filter((section) => section.events.length > 0);
+  const hasContent = visibleSections.length > 0 || events.length > 0;
+
+  if (!hasContent) {
     return (
       <main className={styles.main}>
-        <p className={styles.empty}>No markets to show right now.</p>
+        <p className={styles.empty}>{emptyMessage}</p>
       </main>
     );
   }
 
   return (
     <main className={styles.main}>
-      <Hydrator events={visible} />
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>Category surface</p>
+          <p className={styles.kicker}>{eyebrow}</p>
           <h1 className={styles.title}>{title}</h1>
         </div>
         <p className={styles.description}>{description}</p>
-        {topics.length > 0 ? (
-          <div className={styles.topicRow}>
-            {topics.map((topic) => (
-              <span key={topic.slug} className={styles.topicPill}>
-                {topic.label}
-              </span>
-            ))}
-          </div>
-        ) : null}
       </header>
-      <EventGrid events={visible} />
+
+      {facets.length > 0 ? (
+        <ul className={styles.facetList}>
+          {facets.map((facet) => (
+            <li key={facet.slug} className={styles.facetPill}>
+              <span>{facet.label}</span>
+              {facet.meta ? <span className={styles.facetMeta}>{facet.meta}</span> : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {visibleSections.map((section) => (
+        <section key={section.id} className={styles.surfaceSection}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 className={styles.sectionTitle}>{section.title}</h2>
+              <p className={styles.sectionDescription}>{section.description}</p>
+            </div>
+            <span className={styles.sectionMeta}>{section.events.length} markets</span>
+          </div>
+          <EventGrid events={section.events} />
+        </section>
+      ))}
+
+      {events.length > 0 ? (
+        <section className={styles.surfaceSection}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 className={styles.sectionTitle}>{marketTitle}</h2>
+              <p className={styles.sectionDescription}>{marketDescription}</p>
+            </div>
+            <span className={styles.sectionMeta}>{events.length} markets</span>
+          </div>
+          <EventGrid events={events} />
+        </section>
+      ) : null}
     </main>
   );
 }

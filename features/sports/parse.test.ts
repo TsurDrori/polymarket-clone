@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PolymarketEvent, PolymarketMarket, PolymarketTag } from "@/features/events/types";
 import {
+  buildSportsLeagueSections,
   extractLineValue,
   getSportsLeague,
   getSpreadOutcomeLabel,
@@ -122,5 +123,41 @@ describe("sports parser", () => {
     expect(getSpreadOutcomeLabel(spread, 1)).toBe("Lakers +4.5");
     expect(getTotalOutcomeLabel(total, 0)).toBe("O 208.5");
     expect(getTotalOutcomeLabel(total, 1)).toBe("U 208.5");
+  });
+
+  it("groups sports sections by explicit league with a safe fallback", () => {
+    const nbaOne = buildEvent(
+      "Rockets vs. Lakers",
+      [
+        { id: "1", slug: "sports", label: "Sports" },
+        { id: "2", slug: "games", label: "Games" },
+        { id: "3", slug: "nba", label: "NBA" },
+      ],
+      [buildMarket()],
+    );
+    const nbaTwo = buildEvent(
+      "Warriors vs. Suns",
+      [
+        { id: "4", slug: "sports", label: "Sports" },
+        { id: "5", slug: "games", label: "Games" },
+        { id: "6", slug: "nba", label: "NBA" },
+      ],
+      [buildMarket()],
+    );
+    const fallback = buildEvent(
+      "Shohei Ohtani suspension in March?",
+      [
+        { id: "7", slug: "sports", label: "Sports" },
+        { id: "8", slug: "baseball", label: "Baseball" },
+      ],
+      [buildMarket()],
+    );
+
+    const sections = buildSportsLeagueSections([fallback, nbaTwo, nbaOne]);
+
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.slug).toBe("nba");
+    expect(sections[0]?.events).toHaveLength(2);
+    expect(getSportsLeague(fallback)).toEqual({ slug: "baseball", label: "Baseball" });
   });
 });
