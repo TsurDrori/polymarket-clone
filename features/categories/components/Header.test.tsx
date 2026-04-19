@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { THEME_STORAGE_KEY } from "@/shared/theme";
 import { Header } from "./Header";
@@ -42,9 +42,13 @@ describe("Header", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
 
-    expect(screen.getByRole("dialog", { name: /more/i })).toBeTruthy();
+    const dialog = screen.getByRole("dialog", { name: /more/i });
+    expect(dialog).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: /light theme/i }));
+    const switchControl = within(dialog).getByRole("switch", { name: /dark mode/i });
+    expect(switchControl.getAttribute("aria-checked")).toBe("true");
+
+    fireEvent.click(switchControl);
 
     await waitFor(() => {
       expect(document.documentElement.dataset.theme).toBe("light");
@@ -52,9 +56,7 @@ describe("Header", () => {
 
     expect(document.documentElement.style.colorScheme).toBe("light");
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
-    expect(
-      screen.getByRole("button", { name: /light theme/i }).getAttribute("aria-pressed"),
-    ).toBe("true");
+    expect(within(dialog).getByRole("switch", { name: /dark mode/i }).getAttribute("aria-checked")).toBe("false");
   });
 
   it("reflects a previously stored theme when the popover opens", async () => {
@@ -65,8 +67,18 @@ describe("Header", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /light theme/i }).getAttribute("aria-pressed"),
-      ).toBe("true");
+        within(screen.getByRole("dialog", { name: /more/i }))
+          .getByRole("switch", { name: /dark mode/i })
+          .getAttribute("aria-checked"),
+      ).toBe("false");
     });
+  });
+
+  it("does not render a non-functional topic rail", () => {
+    render(<Header />);
+
+    expect(screen.queryByRole("navigation", { name: /popular topics/i })).toBeNull();
+    expect(screen.queryByText("Finance")).toBeNull();
+    expect(screen.queryByText("Geopolitics")).toBeNull();
   });
 });

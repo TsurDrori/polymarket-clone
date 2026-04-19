@@ -3,7 +3,7 @@ import type {
   PolymarketMarket,
   PolymarketTag,
 } from "@/features/events/types";
-import { formatEndDate, formatPct, formatVolume } from "@/shared/lib/format";
+import { formatEndDate, formatVolume } from "@/shared/lib/format";
 import { getVisibleTags, hasTagSlug } from "@/shared/lib/tags";
 
 export type HeroChartPoint = {
@@ -67,9 +67,11 @@ export type HeroSpotlightModel = {
   sourceRows: HeroSourceRow[];
   sourceMode: "fallback-derived";
   href: string;
+  navigationLabel: string;
 };
 
 export type HomeHeroModel = {
+  spotlights: HeroSpotlightModel[];
   spotlight: HeroSpotlightModel | null;
   breaking: HeroBreakingItem[];
   topics: HeroTopicItem[];
@@ -154,16 +156,38 @@ const formatRelativeAge = (value?: string): string | undefined => {
   return `${elapsedDays}d ago`;
 };
 
-const formatPointChangeLabel = (change: number): string =>
-  `${change >= 0 ? "+" : "-"}${Math.round(Math.abs(change) * 100)} pts`;
-
 const NEWSFEED_SOURCE_LABELS = [
-  "Market Wire",
-  "Signal Desk",
-  "Resolution Watch",
-  "Ticker Brief",
-  "Live Feed",
+  "WSJ",
+  "CNN",
+  "AP News",
+  "The New York Times",
+  "BBC",
 ] as const;
+
+const GENERIC_NAVIGATION_LABELS = new Set([
+  "all",
+  "featured",
+  "market",
+  "markets",
+  "trending",
+]);
+
+const isUsefulNavigationLabel = (value?: string): value is string => {
+  if (!value) return false;
+
+  const normalized = normalizeText(value).replace(/[?!.]+$/g, "");
+  if (normalized.length < 3) return false;
+
+  return !GENERIC_NAVIGATION_LABELS.has(normalized.toLowerCase());
+};
+
+const formatNavigationLabel = (value: string): string =>
+  clampText(
+    normalizeText(value)
+      .replace(/^will\s+/i, "")
+      .replace(/[?!.]+$/g, ""),
+    18,
+  );
 
 const getPrimaryVisibleTags = (event: PolymarketEvent): PolymarketTag[] =>
   getVisibleTags(event).filter((tag) => tag.label.length > 0);
@@ -260,9 +284,6 @@ const buildFallbackSourceRows = (
   const seen = new Set<string>();
   const descriptionSentences = buildDescriptionSentences(event);
   const publishedLabel = formatRelativeAge(event.creationDate ?? event.startDate);
-  const dayChange = getMarketChange(market);
-  const eventVolume = event.volume24hr || event.volume;
-  const marketVolume = getMarketVolume(market);
 
   const pushRow = ({
     label,
@@ -289,36 +310,30 @@ const buildFallbackSourceRows = (
     label: NEWSFEED_SOURCE_LABELS[0],
     value: descriptionSentences[0] ?? market.question,
     meta: publishedLabel,
-    stat: formatPointChangeLabel(dayChange),
-    statTone: dayChange > 0 ? "up" : dayChange < 0 ? "down" : "neutral",
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[1],
     value: descriptionSentences[1] ?? market.question,
-    meta: event.endDate ? `By ${formatEndDate(event.endDate)}` : "Rule",
-    stat: formatVolume(marketVolume),
+    meta: publishedLabel ?? (event.endDate ? `By ${formatEndDate(event.endDate)}` : "1d ago"),
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[2],
     value: descriptionSentences[2] ?? event.title,
-    meta: "Tracked volume",
-    stat: formatVolume(eventVolume),
+    meta: publishedLabel ?? "10h ago",
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[3],
     value: market.question,
-    meta: "Contract",
-    stat: event.endDate ? formatEndDate(event.endDate) : undefined,
+    meta: publishedLabel ?? "21h ago",
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[4],
     value: event.title,
-    meta: "Focus",
-    stat: formatPct(getDisplayPrice(market)),
+    meta: publishedLabel ?? "1d ago",
   });
 
   return sourceRows.slice(0, 5);
@@ -397,6 +412,26 @@ const buildSpotlightSummary = (
 const buildHeroChipHref = (slug: string): string | undefined =>
   CATEGORY_ROUTES.get(slug);
 
+const buildSpotlightNavigationLabel = (
+  event: PolymarketEvent,
+  market: PolymarketMarket,
+  labels: Pick<HeroSpotlightModel, "categoryLabel" | "subcategoryLabel">,
+): string => {
+  const tagLabels = getPrimaryVisibleTags(event)
+    .map((tag) => tag.label)
+    .filter(isUsefulNavigationLabel);
+
+  const candidates = [
+    market.groupItemTitle,
+    labels.subcategoryLabel,
+    ...tagLabels,
+    labels.categoryLabel,
+    event.title,
+  ].filter(isUsefulNavigationLabel);
+
+  return formatNavigationLabel(candidates[0] ?? "Markets");
+};
+
 const buildTopicItems = (
   events: ReadonlyArray<PolymarketEvent>,
   limit = 5,
@@ -439,6 +474,13 @@ export const getPrimaryMarket = (
 export const selectSpotlightEvent = (
   events: ReadonlyArray<PolymarketEvent>,
 ): PolymarketEvent | undefined => {
+  return selectSpotlightEvents(events, 1)[0];
+};
+
+export const selectSpotlightEvents = (
+  events: ReadonlyArray<PolymarketEvent>,
+  limit = 5,
+): PolymarketEvent[] => {
   const candidates = events
     .map((event) => {
       const market = selectSpotlightMarket(event);
@@ -469,19 +511,22 @@ export const selectSpotlightEvent = (
         ? balancedCandidates
         : candidates;
 
-  return pool.sort((left, right) => {
-    return (
-      compareNumbersDesc(left.rank.centeredPrice, right.rank.centeredPrice) ||
-      compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
-      compareNumbersDesc(left.rank.featured, right.rank.featured) ||
-      compareNumbersDesc(left.rank.nonSports, right.rank.nonSports) ||
-      compareNumbersDesc(left.rank.hasImage, right.rank.hasImage) ||
-      compareNumbersDesc(left.rank.marketChange, right.rank.marketChange) ||
-      compareNumbersDesc(left.rank.marketVolume, right.rank.marketVolume) ||
-      compareNumbersDesc(left.rank.eventVolume, right.rank.eventVolume) ||
-      left.event.title.localeCompare(right.event.title)
-    );
-  })[0]?.event;
+  return pool
+    .sort((left, right) => {
+      return (
+        compareNumbersDesc(left.rank.centeredPrice, right.rank.centeredPrice) ||
+        compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
+        compareNumbersDesc(left.rank.featured, right.rank.featured) ||
+        compareNumbersDesc(left.rank.nonSports, right.rank.nonSports) ||
+        compareNumbersDesc(left.rank.hasImage, right.rank.hasImage) ||
+        compareNumbersDesc(left.rank.marketChange, right.rank.marketChange) ||
+        compareNumbersDesc(left.rank.marketVolume, right.rank.marketVolume) ||
+        compareNumbersDesc(left.rank.eventVolume, right.rank.eventVolume) ||
+        left.event.title.localeCompare(right.event.title)
+      );
+    })
+    .slice(0, limit)
+    .map(({ event }) => event);
 };
 
 export const selectFeaturedEvents = (
@@ -688,53 +733,71 @@ export const selectHomeMarketChips = (
     limit,
   );
 
+const buildHeroSpotlightModel = (
+  event: PolymarketEvent,
+  market: PolymarketMarket,
+  chart: HeroChartModel | null,
+): HeroSpotlightModel => {
+  const labels = buildSpotlightLabels(event);
+
+  return {
+    event,
+    market,
+    tokenId: market.clobTokenIds[0],
+    chart: chart && chart.points.length >= 5 ? chart : null,
+    headline: buildSpotlightHeadline(event, market),
+    summary: buildSpotlightSummary(event, market),
+    ...labels,
+    chance: getDisplayPrice(market),
+    dayChange: getMarketChange(market),
+    volumeLabel: formatVolume(
+      getMarketVolume(market) || event.volume24hr || event.volume,
+    ),
+    notes: buildSpotlightNotes(event, market),
+    sourceRows: buildFallbackSourceRows(event, market),
+    sourceMode: "fallback-derived" as const,
+    href: getEventHref(event),
+    navigationLabel: buildSpotlightNavigationLabel(event, market, labels),
+  };
+};
+
 export const buildHomeHeroModel = (
   events: ReadonlyArray<PolymarketEvent>,
   {
     spotlightChart = null,
+    spotlightCharts = {},
+    spotlightLimit = 5,
     breakingLimit = 3,
     topicLimit = 5,
     contextChipLimit = 8,
   }: {
     spotlightChart?: HeroChartModel | null;
+    spotlightCharts?: Record<string, HeroChartModel | null>;
+    spotlightLimit?: number;
     breakingLimit?: number;
     topicLimit?: number;
     contextChipLimit?: number;
   } = {},
 ): HomeHeroModel => {
-  const spotlightEvent = selectSpotlightEvent(events) ?? null;
-  const spotlightMarket =
-    spotlightEvent ? selectSpotlightMarket(spotlightEvent) ?? null : null;
+  const spotlightEvents = selectSpotlightEvents(events, spotlightLimit);
+  const spotlights = spotlightEvents
+    .map((event, index) => {
+      const market = selectSpotlightMarket(event);
+      if (!market) return null;
+
+      const chart =
+        spotlightCharts[market.id] ??
+        (index === 0 ? spotlightChart : null);
+
+      return buildHeroSpotlightModel(event, market, chart);
+    })
+    .filter((spotlight): spotlight is HeroSpotlightModel => Boolean(spotlight));
+
+  const spotlight = spotlights[0] ?? null;
   const topics = selectHeroTopics(events, topicLimit);
 
-  const spotlight =
-    spotlightEvent && spotlightMarket
-      ? ({
-          event: spotlightEvent,
-          market: spotlightMarket,
-          tokenId: spotlightMarket.clobTokenIds[0],
-          chart:
-            spotlightChart && spotlightChart.points.length >= 5
-              ? spotlightChart
-              : null,
-          headline: buildSpotlightHeadline(spotlightEvent, spotlightMarket),
-          summary: buildSpotlightSummary(spotlightEvent, spotlightMarket),
-          ...buildSpotlightLabels(spotlightEvent),
-          chance: getDisplayPrice(spotlightMarket),
-          dayChange: getMarketChange(spotlightMarket),
-          volumeLabel: formatVolume(
-            getMarketVolume(spotlightMarket) ||
-              spotlightEvent.volume24hr ||
-              spotlightEvent.volume,
-          ),
-          notes: buildSpotlightNotes(spotlightEvent, spotlightMarket),
-          sourceRows: buildFallbackSourceRows(spotlightEvent, spotlightMarket),
-          sourceMode: "fallback-derived" as const,
-          href: getEventHref(spotlightEvent),
-        })
-      : null;
-
   return {
+    spotlights,
     spotlight,
     breaking: selectHeroBreaking(events, {
       excludeEventId: spotlight?.event.id,
@@ -749,15 +812,17 @@ export const buildHomePageModel = (
   events: ReadonlyArray<PolymarketEvent>,
   {
     spotlightChart = null,
+    spotlightCharts = {},
     exploreLimit = 30,
     marketChipLimit = 12,
   }: {
     spotlightChart?: HeroChartModel | null;
+    spotlightCharts?: Record<string, HeroChartModel | null>;
     exploreLimit?: number;
     marketChipLimit?: number;
   } = {},
 ): HomePageModel => {
-  const hero = buildHomeHeroModel(events, { spotlightChart });
+  const hero = buildHomeHeroModel(events, { spotlightChart, spotlightCharts });
 
   return {
     hero,

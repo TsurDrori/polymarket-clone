@@ -16,10 +16,14 @@ export function HomePage({ model }: HomePageProps) {
       <HomeHero hero={model.hero} />
       <CompactHeroDiscovery chips={model.hero.contextChips} />
 
-      <section className={styles.marketSection} aria-labelledby="all-markets">
+      <section
+        id="all-markets"
+        className={styles.marketSection}
+        aria-labelledby="all-markets-heading"
+      >
         <div className={styles.sectionHeader}>
           <div>
-            <h2 id="all-markets" className={styles.subheading}>
+            <h2 id="all-markets-heading" className={styles.subheading}>
               All markets
             </h2>
           </div>

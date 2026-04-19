@@ -1,20 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
-  Activity,
   Bookmark,
-  ChevronDown,
-  ChevronUp,
-  Gift,
+  CircleDollarSign,
   Info,
-  LayoutDashboard,
   Menu,
   Moon,
+  PlugZap,
   Search,
   SlidersHorizontal,
-  Sun,
   Trophy,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -26,14 +21,12 @@ import {
 } from "@/shared/theme";
 import { CategoryNav } from "./CategoryNav";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { HEADER_TOPIC_ITEMS } from "./navItems";
 import styles from "./Header.module.css";
 
 const MENU_DESTINATION_ITEMS = [
-  { label: "Activity", icon: Activity },
-  { label: "Leaderboard", icon: Trophy },
-  { label: "Dashboards", icon: LayoutDashboard },
-  { label: "Rewards", icon: Gift },
+  { label: "Leaderboard", icon: Trophy, iconColor: "#ffb700" },
+  { label: "Rewards", icon: CircleDollarSign, iconColor: "#35b66f" },
+  { label: "APIs", icon: PlugZap, iconColor: "#e6468f" },
 ] as const;
 
 export function Header() {
@@ -42,7 +35,6 @@ export function Header() {
   const panelRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const pathname = usePathname() ?? "/";
 
   useEffect(() => {
     return subscribeToThemeChanges(() => {
@@ -178,32 +170,6 @@ export function Header() {
 
           <div className={styles.navShelf}>
             <CategoryNav />
-
-            <nav className={styles.topicNav} aria-label="Popular topics">
-              {HEADER_TOPIC_ITEMS.map((item) =>
-                item.href ? (
-                  <Link key={item.label} href={item.href} className={styles.topicLink}>
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span key={item.label} className={styles.topicLabel}>
-                    {item.label}
-                  </span>
-                ),
-              )}
-              <button
-                type="button"
-                className={styles.topicMore}
-                onClick={() => setIsMenuOpen(true)}
-              >
-                <span>More</span>
-                {isMenuOpen ? (
-                  <ChevronUp size={14} strokeWidth={2.25} aria-hidden="true" />
-                ) : (
-                  <ChevronDown size={14} strokeWidth={2.25} aria-hidden="true" />
-                )}
-              </button>
-            </nav>
           </div>
 
           <div className={styles.mobileSearchRow}>
@@ -223,22 +189,6 @@ export function Header() {
               <Bookmark size={18} strokeWidth={2.2} />
             </button>
           </div>
-
-          {pathname === "/" ? null : (
-            <div className={styles.mobileTopics} aria-label="Mobile topics">
-              {HEADER_TOPIC_ITEMS.map((item) =>
-                item.href ? (
-                  <Link key={item.label} href={item.href} className={styles.topicPill}>
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span key={item.label} className={styles.topicPill}>
-                    {item.label}
-                  </span>
-                ),
-              )}
-            </div>
-          )}
         </div>
 
         {isMenuOpen ? (
@@ -270,7 +220,12 @@ export function Header() {
                         className={styles.menuLink}
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <Icon className={styles.menuIcon} size={17} strokeWidth={2.05} />
+                        <Icon
+                          className={styles.menuIcon}
+                          size={22}
+                          strokeWidth={2.1}
+                          style={{ color: item.iconColor }}
+                        />
                         <span className={styles.menuLabel}>{item.label}</span>
                       </button>
                     );
@@ -280,29 +235,28 @@ export function Header() {
                 <div className={styles.menuDivider} />
 
                 <section className={styles.themeSection} aria-label="Theme controls">
-                  <div className={styles.themeSwitch}>
-                    <button
-                      type="button"
-                      className={styles.themeButton}
-                      aria-label="Dark theme"
-                      aria-pressed={theme === "dark"}
-                      onClick={() => applyTheme("dark")}
-                    >
-                      <Moon size={15} strokeWidth={2.15} />
-                      Dark
-                    </button>
+                  <button
+                    type="button"
+                    className={styles.themeRow}
+                    role="switch"
+                    aria-checked={theme === "dark"}
+                    aria-label="Dark mode"
+                    onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
+                  >
+                    <span className={styles.themeMeta}>
+                      <Moon
+                        className={styles.themeRowIcon}
+                        size={24}
+                        strokeWidth={2.15}
+                        aria-hidden="true"
+                      />
+                      <span className={styles.themeRowLabel}>Dark mode</span>
+                    </span>
 
-                    <button
-                      type="button"
-                      className={styles.themeButton}
-                      aria-label="Light theme"
-                      aria-pressed={theme === "light"}
-                      onClick={() => applyTheme("light")}
-                    >
-                      <Sun size={15} strokeWidth={2.15} />
-                      Light
-                    </button>
-                  </div>
+                    <span className={styles.themeSwitch} aria-hidden="true">
+                      <span className={styles.themeSwitchThumb} />
+                    </span>
+                  </button>
                 </section>
               </div>
             </div>

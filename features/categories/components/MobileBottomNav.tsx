@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { isTabActive } from "../activeTab";
+import { useActiveHomeSection } from "../useActiveHomeSection";
 import { MOBILE_BOTTOM_ITEMS } from "./navItems";
 import styles from "./MobileBottomNav.module.css";
 
@@ -17,6 +18,7 @@ export function MobileBottomNav({
   onMore,
 }: MobileBottomNavProps) {
   const pathname = usePathname() ?? "/";
+  const activeHomeSection = useActiveHomeSection(pathname);
 
   return (
     <nav className={styles.nav} aria-label="Mobile quick actions">
@@ -25,7 +27,11 @@ export function MobileBottomNav({
         const href = "href" in item ? item.href : undefined;
         const activeHref =
           "activeMatch" in item ? item.activeMatch : href ?? "/";
-        const active = href ? isTabActive(pathname, activeHref) : false;
+        const active =
+          href &&
+          ("sectionId" in item && item.sectionId && pathname === "/"
+            ? activeHomeSection === item.sectionId
+            : isTabActive(pathname, activeHref));
 
         if (!href) {
           return (

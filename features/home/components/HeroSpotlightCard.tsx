@@ -31,19 +31,24 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
               src={imageSrc}
               alt=""
               fill
-              sizes="48px"
+              sizes="56px"
               className={styles.thumbnail}
             />
           </div>
 
           <div>
             <p className={styles.breadcrumb}>
-              {spotlight.categoryLabel}
+              <span>{spotlight.categoryLabel}</span>
               {spotlight.subcategoryLabel
-                ? ` · ${spotlight.subcategoryLabel}`
+                ? (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>{spotlight.subcategoryLabel}</span>
+                    </>
+                  )
                 : ""}
             </p>
-            <h1 className={styles.spotlightTitle}>
+            <h1 className={styles.spotlightTitle} data-hero-title>
               <Link href={spotlight.href} className={styles.spotlightTitleLink}>
                 {spotlight.market.question}
               </Link>
@@ -91,7 +96,6 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
           </div>
 
           <div className={styles.sourceSection}>
-            <span className={styles.sourceMeta}>Market feed</span>
             <div className={styles.sourceTicker} data-feed-ticker>
               <ul className={styles.sourceTrack} data-feed-track>
                 {sourceRows.map((row, index) => (
@@ -100,29 +104,19 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
                     className={styles.sourceItem}
                     aria-hidden={index >= spotlight.sourceRows.length}
                   >
-                    <div className={styles.sourceBody}>
-                      <span className={styles.sourceHeader}>
-                        <span className={styles.sourceMarker} aria-hidden="true" />
-                        <span className={styles.sourceLabel}>{row.label}</span>
-                        {row.meta ? (
-                          <span className={styles.sourceMetaText}>{row.meta}</span>
-                        ) : null}
+                    <Link
+                      href={spotlight.href}
+                      className={styles.sourceItemLink}
+                      tabIndex={index >= spotlight.sourceRows.length ? -1 : undefined}
+                    >
+                      <span className={styles.sourceBody}>
+                        <span className={styles.sourceHeader}>
+                          {row.label}
+                          {row.meta ? ` · ${row.meta}` : ""}
+                        </span>
+                        <span className={styles.sourceValue}>{row.value}</span>
                       </span>
-                      <span className={styles.sourceValue}>{row.value}</span>
-                    </div>
-                    {row.stat ? (
-                      <span
-                        className={`${styles.sourceStat} ${
-                          row.statTone === "up"
-                            ? styles.sourceStatUp
-                            : row.statTone === "down"
-                              ? styles.sourceStatDown
-                              : ""
-                        }`.trim()}
-                      >
-                        {row.stat}
-                      </span>
-                    ) : null}
+                    </Link>
                   </li>
                 ))}
               </ul>

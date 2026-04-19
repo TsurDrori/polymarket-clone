@@ -1,20 +1,26 @@
 .desktopHero {
   display: none;
+  scroll-margin-top: 116px;
 }
 
 .heroRow {
+  display: grid;
+  gap: 32px;
+}
+
+.spotlightColumn {
   display: grid;
   gap: 16px;
 }
 
 .spotlightCard {
   display: grid;
-  gap: 12px;
-  padding: 18px 16px 14px;
-  border: 1px solid color-mix(in srgb, var(--border) 88%, var(--bg-soft));
-  border-radius: 22px;
+  gap: 16px;
+  padding: 20px 20px 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 92%, var(--bg-soft));
+  border-radius: 18px;
   background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
-  box-shadow: 0 10px 26px rgba(15, 23, 32, 0.05);
+  box-shadow: 0 8px 18px rgba(15, 23, 32, 0.04);
 }
 
 .spotlightHeader,
@@ -28,20 +34,26 @@
   gap: 12px;
 }
 
+.spotlightHeader {
+  align-items: flex-start;
+  padding-bottom: 6px;
+}
+
 .spotlightIntro {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
+  align-items: center;
 }
 
 .thumbnailWrap {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   flex: 0 0 auto;
   overflow: hidden;
   border: 1px solid var(--border-soft);
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--bg-soft);
 }
 
@@ -50,19 +62,28 @@
 }
 
 .breadcrumb {
-  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 2px;
   color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 540;
+  letter-spacing: 0;
 }
 
 .spotlightTitle {
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(22px, 2.8vw, 26px);
-  line-height: 1.04;
-  letter-spacing: -0.05em;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .spotlightTitleLink {
@@ -75,17 +96,17 @@
 
 .utilityIcons {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .utilityIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--border-soft);
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--bg-soft);
   color: var(--text-muted);
 }
@@ -93,21 +114,22 @@
 .priceRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 8px 12px;
   align-items: flex-end;
 }
 
 .spotlightPrice {
   color: var(--accent-brand);
-  font-size: clamp(30px, 3.8vw, 40px);
-  font-weight: 800;
-  letter-spacing: -0.06em;
-  line-height: 0.9;
+  font-size: 28px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .priceDelta {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
 }
 
 .deltaUp {
@@ -120,30 +142,31 @@
 
 .spotlightBody {
   display: grid;
-  gap: 12px;
+  gap: 24px;
 }
 
 .spotlightCopy {
   display: grid;
-  gap: 8px;
+  gap: 16px;
 }
 
 .outcomeRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .outcomePill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
-  min-width: 118px;
-  padding: 0 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
+  min-height: 56px;
+  min-width: 169px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
 }
 
 .outcomeYes {
@@ -157,16 +180,7 @@
 }
 
 .sourceSection {
-  display: grid;
-  gap: 6px;
-}
-
-.sourceMeta {
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  min-height: 0;
 }
 
 .railList {
@@ -181,15 +195,14 @@
 
 .sourceTicker {
   position: relative;
-  height: 198px;
+  height: 219px;
   overflow: hidden;
-  mask-image: linear-gradient(to bottom, transparent 0, black 14px, black calc(100% - 14px), transparent 100%);
 }
 
 .sourceTrack {
-  display: grid;
-  gap: 0;
-  animation: newsTicker 20s linear infinite;
+  display: flex;
+  flex-direction: column;
+  animation: newsTicker 25s linear infinite;
 }
 
 .sourceTicker:hover .sourceTrack {
@@ -198,78 +211,47 @@
 
 .sourceItem,
 .railItem {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border-soft);
-}
-
-.sourceItem:first-child,
-.railItem:first-child {
-  padding-top: 0;
-  border-top: 0;
+  min-width: 0;
 }
 
 .sourceBody {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
+.sourceItemLink {
+  display: block;
+  padding: 10px 0;
+  color: inherit;
+}
+
+.sourceItemLink:hover .sourceValue {
+  color: var(--text-secondary);
+}
+
 .sourceHeader {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-
-.sourceMarker {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent-brand) 74%, transparent);
-}
-
-.sourceLabel {
   color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sourceMetaText {
-  color: var(--text-subtle);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 540;
 }
 
 .sourceValue {
   color: var(--text-primary);
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.sourceStat {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.sourceStatUp {
-  color: var(--accent-yes);
-}
-
-.sourceStatDown {
-  color: var(--accent-no);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .chartPanel {
   display: grid;
-  gap: 6px;
-  padding: 0 4px 0 6px;
+  gap: 8px;
+  padding: 0;
   border-radius: 18px;
   background: transparent;
 }
@@ -279,13 +261,14 @@
 .spotlightFooter {
   color: var(--text-muted);
   font-size: 12px;
-  font-weight: 600;
+  line-height: 18px;
+  font-weight: 500;
 }
 
 .chartFigure {
   margin: 0;
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .chartSurface {
@@ -315,22 +298,29 @@
 }
 
 .heroRail {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.heroRailContent {
   display: grid;
-  gap: 18px;
-  align-content: start;
+  gap: 22px;
 }
 
 .railModule {
   display: grid;
-  gap: 6px;
+  gap: 8px;
+  scroll-margin-top: 116px;
 }
 
 .railHeading {
   margin: 0;
   color: var(--text-primary);
   font-size: 17px;
-  line-height: 1;
-  letter-spacing: -0.04em;
+  line-height: 27px;
+  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
 .railHeadingCopy {
@@ -346,9 +336,9 @@
 .railLink {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 12px;
   align-items: start;
-  padding: 9px 0;
+  padding: 11px 0;
   border-top: 1px solid var(--border-soft);
 }
 
@@ -359,50 +349,52 @@
 
 .railRank {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 18px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
 }
 
 .railBody {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 .railTitle {
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
 }
 
 .railSubtitle {
   color: var(--text-muted);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 18px;
 }
 
 .railStats {
   display: grid;
-  gap: 4px;
+  gap: 0;
   justify-items: end;
 }
 
 .railChance,
 .railVolume {
   color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
 }
 
 .footerNav {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 2px 2px 0;
+  gap: 16px;
+  min-height: 40px;
+  padding-left: 20px;
 }
 
 .dotGroup,
@@ -416,21 +408,26 @@
   gap: 6px;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
+.dotButton {
+  border: 0;
+  padding: 0;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+  background: color-mix(in srgb, var(--text-muted) 34%, transparent);
+  transition:
+    width 160ms ease,
+    background-color 160ms ease;
 }
 
 .dotActive {
-  width: 24px;
+  width: 32px;
   background: var(--text-primary);
 }
 
 .footerChipGroup,
 .compactChipGroup {
-  gap: 10px;
+  gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -440,33 +437,57 @@
   display: none;
 }
 
-.footerChip,
+.footerChipButton,
 .compactChip,
 .exploreLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
+  min-height: 56px;
+  padding: 8px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
   white-space: nowrap;
 }
 
-.footerChip:hover,
+.footerChipButton svg {
+  color: var(--text-muted);
+}
+
+.footerChipPrev {
+  padding: 8px 6px 8px 8px;
+}
+
+.footerChipNext {
+  padding: 8px 8px 8px 6px;
+}
+
+.footerChipButton:hover,
 .compactChip:hover,
 .exploreLink:hover,
 .spotlightTitleLink:hover,
 .railLink:hover {
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 .exploreLink {
-  min-width: 146px;
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 32px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  border-radius: 999px;
+  margin-top: auto;
+  color: var(--text-primary);
 }
 
 .compactDiscovery {
@@ -509,7 +530,7 @@
 @media (min-width: 769px) {
   .desktopHero {
     display: grid;
-    gap: 18px;
+    gap: 16px;
   }
 
   .compactDiscovery {
@@ -519,12 +540,12 @@
 
 @media (min-width: 1024px) {
   .heroRow {
-    grid-template-columns: minmax(0, 2.25fr) minmax(280px, 1fr);
+    grid-template-columns: minmax(0, 907px) minmax(320px, 1fr);
     align-items: start;
   }
 
   .spotlightBody {
-    grid-template-columns: minmax(250px, 0.68fr) minmax(360px, 1.32fr);
+    grid-template-columns: 346px minmax(0, 1fr);
     align-items: start;
   }
 }

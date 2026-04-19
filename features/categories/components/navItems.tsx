@@ -3,7 +3,7 @@ import { Bitcoin, House, Landmark, Search, Trophy } from "lucide-react";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
-function TrendingMark(props: IconProps) {
+export function TrendingMark(props: IconProps) {
   return (
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" {...props}>
       <path
@@ -33,6 +33,7 @@ export type ShellLinkItem = {
   href?: string;
   description?: string;
   activeMatch?: string;
+  sectionId?: "trending" | "breaking-news" | "all-markets";
 };
 
 export const CATEGORY_ITEMS: readonly CategoryNavItem[] = [
@@ -43,25 +44,17 @@ export const CATEGORY_ITEMS: readonly CategoryNavItem[] = [
 ] as const;
 
 export const HEADER_MARKET_ITEMS: readonly ShellLinkItem[] = [
-  { label: "Trending", href: "/", activeMatch: "/" },
-  { label: "Breaking", href: "/#breaking-news", activeMatch: "/" },
-  { label: "New", href: "/#all-markets", activeMatch: "/" },
+  { label: "Trending", href: "/#trending", activeMatch: "/", sectionId: "trending" },
+  {
+    label: "Breaking",
+    href: "/#breaking-news",
+    activeMatch: "/",
+    sectionId: "breaking-news",
+  },
+  { label: "New", href: "/#all-markets", activeMatch: "/", sectionId: "all-markets" },
   { label: "Politics", href: "/politics", activeMatch: "/politics" },
   { label: "Sports", href: "/sports/live", activeMatch: "/sports" },
   { label: "Crypto", href: "/crypto", activeMatch: "/crypto" },
-] as const;
-
-export const HEADER_TOPIC_ITEMS: readonly ShellLinkItem[] = [
-  { label: "Esports" },
-  { label: "Iran" },
-  { label: "Finance" },
-  { label: "Geopolitics" },
-  { label: "Tech" },
-  { label: "Culture" },
-  { label: "Economy" },
-  { label: "Weather" },
-  { label: "Mentions" },
-  { label: "Elections" },
 ] as const;
 
 export const DRAWER_DESTINATION_ITEMS: readonly ShellLinkItem[] = [
@@ -98,7 +91,19 @@ export const DRAWER_DESTINATION_ITEMS: readonly ShellLinkItem[] = [
 ] as const;
 
 export const MOBILE_BOTTOM_ITEMS = [
-  { label: "Home", href: "/", icon: House, activeMatch: "/" },
+  {
+    label: "Home",
+    href: "/#trending",
+    icon: House,
+    activeMatch: "/",
+    sectionId: "trending",
+  },
   { label: "Search", icon: Search },
-  { label: "Breaking", href: "/#breaking-news", icon: TrendingMark, activeMatch: "/" },
+  {
+    label: "Breaking",
+    href: "/#breaking-news",
+    icon: TrendingMark,
+    activeMatch: "/",
+    sectionId: "breaking-news",
+  },
 ] as const;

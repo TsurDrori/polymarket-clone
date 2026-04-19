@@ -139,7 +139,7 @@
 
 .menuButton,
 .iconButton,
-.themeButton,
+.themeRow,
 .menuLink {
   transition:
     transform 160ms ease,
@@ -170,21 +170,19 @@
 
 .menuButton:hover,
 .iconButton:hover,
-.signupButton:hover,
-.topicMore:hover {
+.signupButton:hover {
   transform: translateY(-1px);
 }
 
 .menuButton:focus-visible,
 .iconButton:focus-visible,
-.themeButton:focus-visible,
+.themeRow:focus-visible,
 .menuLink:focus-visible,
 .searchInput:focus-visible,
 .authLink:focus-visible,
 .signupButton:focus-visible,
 .howItWorks:focus-visible,
 .topicLink:focus-visible,
-.topicMore:focus-visible,
 .topicPill:focus-visible,
 .backdrop:focus-visible {
   outline: 2px solid var(--text-primary);
@@ -234,19 +232,11 @@
 
 .topicLink,
 .topicLabel,
-.topicMore,
 .topicPill {
   white-space: nowrap;
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
-}
-
-.topicMore {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--text-primary);
 }
 
 .topicPill {
@@ -284,14 +274,14 @@
 
 .menuPopover {
   position: relative;
-  width: min(176px, calc(100vw - 24px));
+  width: min(292px, calc(100vw - 24px));
   display: grid;
-  gap: 8px;
-  padding: 7px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-soft);
-  border-radius: 11px;
-  box-shadow: none;
+  gap: 10px;
+  padding: 14px 0 12px;
+  background: color-mix(in srgb, var(--bg-page) 92%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--border-soft) 90%, transparent);
+  border-radius: 22px;
+  box-shadow: 0 22px 40px rgba(8, 11, 15, 0.28);
 }
 
 .menuPopover:focus {
@@ -300,80 +290,107 @@
 
 .menuNav {
   display: grid;
-  gap: 1px;
+  gap: 2px;
 }
 
 .menuLink {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
+  grid-template-columns: 26px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   width: 100%;
-  min-height: 40px;
-  padding: 0 10px;
+  min-height: 56px;
+  padding: 0 34px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 0;
   background: transparent;
   color: var(--text-primary);
   text-align: left;
 }
 
 .menuLink:hover {
-  background: color-mix(in srgb, var(--bg-soft) 76%, transparent);
-}
-
-.menuIcon {
-  color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg-soft) 42%, transparent);
 }
 
 .menuLabel {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 650;
   letter-spacing: -0.02em;
 }
 
 .menuDivider {
   height: 1px;
-  background: var(--border);
+  margin: 4px 0 2px;
+  background: color-mix(in srgb, var(--border-soft) 78%, transparent);
 }
 
 .themeSection {
   display: block;
 }
 
-.themeSwitch {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 3px;
-  padding: 3px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg-soft) 92%, transparent);
+.themeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 64px;
+  padding: 0 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
 }
 
-.themeButton {
+.themeRow:hover {
+  background: color-mix(in srgb, var(--bg-soft) 32%, transparent);
+}
+
+.themeMeta {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-height: 28px;
-  padding: 0 6px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
+  gap: 16px;
 }
 
-.themeButton:hover {
-  background: color-mix(in srgb, var(--bg-surface) 42%, transparent);
+.themeRowIcon {
+  color: #3c68ff;
 }
 
-.themeButton[aria-pressed="true"] {
-  border-color: var(--border-soft);
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  box-shadow: 0 1px 2px rgba(15, 23, 32, 0.08);
+.themeRowLabel {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.themeSwitch {
+  position: relative;
+  width: 68px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #949ca8;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.themeSwitchThumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 32, 0.22);
+  transition: transform 160ms ease;
+}
+
+.themeRow[aria-checked="true"] .themeSwitch {
+  background: #1292ff;
+}
+
+.themeRow[aria-checked="true"] .themeSwitchThumb {
+  transform: translateX(28px);
 }
 
 @media (min-width: 600px) {
