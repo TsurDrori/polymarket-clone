@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { formatPct, formatVolume } from "@/shared/lib/format";
 import type { HomeHeroModel } from "../selectors";
-import styles from "./HomeHero.module.css";
+import styles from "./HeroRightRail.module.css";
 
 type HeroRightRailProps = {
   hero: HomeHeroModel;
@@ -11,35 +11,38 @@ type HeroRightRailProps = {
 const formatChangeLabel = (change: number): string =>
   `${change >= 0 ? "+" : "-"}${Math.round(Math.abs(change) * 100)}%`;
 
+const formatTopicCountLabel = (eventCount: number): string =>
+  `${eventCount} market${eventCount === 1 ? "" : "s"}`;
+
 export function HeroRightRail({ hero }: HeroRightRailProps) {
   return (
-    <aside className={styles.heroRail} aria-label="Homepage spotlight rail">
-      <div className={styles.heroRailContent}>
+    <aside className={styles.rail} aria-label="Homepage spotlight rail">
+      <div className={styles.content}>
         <section
           id="breaking-news"
-          className={styles.railModule}
+          className={`${styles.module} ${styles.breakingModule}`.trim()}
           aria-labelledby="breaking-news-heading"
         >
-          <div className={styles.railHeadingRow}>
-            <h2 id="breaking-news-heading" className={styles.railHeading}>
+          <div className={styles.headingRow}>
+            <h2 id="breaking-news-heading" className={styles.heading}>
               Breaking news
             </h2>
-            <ChevronRight size={18} aria-hidden="true" />
+            <ChevronRight size={16} aria-hidden="true" className={styles.chevron} />
           </div>
 
-          <ol className={styles.railList}>
+          <ol className={styles.list}>
             {hero.breaking.map((item, index) => (
-              <li key={`${item.event.id}-${item.market.id}`}>
-                <Link href={item.href} className={styles.railLink}>
-                  <span className={styles.railRank}>
+              <li key={`${item.event.id}-${item.market.id}`} className={styles.item}>
+                <Link href={item.href} className={styles.link}>
+                  <span className={styles.rank}>
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <span className={styles.railBody}>
-                    <span className={styles.railTitle}>{item.label}</span>
-                    <span className={styles.railSubtitle}>{item.event.title}</span>
+                  <span className={styles.body}>
+                    <span className={styles.title}>{item.label}</span>
+                    <span className={styles.subtitle}>{item.event.title}</span>
                   </span>
-                  <span className={styles.railStats}>
-                    <span className={styles.railChance}>{formatPct(item.chance)}</span>
+                  <span className={styles.stats}>
+                    <span className={styles.primaryStat}>{formatPct(item.chance)}</span>
                     <span
                       className={item.dayChange >= 0 ? styles.deltaUp : styles.deltaDown}
                     >
@@ -52,44 +55,47 @@ export function HeroRightRail({ hero }: HeroRightRailProps) {
           </ol>
         </section>
 
-        <section className={styles.railModule} aria-labelledby="hero-hot-topics">
-          <div className={styles.railHeadingRow}>
-            <h2 id="hero-hot-topics" className={styles.railHeading}>
+        <section
+          className={`${styles.module} ${styles.topicModule}`.trim()}
+          aria-labelledby="hero-hot-topics"
+        >
+          <div className={styles.headingRow}>
+            <h2 id="hero-hot-topics" className={styles.heading}>
               Hot topics
             </h2>
-            <ChevronRight size={18} aria-hidden="true" />
+            <ChevronRight size={16} aria-hidden="true" className={styles.chevron} />
           </div>
 
-          <ol className={styles.railList}>
+          <ol className={styles.list}>
             {hero.topics.map((topic, index) => {
               const content = (
                 <>
-                  <span className={styles.railRank}>
+                  <span className={styles.rank}>
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <span className={styles.railBody}>
-                    <span className={styles.railTitle}>{topic.label}</span>
-                    <span className={styles.railSubtitle}>
-                      {topic.eventCount} markets
+                  <span className={styles.body}>
+                    <span className={styles.title}>{topic.label}</span>
+                    <span className={styles.subtitle}>
+                      {formatTopicCountLabel(topic.eventCount)}
                     </span>
                   </span>
-                  <span className={styles.railStats}>
-                    <span className={styles.railVolume}>
+                  <span className={styles.stats}>
+                    <span className={styles.primaryStat}>
                       {formatVolume(topic.totalVolume)}
                     </span>
-                    <span className={styles.railHeadingCopy}>today</span>
+                    <span className={styles.statMeta}>today</span>
                   </span>
                 </>
               );
 
               return (
-                <li key={topic.slug}>
+                <li key={topic.slug} className={styles.item}>
                   {topic.href ? (
-                    <Link href={topic.href} className={styles.railLink}>
+                    <Link href={topic.href} className={styles.link}>
                       {content}
                     </Link>
                   ) : (
-                    <div className={styles.railLink}>{content}</div>
+                    <div className={styles.link}>{content}</div>
                   )}
                 </li>
               );
