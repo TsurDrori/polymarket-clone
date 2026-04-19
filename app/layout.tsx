@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Footer } from "@/features/categories/components/Footer";
 import { Header } from "@/features/categories/components/Header";
 import { Providers } from "./Providers";
 import "./globals.css";
@@ -26,6 +27,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           {children}
+          <Footer />
         </Providers>
       </body>
     </html>

@@ -1,0 +1,115 @@
+.footer {
+  margin-top: 72px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(61, 180, 104, 0.06), transparent 30%),
+    linear-gradient(180deg, rgba(18, 22, 26, 0.98), rgba(12, 16, 20, 1));
+}
+
+.inner {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 16px 56px;
+  display: grid;
+  gap: 28px;
+}
+
+.brandColumn {
+  display: grid;
+  gap: 14px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+}
+
+.logoMark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #f3f6f8;
+  color: #0f1418;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.brandText {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.brandCopy {
+  margin: 0;
+  max-width: 520px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.linkGrid {
+  display: grid;
+  gap: 24px;
+}
+
+.linkSection {
+  display: grid;
+  gap: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.linkList {
+  display: grid;
+  gap: 10px;
+}
+
+.link {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: color 120ms ease-out;
+}
+
+.link:hover {
+  color: var(--text-primary);
+}
+
+.legal {
+  display: grid;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.legalLine,
+.disclaimer {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding: 48px 24px 64px;
+  }
+
+  .linkGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -1,5 +1,5 @@
 import { listEvents } from "@/features/events/api/gamma";
-import { EventGrid } from "@/features/events/components/EventGrid";
+import { HomePage } from "@/features/home/HomePage";
 import { Hydrator } from "@/features/realtime/Hydrator";
 import { isEventVisible } from "@/shared/lib/tags";
 import styles from "./page.module.css";
@@ -23,7 +23,7 @@ export default async function Home() {
   return (
     <main className={styles.main}>
       <Hydrator events={visible} />
-      <EventGrid events={visible} />
+      <HomePage events={visible} />
     </main>
   );
 }
