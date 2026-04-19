@@ -26,6 +26,7 @@ export function CategoryNav() {
             href={item.href}
             role="link"
             aria-current={active ? "page" : undefined}
+            aria-selected={active ? true : undefined}
           >
             {item.label}
           </Tab>
