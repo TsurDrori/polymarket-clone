@@ -504,7 +504,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .utilityRow {
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;

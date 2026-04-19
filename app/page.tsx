@@ -4,7 +4,7 @@ import { listEvents } from "@/features/events/api/gamma";
 import { HomePage } from "@/features/home/HomePage";
 import {
   buildHomePageModel,
-  selectSpotlightEvent,
+  selectSpotlightEvents,
   selectSpotlightMarket,
   type HeroChartModel,
 } from "@/features/home/selectors";
@@ -64,34 +64,45 @@ export default async function Home() {
     );
   }
 
-  const spotlightEvent = selectSpotlightEvent(visible);
-  const spotlightMarket = spotlightEvent
-    ? selectSpotlightMarket(spotlightEvent)
-    : undefined;
-  const spotlightTokenId = spotlightMarket?.clobTokenIds[0];
-  let spotlightChart: HeroChartModel | null = null;
+  const spotlightChartsEntries = await Promise.all(
+    selectSpotlightEvents(visible, 5).map(async (event) => {
+      const market = selectSpotlightMarket(event);
+      const tokenId = market?.clobTokenIds[0];
 
-  if (spotlightTokenId) {
-    try {
-      const points = await getMarketPriceHistory({
-        tokenId: spotlightTokenId,
-        interval: "1w",
-        fidelity: 60,
-      });
-
-      if (points.length >= 5) {
-        spotlightChart = {
-          points,
-          intervalLabel: "1W window",
-          sourceLabel: "Polymarket CLOB",
-        };
+      if (!market || !tokenId) {
+        return null;
       }
-    } catch {
-      spotlightChart = null;
-    }
-  }
 
-  const model = buildHomePageModel(visible, { spotlightChart });
+      try {
+        const points = await getMarketPriceHistory({
+          tokenId,
+          interval: "1w",
+          fidelity: 60,
+        });
+
+        return [
+          market.id,
+          points.length >= 5
+            ? {
+                points,
+                intervalLabel: "Monthly",
+                sourceLabel: "Polymarket",
+              }
+            : null,
+        ] as const;
+      } catch {
+        return [market.id, null] as const;
+      }
+    }),
+  );
+
+  const spotlightCharts = Object.fromEntries(
+    spotlightChartsEntries.filter(
+      (entry): entry is readonly [string, HeroChartModel | null] => Boolean(entry),
+    ),
+  );
+
+  const model = buildHomePageModel(visible, { spotlightCharts });
 
   return (
     <main className={styles.main}>

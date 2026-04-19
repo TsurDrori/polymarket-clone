@@ -48,8 +48,12 @@ export function HeroFooterNav({
           aria-label={`Show previous spotlight: ${previousSpotlight.navigationLabel}`}
           data-footer-prev
         >
-          <ChevronLeft size={16} />
-          <span>{previousSpotlight.navigationLabel}</span>
+          <span className={styles.footerChipInner}>
+            <span className={styles.footerChipLabel}>
+              <ChevronLeft size={16} />
+              <span>{previousSpotlight.navigationLabel}</span>
+            </span>
+          </span>
         </button>
 
         <button
@@ -59,8 +63,12 @@ export function HeroFooterNav({
           aria-label={`Show next spotlight: ${nextSpotlight.navigationLabel}`}
           data-footer-next
         >
-          <span>{nextSpotlight.navigationLabel}</span>
-          <ChevronRight size={16} />
+          <span className={styles.footerChipInner}>
+            <span className={styles.footerChipLabel}>
+              <span>{nextSpotlight.navigationLabel}</span>
+              <ChevronRight size={16} />
+            </span>
+          </span>
         </button>
       </div>
     </div>

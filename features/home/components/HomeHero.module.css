@@ -166,7 +166,7 @@
   min-width: 169px;
   padding: 8px 16px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 20px;
   font-weight: 600;
 }
@@ -184,7 +184,6 @@
 .sourceSection {
   display: flex;
   min-height: 0;
-  padding-bottom: 10px;
 }
 
 .railList {
@@ -199,9 +198,23 @@
 
 .sourceTicker {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
+  height: 208px;
+  min-height: 208px;
   overflow: hidden;
+}
+
+.sourceTicker::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 20px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    color-mix(in srgb, var(--bg-surface) 92%, transparent) 72%,
+    color-mix(in srgb, var(--bg-surface) 100%, transparent)
+  );
 }
 
 .sourceTrack {
@@ -224,7 +237,7 @@
 
 .sourceBody {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -233,7 +246,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
-  padding: 4px 0;
+  padding: 10px 0;
   color: inherit;
 }
 
@@ -255,12 +268,12 @@
   font-weight: 400;
   display: -webkit-box;
   overflow: hidden;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
 .sourceStat {
-  padding-top: 16px;
+  padding-top: 28px;
   font-size: 12px;
   line-height: 16px;
   font-weight: 600;
@@ -281,8 +294,6 @@
 
 .chartPanel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 8px;
   padding: 0;
   border-radius: 18px;
   background: transparent;
@@ -301,8 +312,6 @@
 .chartFigure {
   margin: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 6px;
   min-height: 0;
 }
 
@@ -313,7 +322,7 @@
 }
 
 .chartFallback {
-  min-height: 228px;
+  min-height: 248px;
   display: grid;
   gap: 8px;
   place-items: center;
@@ -331,6 +340,10 @@
   color: var(--text-muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.chartCaption {
+  display: none;
 }
 
 .heroRail {
@@ -425,9 +438,9 @@
 }
 
 .footerNav {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   height: 40px;
   min-height: 40px;
@@ -465,7 +478,7 @@
 
 .footerChipGroup,
 .compactChipGroup {
-  gap: 10px;
+  gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -481,25 +494,60 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 16px;
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  background: var(--bg-soft);
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  min-height: 56px;
+  padding: 8px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
   white-space: nowrap;
 }
 
 .footerChipButton svg {
-  color: currentColor;
+  color: var(--text-muted);
 }
 
+.footerChipInner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f4f5f6;
+}
+
+.footerChipLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.footerChipButton:hover .footerChipInner {
+  background: color-mix(in srgb, #f4f5f6 72%, var(--border) 28%);
+}
+
+.footerChipButton:hover .footerChipLabel,
 .footerChipButton:hover svg {
   color: var(--text-secondary);
+}
+
+.footerChipPrev {
+  padding: 8px 6px 8px 8px;
+}
+
+.footerChipNext {
+  padding: 8px 8px 8px 6px;
 }
 
 .footerChipButton:hover,
@@ -510,12 +558,9 @@
   color: var(--text-secondary);
 }
 
-.footerChipButton:hover {
-  background: color-mix(in srgb, var(--bg-soft) 94%, white);
-}
-
 .footerChipGroup {
-  justify-self: center;
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .exploreLink {

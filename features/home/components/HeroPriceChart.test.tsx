@@ -10,13 +10,13 @@ describe("HeroPriceChart", () => {
     expect(screen.getByText("28% chance")).toBeTruthy();
   });
 
-  it("renders chart labels when a bounded history is available", () => {
+  it("renders the chart surface when a bounded history is available", () => {
     render(
       <HeroPriceChart
         currentChance={0.31}
         chart={{
-          intervalLabel: "1W window",
-          sourceLabel: "Polymarket CLOB",
+          intervalLabel: "Monthly",
+          sourceLabel: "Polymarket",
           points: [
             { t: 1_710_000_000, p: 0.21 },
             { t: 1_710_086_400, p: 0.28 },
@@ -28,9 +28,11 @@ describe("HeroPriceChart", () => {
       />,
     );
 
-    expect(screen.getByText("Price history")).toBeTruthy();
-    expect(screen.getByText("1W window")).toBeTruthy();
-    expect(screen.getByText("Polymarket CLOB")).toBeTruthy();
-    expect(screen.getByText("31% latest")).toBeTruthy();
+    expect(
+      screen.getByRole("img", { name: "Spotlight market price history" }),
+    ).toBeTruthy();
+    expect(screen.queryByText("Price history")).toBeNull();
+    expect(screen.getByText("25%")).toBeTruthy();
+    expect(screen.getByText("Mar 9")).toBeTruthy();
   });
 });

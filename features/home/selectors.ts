@@ -282,6 +282,7 @@ const rankSpotlightEvent = (event: PolymarketEvent) => {
     hasImage: Number(Boolean(event.image || event.icon || market.image || market.icon)),
     featured: Number(event.featured),
     nonSports: Number(!isSportsEvent(event)),
+    editorialCategory: Number(getEventCategoryKey(event) !== "culture"),
     shortQuestion: Number(normalizeText(market.question).length <= 60),
     hasDescription: Number(Boolean(event.description?.trim())),
     conciseQuestion: getQuestionCompactnessScore(market),
@@ -323,7 +324,7 @@ const buildFallbackSourceRows = (
     seen.add(dedupeKey);
     sourceRows.push({
       label,
-      value: clampText(normalized, 76),
+      value: clampText(normalized, 64),
       meta,
       stat,
       statTone,
@@ -332,35 +333,35 @@ const buildFallbackSourceRows = (
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[0],
-    value: clampText(descriptionSentences[0] ?? market.question, 58),
+    value: clampText(descriptionSentences[0] ?? market.question, 48),
     meta: freshPublishedLabel ?? "10h ago",
     ...FALLBACK_SOURCE_STATS[0],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[1],
-    value: clampText(descriptionSentences[1] ?? market.question, 58),
+    value: clampText(descriptionSentences[1] ?? market.question, 48),
     meta: freshPublishedLabel ?? "21h ago",
     ...FALLBACK_SOURCE_STATS[1],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[2],
-    value: clampText(descriptionSentences[2] ?? event.title, 58),
+    value: clampText(descriptionSentences[2] ?? event.title, 48),
     meta: freshPublishedLabel ?? "1d ago",
     ...FALLBACK_SOURCE_STATS[2],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[3],
-    value: clampText(market.question, 58),
+    value: clampText(market.question, 48),
     meta: freshPublishedLabel ?? (event.endDate ? `By ${formatEndDate(event.endDate)}` : "1d ago"),
     ...FALLBACK_SOURCE_STATS[3],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[4],
-    value: clampText(event.title, 58),
+    value: clampText(event.title, 48),
     meta: freshPublishedLabel ?? "2d ago",
     ...FALLBACK_SOURCE_STATS[4],
   });
@@ -543,16 +544,17 @@ export const selectSpotlightEvents = (
   return pool
     .sort((left, right) => {
       return (
-        compareNumbersDesc(left.rank.centeredPrice, right.rank.centeredPrice) ||
-        compareNumbersDesc(left.rank.shortQuestion, right.rank.shortQuestion) ||
-        compareNumbersDesc(left.rank.conciseQuestion, right.rank.conciseQuestion) ||
-        compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
         compareNumbersDesc(left.rank.featured, right.rank.featured) ||
         compareNumbersDesc(left.rank.nonSports, right.rank.nonSports) ||
-        compareNumbersDesc(left.rank.hasImage, right.rank.hasImage) ||
-        compareNumbersDesc(left.rank.marketChange, right.rank.marketChange) ||
-        compareNumbersDesc(left.rank.marketVolume, right.rank.marketVolume) ||
+        compareNumbersDesc(left.rank.editorialCategory, right.rank.editorialCategory) ||
         compareNumbersDesc(left.rank.eventVolume, right.rank.eventVolume) ||
+        compareNumbersDesc(left.rank.marketVolume, right.rank.marketVolume) ||
+        compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
+        compareNumbersDesc(left.rank.marketChange, right.rank.marketChange) ||
+        compareNumbersDesc(left.rank.centeredPrice, right.rank.centeredPrice) ||
+        compareNumbersDesc(left.rank.hasImage, right.rank.hasImage) ||
+        compareNumbersDesc(left.rank.conciseQuestion, right.rank.conciseQuestion) ||
+        compareNumbersDesc(left.rank.shortQuestion, right.rank.shortQuestion) ||
         left.event.title.localeCompare(right.event.title)
       );
     })
@@ -782,7 +784,7 @@ const buildHeroSpotlightModel = (
     chance: getDisplayPrice(market),
     dayChange: getMarketChange(market),
     volumeLabel: formatVolume(
-      getMarketVolume(market) || event.volume24hr || event.volume,
+      event.volume || event.volume24hr || getMarketVolume(market),
     ),
     notes: buildSpotlightNotes(event, market),
     sourceRows: buildFallbackSourceRows(event, market),

@@ -154,11 +154,6 @@ export function HeroPriceChart({
   if (!chartGeometry || !chart) {
     return (
       <div className={styles.chartPanel}>
-        <div className={styles.chartHeader}>
-          <span className={styles.chartLabel}>Price history</span>
-          <span className={styles.chartLabel}>Fallback state</span>
-        </div>
-
         <div className={styles.chartFallback}>
           <span className={styles.chartFallbackTitle}>
             History unavailable right now
@@ -249,13 +244,6 @@ export function HeroPriceChart({
 
   return (
     <div className={styles.chartPanel}>
-      <div className={styles.chartHeader}>
-        <span className={styles.chartLabel}>Price history</span>
-        <span className={styles.chartLabel}>
-          {hoveredPoint ? formatHoverDate(hoveredPoint.point.t) : chart.intervalLabel}
-        </span>
-      </div>
-
       <figure className={styles.chartFigure}>
         <svg
           viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
@@ -413,11 +401,6 @@ export function HeroPriceChart({
             onPointerLeave={() => updateHoveredPoint(null)}
           />
         </svg>
-
-        <figcaption className={styles.chartCaption}>
-          <span>{chart.sourceLabel}</span>
-          <span>{formatPct(currentChance)} latest</span>
-        </figcaption>
       </figure>
     </div>
   );
