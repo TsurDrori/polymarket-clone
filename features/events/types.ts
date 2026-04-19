@@ -5,6 +5,19 @@ export interface PolymarketTag {
   forceHide?: boolean;
 }
 
+export interface PolymarketTeam {
+  name: string;
+  abbreviation?: string;
+  record?: string;
+  logo?: string;
+}
+
+export interface PolymarketEventMetadata {
+  league?: string;
+  tournament?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
 export interface PolymarketMarket {
   id: string;
   question: string;
@@ -14,6 +27,8 @@ export interface PolymarketMarket {
   image?: string;
   icon?: string;
   endDate?: string;
+  sportsMarketType?: string;
+  line?: number | null;
 
   outcomes: string[];
   outcomePrices: number[];
@@ -52,6 +67,11 @@ export interface PolymarketEvent {
   archived: boolean;
   featured: boolean;
   restricted: boolean;
+  live?: boolean;
+  ended?: boolean;
+  period?: string;
+  score?: string;
+  eventWeek?: number;
 
   liquidity: number;
   volume: number;
@@ -68,4 +88,6 @@ export interface PolymarketEvent {
 
   markets: PolymarketMarket[];
   tags: PolymarketTag[];
+  teams?: PolymarketTeam[];
+  eventMetadata?: PolymarketEventMetadata;
 }

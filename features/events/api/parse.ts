@@ -1,7 +1,9 @@
 import type {
   PolymarketEvent,
+  PolymarketEventMetadata,
   PolymarketMarket,
   PolymarketTag,
+  PolymarketTeam,
 } from "../types";
 
 type RawTag = {
@@ -20,6 +22,8 @@ type RawMarket = {
   image?: unknown;
   icon?: unknown;
   endDate?: unknown;
+  sportsMarketType?: unknown;
+  line?: unknown;
   outcomes?: unknown;
   outcomePrices?: unknown;
   clobTokenIds?: unknown;
@@ -42,6 +46,7 @@ type RawEvent = {
   title?: unknown;
   description?: unknown;
   startDate?: unknown;
+  startTime?: unknown;
   creationDate?: unknown;
   endDate?: unknown;
   image?: unknown;
@@ -51,6 +56,11 @@ type RawEvent = {
   archived?: unknown;
   featured?: unknown;
   restricted?: unknown;
+  live?: unknown;
+  ended?: unknown;
+  period?: unknown;
+  score?: unknown;
+  eventWeek?: unknown;
   liquidity?: unknown;
   volume?: unknown;
   volume24hr?: unknown;
@@ -64,6 +74,15 @@ type RawEvent = {
   showMarketImages?: unknown;
   markets?: unknown;
   tags?: unknown;
+  teams?: unknown;
+  eventMetadata?: unknown;
+};
+
+type RawTeam = {
+  name?: unknown;
+  abbreviation?: unknown;
+  record?: unknown;
+  logo?: unknown;
 };
 
 const isString = (v: unknown): v is string => typeof v === "string";
@@ -102,6 +121,37 @@ const parseTag = (raw: RawTag): PolymarketTag => ({
   forceHide: toBool(raw.forceHide),
 });
 
+const parseTeam = (raw: RawTeam): PolymarketTeam => ({
+  name: isString(raw.name) ? raw.name : "",
+  abbreviation: isString(raw.abbreviation) ? raw.abbreviation : undefined,
+  record: isString(raw.record) ? raw.record : undefined,
+  logo: isString(raw.logo) ? raw.logo : undefined,
+});
+
+const parseEventMetadata = (raw: unknown): PolymarketEventMetadata | undefined => {
+  if (!raw || typeof raw !== "object") return undefined;
+
+  const out: PolymarketEventMetadata = {};
+
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof value === "string" && value.length > 0) {
+      out[key] = value;
+      continue;
+    }
+
+    if (typeof value === "number" && Number.isFinite(value)) {
+      out[key] = value;
+      continue;
+    }
+
+    if (typeof value === "boolean") {
+      out[key] = value;
+    }
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined;
+};
+
 const parseMarket = (raw: RawMarket): PolymarketMarket => ({
   id: String(raw.id ?? ""),
   question: isString(raw.question) ? raw.question : "",
@@ -111,6 +161,9 @@ const parseMarket = (raw: RawMarket): PolymarketMarket => ({
   image: isString(raw.image) ? raw.image : undefined,
   icon: isString(raw.icon) ? raw.icon : undefined,
   endDate: isString(raw.endDate) ? raw.endDate : undefined,
+  sportsMarketType: isString(raw.sportsMarketType) ? raw.sportsMarketType : undefined,
+  line:
+    raw.line === undefined || raw.line === null ? null : toNumber(raw.line),
 
   outcomes: parseStringArray(raw.outcomes),
   outcomePrices: parseNumberArray(raw.outcomePrices),
@@ -149,6 +202,7 @@ export const parseEvent = (raw: unknown): PolymarketEvent => {
   const e = raw as RawEvent;
   const rawMarkets = Array.isArray(e.markets) ? (e.markets as RawMarket[]) : [];
   const rawTags = Array.isArray(e.tags) ? (e.tags as RawTag[]) : [];
+  const rawTeams = Array.isArray(e.teams) ? (e.teams as RawTeam[]) : [];
 
   return {
     id: String(e.id ?? ""),
@@ -157,7 +211,8 @@ export const parseEvent = (raw: unknown): PolymarketEvent => {
     title: isString(e.title) ? e.title : "",
     description: isString(e.description) ? e.description : undefined,
 
-    startDate: isString(e.startDate) ? e.startDate : undefined,
+    startDate:
+      isString(e.startDate) ? e.startDate : isString(e.startTime) ? e.startTime : undefined,
     creationDate: isString(e.creationDate) ? e.creationDate : undefined,
     endDate: isString(e.endDate) ? e.endDate : undefined,
 
@@ -169,6 +224,11 @@ export const parseEvent = (raw: unknown): PolymarketEvent => {
     archived: toBool(e.archived),
     featured: toBool(e.featured),
     restricted: toBool(e.restricted),
+    live: e.live === undefined ? undefined : toBool(e.live),
+    ended: e.ended === undefined ? undefined : toBool(e.ended),
+    period: isString(e.period) ? e.period : undefined,
+    score: isString(e.score) ? e.score : undefined,
+    eventWeek: e.eventWeek === undefined ? undefined : toNumber(e.eventWeek),
 
     liquidity: toNumber(e.liquidity),
     volume: toNumber(e.volume),
@@ -187,6 +247,8 @@ export const parseEvent = (raw: unknown): PolymarketEvent => {
 
     markets: rawMarkets.map(parseMarket),
     tags: rawTags.map(parseTag),
+    teams: rawTeams.map(parseTeam).filter((team) => team.name.length > 0),
+    eventMetadata: parseEventMetadata(e.eventMetadata),
   };
 };
 

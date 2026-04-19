@@ -1,0 +1,169 @@
+.surface {
+  display: grid;
+  gap: 18px;
+}
+
+.switchRow,
+.routeSwitch,
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.switchPill,
+.switchPillMuted,
+.routePill,
+.routePillMuted,
+.title,
+.copy,
+.icon,
+.cardTitleShort,
+.cardTitleLong,
+.rowTitle,
+.rowValue,
+.action,
+.meta,
+.link {
+  display: block;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--bg-soft) 92%, transparent),
+      color-mix(in srgb, var(--bg-surface-alt) 80%, transparent),
+      color-mix(in srgb, var(--bg-soft) 92%, transparent)
+    );
+  background-size: 240% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.switchPill,
+.switchPillMuted,
+.routePill,
+.routePillMuted {
+  width: 92px;
+  height: 36px;
+}
+
+.header,
+.titleBlock,
+.cardHeading {
+  display: grid;
+  gap: 12px;
+}
+
+.title {
+  width: min(220px, 62%);
+  height: 42px;
+}
+
+.copy {
+  width: min(520px, 100%);
+  height: 16px;
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-surface);
+}
+
+.cardTop {
+  display: flex;
+  gap: 12px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+}
+
+.cardTitleShort {
+  width: 72%;
+  height: 18px;
+}
+
+.cardTitleLong {
+  width: 44%;
+  height: 14px;
+}
+
+.rows {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+}
+
+.rowTitle {
+  width: 60%;
+  height: 16px;
+}
+
+.rowValue {
+  width: 64px;
+  height: 24px;
+}
+
+.action {
+  width: 100%;
+  height: 34px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.meta {
+  width: 120px;
+  height: 14px;
+}
+
+.link {
+  width: 70px;
+  height: 14px;
+}
+
+@media (min-width: 800px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 20px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

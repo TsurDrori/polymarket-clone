@@ -112,6 +112,50 @@ describe("parseEvent", () => {
     expect(event.tags.map((t) => t.slug)).toContain("sports");
     expect(event.tags.map((t) => t.slug)).toContain("hide-from-new");
   });
+
+  it("parses optional sports metadata without affecting generic events", () => {
+    const sportsEvent = parseEvent({
+      ...raw,
+      startDate: undefined,
+      startTime: "2026-04-19T17:00:00.000Z",
+      live: true,
+      ended: false,
+      period: "Q3 - 08:31",
+      score: "88-84",
+      eventWeek: "3",
+      teams: [
+        {
+          name: "Rockets",
+          abbreviation: "HOU",
+          record: "52-30",
+        },
+        {
+          name: "Lakers",
+          abbreviation: "LAL",
+          record: "50-32",
+        },
+      ],
+      eventMetadata: {
+        league: "NBA",
+        tournament: "Playoffs",
+        context_requires_regen: false,
+      },
+      markets: [
+        {
+          ...(raw as { markets: Record<string, unknown>[] }).markets[0],
+          sportsMarketType: "moneyline",
+          line: "-4.5",
+        },
+      ],
+    });
+
+    expect(sportsEvent.startDate).toBe("2026-04-19T17:00:00.000Z");
+    expect(sportsEvent.live).toBe(true);
+    expect(sportsEvent.teams?.[0]?.abbreviation).toBe("HOU");
+    expect(sportsEvent.eventMetadata?.league).toBe("NBA");
+    expect(sportsEvent.markets[0]?.sportsMarketType).toBe("moneyline");
+    expect(sportsEvent.markets[0]?.line).toBe(-4.5);
+  });
 });
 
 describe("getEventImage", () => {
