@@ -1,8 +1,29 @@
-export default function Home() {
+import { listEvents } from "@/features/events/api/gamma";
+import { EventGrid } from "@/features/events/components/EventGrid";
+import { Hydrator } from "@/features/realtime/Hydrator";
+import { isEventVisible } from "@/shared/lib/tags";
+import styles from "./page.module.css";
+
+export default async function Home() {
+  const events = await listEvents({
+    limit: 30,
+    order: "volume_24hr",
+    ascending: false,
+  });
+  const visible = events.filter(isEventVisible);
+
+  if (visible.length === 0) {
+    return (
+      <main className={styles.main}>
+        <p className={styles.empty}>No markets to show right now.</p>
+      </main>
+    );
+  }
+
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Polymarket Clone</h1>
-      <p>Scaffold ready. Session 1 complete.</p>
+    <main className={styles.main}>
+      <Hydrator events={visible} />
+      <EventGrid events={visible} />
     </main>
   );
 }

@@ -9,3 +9,6 @@ export const getVisibleTags = (event: PolymarketEvent): PolymarketTag[] =>
 
 export const hasTagSlug = (event: PolymarketEvent, slug: string): boolean =>
   event.tags.some((tag) => tag.slug === slug);
+
+export const isEventVisible = (event: PolymarketEvent): boolean =>
+  event.tags.every((tag) => !tag.forceHide && !HIDDEN_SLUGS.has(tag.slug));
