@@ -115,7 +115,7 @@ describe("parseEvent", () => {
 
   it("parses optional sports metadata without affecting generic events", () => {
     const sportsEvent = parseEvent({
-      ...raw,
+      ...(raw as Record<string, unknown>),
       startDate: undefined,
       startTime: "2026-04-19T17:00:00.000Z",
       live: true,

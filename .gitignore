@@ -14,6 +14,7 @@ node_modules/
 # testing
 /coverage
 coverage/
+test-results/
 
 # next.js
 /.next/
@@ -60,6 +61,7 @@ next-env.d.ts
 .parcel-cache/
 tmp/
 temp/
+/artifacts/
 
 # Private local project notes
 project-notes/

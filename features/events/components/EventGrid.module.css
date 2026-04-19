@@ -1,7 +1,17 @@
+.stack {
+  display: grid;
+  gap: 20px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 16px;
+}
+
+.actionRow {
+  display: flex;
+  justify-content: center;
 }
 
 @media (min-width: 768px) {

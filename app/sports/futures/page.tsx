@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getSportsCardWorkingSet } from "@/features/sports/futures/api";
 import {
   buildSportsCards,
@@ -5,6 +6,12 @@ import {
 } from "@/features/sports/futures/parse";
 import { SportsFuturesSurface } from "@/features/sports/futures/SportsFuturesSurface";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Sports Futures Prediction Markets & Live Odds 2026 | Polymarket",
+  description:
+    "Season-long sports futures cards with league rails and the same empty aggregate-state contract the live site exposes.",
+};
 
 export default async function SportsFuturesPage() {
   const events = await getSportsCardWorkingSet();

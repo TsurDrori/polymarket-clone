@@ -9,6 +9,7 @@ export default defineConfig({
       ...configDefaults.exclude,
       ".claude/**",
       ".next/**",
+      "project-notes/**",
     ],
     css: {
       modules: {

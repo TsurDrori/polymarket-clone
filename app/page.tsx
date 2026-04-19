@@ -19,12 +19,42 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const events = await listEvents({
-    limit: 30,
-    order: "volume_24hr",
-    ascending: false,
-  });
-  const visible = events.filter(isEventVisible);
+  const [topEvents, cryptoEvents, economyEvents, cultureEvents, worldEvents] =
+    await Promise.all([
+    listEvents({
+      limit: 30,
+      order: "volume_24hr",
+      ascending: false,
+    }),
+    listEvents({
+      limit: 6,
+      tagSlug: "crypto",
+    }),
+    listEvents({
+      limit: 6,
+      tagSlug: "economy",
+    }),
+    listEvents({
+      limit: 6,
+      tagSlug: "pop-culture",
+    }),
+    listEvents({
+      limit: 6,
+      tagSlug: "world",
+    }),
+  ]);
+
+  const visible = [
+    ...topEvents,
+    ...cryptoEvents,
+    ...economyEvents,
+    ...cultureEvents,
+    ...worldEvents,
+  ].filter(
+    (event, index, allEvents) =>
+      isEventVisible(event) &&
+      allEvents.findIndex((candidate) => candidate.id === event.id) === index,
+  );
 
   if (visible.length === 0) {
     return (

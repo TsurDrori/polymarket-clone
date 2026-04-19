@@ -16,9 +16,10 @@ export default function Error({ error, unstable_retry }: ErrorProps) {
   return (
     <main className={styles.wrap}>
       <div role="alert" className={styles.card}>
-        <h2 className={styles.title}>Couldn&apos;t load markets</h2>
+        <h2 className={styles.title}>Something went wrong</h2>
         <p className={styles.message}>
-          The Polymarket feed didn&apos;t respond. This is usually transient.
+          This route failed to render. Retry the request or jump back to a top-level
+          market surface.
         </p>
         <button
           type="button"

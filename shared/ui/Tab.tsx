@@ -21,7 +21,7 @@ type TabProps = TabLinkProps | TabButtonProps;
 
 export function Tab(props: TabProps) {
   if (props.href !== undefined) {
-    const { href, className, ref, role = "tab", ...rest } = props;
+    const { href, className, ref, role, ...rest } = props;
     return (
       <Link
         href={href}

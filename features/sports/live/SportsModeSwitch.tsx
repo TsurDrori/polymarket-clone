@@ -7,7 +7,7 @@ type SportsModeSwitchProps = {
 
 export function SportsModeSwitch({ activeMode }: SportsModeSwitchProps) {
   return (
-    <div className={styles.switch} role="tablist" aria-label="Sports mode">
+    <nav className={styles.switch} aria-label="Sports mode">
       <Tab
         href="/sports/live"
         className={styles.tab}
@@ -22,6 +22,6 @@ export function SportsModeSwitch({ activeMode }: SportsModeSwitchProps) {
       >
         Futures
       </Tab>
-    </div>
+    </nav>
   );
 }

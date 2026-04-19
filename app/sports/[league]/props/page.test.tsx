@@ -136,10 +136,10 @@ describe("SportsLeaguePropsPage", () => {
     render(ui);
 
     expect(screen.getByRole("heading", { name: "NBA" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Games" }).getAttribute("href")).toBe(
+    expect(screen.getByRole("link", { name: "Games" }).getAttribute("href")).toBe(
       "/sports/nba/games",
     );
-    expect(screen.getByRole("tab", { name: "Props" }).getAttribute("href")).toBe(
+    expect(screen.getByRole("link", { name: "Props" }).getAttribute("href")).toBe(
       "/sports/nba/props",
     );
     expect(screen.getByText("2026 NBA Champion")).toBeTruthy();

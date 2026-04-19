@@ -1,11 +1,11 @@
 .root {
   display: grid;
-  gap: 24px;
+  gap: 18px;
 }
 
 .marketSection {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .sectionHeader {
@@ -28,25 +28,75 @@
 .subheading {
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(24px, 4vw, 34px);
+  font-size: clamp(24px, 2.4vw, 28px);
   line-height: 1;
   letter-spacing: -0.04em;
 }
 
-.sectionCopy {
-  max-width: 54ch;
-  margin: 0;
+.marketTools {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.toolButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--text-secondary);
+}
+
+.marketChipRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.marketChipRow::-webkit-scrollbar {
+  display: none;
+}
+
+.marketChip,
+.marketChipArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 10px;
   color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.marketChipActive {
+  background: color-mix(in srgb, var(--accent-brand-soft) 85%, var(--bg-surface));
+  color: var(--accent-brand);
+}
+
+.marketChipArrow {
+  padding: 0;
+  min-width: 24px;
 }
 
 @media (max-width: 768px) {
   .root {
-    gap: 18px;
+    gap: 12px;
   }
 
-  .sectionHeader {
+  .marketSection {
+    gap: 10px;
+  }
+
+  .sectionHeader,
+  .marketTools,
+  .marketChipRow {
     display: none;
   }
 }

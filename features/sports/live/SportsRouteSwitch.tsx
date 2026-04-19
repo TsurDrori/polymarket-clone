@@ -11,13 +11,13 @@ export function SportsRouteSwitch({
   propsHref,
 }: SportsRouteSwitchProps) {
   return (
-    <div className={styles.switch} role="tablist" aria-label="League route">
+    <nav className={styles.switch} aria-label="League route">
       <Tab href={gamesHref} className={styles.tab} aria-current="page">
         Games
       </Tab>
       <Tab href={propsHref} className={styles.tab}>
         Props
       </Tab>
-    </div>
+    </nav>
   );
 }

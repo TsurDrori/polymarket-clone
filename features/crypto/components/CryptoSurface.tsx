@@ -14,6 +14,8 @@ type CryptoSurfaceProps = {
   facets: CryptoFacetState;
   filters: CryptoFilterState;
   cards: ReadonlyArray<CryptoCardModel>;
+  initialVisibleCount?: number;
+  visibleIncrement?: number;
 };
 
 export function CryptoSurface({
@@ -21,6 +23,8 @@ export function CryptoSurface({
   facets,
   filters,
   cards,
+  initialVisibleCount,
+  visibleIncrement,
 }: CryptoSurfaceProps) {
   return (
     <section className={styles.surface}>
@@ -43,7 +47,11 @@ export function CryptoSurface({
           </header>
 
           {cards.length > 0 ? (
-            <CryptoCardGrid cards={cards} />
+            <CryptoCardGrid
+              cards={cards}
+              initialCount={initialVisibleCount}
+              incrementCount={visibleIncrement}
+            />
           ) : (
             <div className={styles.emptyState}>
               <h2 className={styles.emptyTitle}>No crypto markets match those filters.</h2>

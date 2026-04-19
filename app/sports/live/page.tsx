@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { SportsRowsHydrator } from "@/features/sports/games/SportsRowsHydrator";
 import { getSportsGamesWorkingSet } from "@/features/sports/games/api";
 import {
@@ -8,6 +9,12 @@ import {
 } from "@/features/sports/games/parse";
 import { SportsLiveSurface } from "@/features/sports/live/SportsLiveSurface";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Sports Prediction Markets & Live Odds 2026 | Polymarket",
+  description:
+    "Live sportsbook-style rows grouped by league and date, with canonical sports routing under the shared shell.",
+};
 
 export default async function SportsLivePage() {
   const events = await getSportsGamesWorkingSet();

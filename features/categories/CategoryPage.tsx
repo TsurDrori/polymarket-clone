@@ -25,6 +25,8 @@ type Props = {
   marketTitle?: string;
   marketDescription?: string;
   emptyMessage?: string;
+  initialEventCount?: number;
+  eventIncrement?: number;
 };
 
 export function CategoryPage({
@@ -37,6 +39,8 @@ export function CategoryPage({
   marketTitle = "All markets",
   marketDescription = "Active markets sorted by 24-hour volume.",
   emptyMessage = "No markets to show right now.",
+  initialEventCount,
+  eventIncrement,
 }: Props) {
   const visibleSections = sections.filter((section) => section.events.length > 0);
   const hasContent = visibleSections.length > 0 || events.length > 0;
@@ -96,7 +100,11 @@ export function CategoryPage({
             </div>
             <span className={styles.sectionMeta}>{events.length} markets</span>
           </div>
-          <EventGrid events={events} />
+          <EventGrid
+            events={events}
+            initialCount={initialEventCount}
+            incrementCount={eventIncrement}
+          />
         </section>
       ) : null}
     </main>

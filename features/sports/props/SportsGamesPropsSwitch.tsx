@@ -13,7 +13,7 @@ export function SportsGamesPropsSwitch({
   activeRoute,
 }: SportsGamesPropsSwitchProps) {
   return (
-    <div className={styles.switch} role="tablist" aria-label="League route">
+    <nav className={styles.switch} aria-label="League route">
       <Tab
         href={gamesHref}
         className={styles.tab}
@@ -28,6 +28,6 @@ export function SportsGamesPropsSwitch({
       >
         Props
       </Tab>
-    </div>
+    </nav>
   );
 }

@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { Hydrator } from "@/features/realtime/Hydrator";
+import { formatSportsLeagueLabel } from "@/features/sports/leagueLabel";
 import { getSportsCardWorkingSet } from "@/features/sports/futures/api";
 import {
   buildHydrationEvents,
@@ -9,6 +11,18 @@ import {
 import { SportsFuturesSurface } from "@/features/sports/futures/SportsFuturesSurface";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
+
+export async function generateMetadata(
+  props: PageProps<"/sports/futures/[league]">,
+): Promise<Metadata> {
+  const { league } = await props.params;
+  const leagueLabel = formatSportsLeagueLabel(league);
+
+  return {
+    title: `${leagueLabel} Futures Trading Odds & Predictions 2026 | Polymarket`,
+    description: `${leagueLabel} outrights and season-long futures cards presented inside the clone's canonical sports futures route family.`,
+  };
+}
 
 export default async function SportsLeagueFuturesPage(
   props: PageProps<"/sports/futures/[league]">,

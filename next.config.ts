@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Allow opening the dev server through common local hosts without losing hydration.
+  allowedDevOrigins: ["127.0.0.1", "192.168.*.*", "10.*.*.*"],
+  async redirects() {
+    return [
+      {
+        source: "/sports",
+        destination: "/sports/live",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

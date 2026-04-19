@@ -20,6 +20,9 @@ export type HeroChartModel = {
 export type HeroSourceRow = {
   label: string;
   value: string;
+  meta?: string;
+  stat?: string;
+  statTone?: "up" | "down" | "neutral";
 };
 
 export type HeroChip = {
@@ -75,6 +78,7 @@ export type HomeHeroModel = {
 
 export type HomePageModel = {
   hero: HomeHeroModel;
+  marketChips: HeroChip[];
   exploreEvents: PolymarketEvent[];
 };
 
@@ -115,6 +119,9 @@ const PRIMARY_CATEGORY_SLUGS = new Set([
 const normalizeText = (value: string): string =>
   value.replace(/\s+/g, " ").trim();
 
+const clampText = (value: string, maxLength: number): string =>
+  value.length <= maxLength ? value : `${value.slice(0, maxLength - 1).trimEnd()}…`;
+
 const compareNumbersDesc = (left: number, right: number): number => right - left;
 
 const getEventHref = (event: PolymarketEvent): string => `/event/${event.slug}`;
@@ -128,6 +135,28 @@ const getMarketVolume = (market: PolymarketMarket): number =>
 const getMarketChange = (market: PolymarketMarket): number =>
   Number.isFinite(market.oneDayPriceChange) ? market.oneDayPriceChange : 0;
 
+const formatRelativeAge = (value?: string): string | undefined => {
+  if (!value) return undefined;
+
+  const timestamp = new Date(value).getTime();
+  if (Number.isNaN(timestamp)) return undefined;
+
+  const elapsedHours = Math.max(
+    1,
+    Math.round((Date.now() - timestamp) / (1000 * 60 * 60)),
+  );
+
+  if (elapsedHours < 24) {
+    return `${elapsedHours}h ago`;
+  }
+
+  const elapsedDays = Math.round(elapsedHours / 24);
+  return `${elapsedDays}d ago`;
+};
+
+const formatPointChangeLabel = (change: number): string =>
+  `${change >= 0 ? "+" : "-"}${Math.round(Math.abs(change) * 100)} pts`;
+
 const getPrimaryVisibleTags = (event: PolymarketEvent): PolymarketTag[] =>
   getVisibleTags(event).filter((tag) => tag.label.length > 0);
 
@@ -136,6 +165,25 @@ const isSportsEvent = (event: PolymarketEvent): boolean =>
 
 const isMarketEligibleForSpotlight = (market: PolymarketMarket): boolean =>
   Boolean(market.clobTokenIds[0]) && !market.closed;
+
+const isBalancedSpotlightMarket = (market: PolymarketMarket): boolean => {
+  const price = getDisplayPrice(market);
+  return price >= 0.14 && price <= 0.86;
+};
+
+const getSpotlightProbabilityScore = (market: PolymarketMarket): number => {
+  const price = getDisplayPrice(market);
+  return 1 - Math.min(1, Math.abs(price - 0.5) * 2);
+};
+
+const getEventCategoryKey = (event: PolymarketEvent): string => {
+  if (isSportsEvent(event)) return "sports";
+  if (hasTagSlug(event, "crypto")) return "crypto";
+  if (hasTagSlug(event, "finance") || hasTagSlug(event, "economy")) return "economy";
+  if (hasTagSlug(event, "culture") || hasTagSlug(event, "pop-culture")) return "culture";
+  if (hasTagSlug(event, "tech")) return "tech";
+  return "politics";
+};
 
 const getRankedEvents = (
   events: ReadonlyArray<PolymarketEvent>,
@@ -156,12 +204,14 @@ const rankSpotlightEvent = (event: PolymarketEvent) => {
   if (!market) return null;
 
   return {
+    hasImage: Number(Boolean(event.image || event.icon || market.image || market.icon)),
     featured: Number(event.featured),
     nonSports: Number(!isSportsEvent(event)),
     hasDescription: Number(Boolean(event.description?.trim())),
     eventVolume: event.volume24hr || event.volume,
     marketVolume: getMarketVolume(market),
     marketChange: Math.abs(getMarketChange(market)),
+    centeredPrice: getSpotlightProbabilityScore(market),
   };
 };
 
@@ -178,25 +228,53 @@ const buildFallbackSourceRows = (
   const sourceRows: HeroSourceRow[] = [];
   const seen = new Set<string>();
   const descriptionSentences = buildDescriptionSentences(event);
+  const publishedLabel = formatRelativeAge(event.creationDate ?? event.startDate);
+  const dayChange = getMarketChange(market);
+  const eventVolume = event.volume24hr || event.volume;
+  const marketVolume = getMarketVolume(market);
 
-  const pushRow = (label: string, value: string | undefined) => {
+  const pushRow = ({
+    label,
+    value,
+    meta,
+    stat,
+    statTone = "neutral",
+  }: HeroSourceRow) => {
     const normalized = normalizeText(value ?? "");
     if (normalized.length === 0) return;
     const dedupeKey = normalized.toLowerCase();
     if (seen.has(dedupeKey)) return;
     seen.add(dedupeKey);
-    sourceRows.push({ label, value: normalized });
+    sourceRows.push({
+      label,
+      value: clampText(normalized, 76),
+      meta,
+      stat,
+      statTone,
+    });
   };
 
-  pushRow("Market brief", descriptionSentences[0]);
-  pushRow("Resolution rule", descriptionSentences[1]);
+  pushRow({
+    label: "Derived brief",
+    value: descriptionSentences[0] ?? market.question,
+    meta: publishedLabel,
+    stat: formatPointChangeLabel(dayChange),
+    statTone: dayChange > 0 ? "up" : dayChange < 0 ? "down" : "neutral",
+  });
 
-  if (event.endDate) {
-    pushRow("Timeline", `Resolves by ${formatEndDate(event.endDate)}.`);
-  }
+  pushRow({
+    label: "Resolution rule",
+    value: descriptionSentences[1] ?? market.question,
+    meta: event.endDate ? `By ${formatEndDate(event.endDate)}` : "Rule",
+    stat: formatVolume(marketVolume),
+  });
 
-  pushRow("Contract", market.question);
-  pushRow("Event focus", event.title);
+  pushRow({
+    label: "Event focus",
+    value: descriptionSentences[2] ?? event.title,
+    meta: "Tracked volume",
+    stat: formatVolume(eventVolume),
+  });
 
   return sourceRows.slice(0, 3);
 };
@@ -265,7 +343,11 @@ const buildSpotlightSummary = (
     (sentence) => sentence !== buildSpotlightHeadline(event, market),
   );
 
-  return summary ?? "Derived from the market description because the public API does not expose live article rows.";
+  return clampText(
+    summary ??
+      "Derived from event copy because the public API does not expose live article rows.",
+    96,
+  );
 };
 
 const buildHeroChipHref = (slug: string): string | undefined =>
@@ -297,6 +379,10 @@ export const selectSpotlightMarket = (
         Math.abs(getMarketChange(left)),
         Math.abs(getMarketChange(right)),
       ) ||
+      compareNumbersDesc(
+        getSpotlightProbabilityScore(left),
+        getSpotlightProbabilityScore(right),
+      ) ||
       compareNumbersDesc(getMarketVolume(left), getMarketVolume(right)) ||
       left.question.localeCompare(right.question),
   )[0];
@@ -308,24 +394,43 @@ export const getPrimaryMarket = (
 
 export const selectSpotlightEvent = (
   events: ReadonlyArray<PolymarketEvent>,
-): PolymarketEvent | undefined =>
-  [...events]
-    .filter((event) => Boolean(selectSpotlightMarket(event)))
-    .sort((left, right) => {
-      const leftRank = rankSpotlightEvent(left);
-      const rightRank = rankSpotlightEvent(right);
+): PolymarketEvent | undefined => {
+  const candidates = events
+    .map((event) => {
+      const market = selectSpotlightMarket(event);
+      const rank = market ? rankSpotlightEvent(event) : null;
 
-      if (!leftRank || !rightRank) return 0;
+      return market && rank ? { event, market, rank } : null;
+    })
+    .filter(
+      (
+        candidate,
+      ): candidate is {
+        event: PolymarketEvent;
+        market: PolymarketMarket;
+        rank: NonNullable<ReturnType<typeof rankSpotlightEvent>>;
+      } => Boolean(candidate),
+    );
 
-      return (
-        rightRank.featured - leftRank.featured ||
-        rightRank.nonSports - leftRank.nonSports ||
-        compareNumbersDesc(leftRank.hasDescription, rightRank.hasDescription) ||
-        compareNumbersDesc(leftRank.eventVolume, rightRank.eventVolume) ||
-        compareNumbersDesc(leftRank.marketChange, rightRank.marketChange) ||
-        compareNumbersDesc(leftRank.marketVolume, rightRank.marketVolume)
-      );
-    })[0];
+  const balancedCandidates = candidates.filter(({ market }) =>
+    isBalancedSpotlightMarket(market),
+  );
+  const pool = balancedCandidates.length > 0 ? balancedCandidates : candidates;
+
+  return pool.sort((left, right) => {
+    return (
+      compareNumbersDesc(left.rank.centeredPrice, right.rank.centeredPrice) ||
+      compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
+      compareNumbersDesc(left.rank.featured, right.rank.featured) ||
+      compareNumbersDesc(left.rank.nonSports, right.rank.nonSports) ||
+      compareNumbersDesc(left.rank.hasImage, right.rank.hasImage) ||
+      compareNumbersDesc(left.rank.marketChange, right.rank.marketChange) ||
+      compareNumbersDesc(left.rank.marketVolume, right.rank.marketVolume) ||
+      compareNumbersDesc(left.rank.eventVolume, right.rank.eventVolume) ||
+      left.event.title.localeCompare(right.event.title)
+    );
+  })[0]?.event;
+};
 
 export const selectFeaturedEvents = (
   events: ReadonlyArray<PolymarketEvent>,
@@ -469,6 +574,66 @@ export const selectHeroContextChips = (
   return chips.slice(0, limit);
 };
 
+export const selectHomeFeedEvents = (
+  events: ReadonlyArray<PolymarketEvent>,
+  {
+    spotlightEventId,
+    limit = 30,
+  }: {
+    spotlightEventId?: string;
+    limit?: number;
+  } = {},
+): PolymarketEvent[] => {
+  const ranked = getRankedEvents(events).filter((event) => event.id !== spotlightEventId);
+  const buckets = new Map<string, PolymarketEvent[]>();
+
+  for (const event of ranked) {
+    const bucket = getEventCategoryKey(event);
+    const list = buckets.get(bucket);
+    if (list) {
+      list.push(event);
+      continue;
+    }
+    buckets.set(bucket, [event]);
+  }
+
+  const preferredOrder = ["politics", "crypto", "economy", "culture", "sports", "tech"];
+  const selected: PolymarketEvent[] = [];
+  const seen = new Set<string>();
+
+  while (selected.length < limit) {
+    let madeProgress = false;
+
+    for (const key of preferredOrder) {
+      const bucket = buckets.get(key);
+      if (!bucket || bucket.length === 0) continue;
+      const next = bucket.shift();
+      if (!next || seen.has(next.id)) continue;
+      seen.add(next.id);
+      selected.push(next);
+      madeProgress = true;
+      if (selected.length >= limit) break;
+    }
+
+    if (!madeProgress) {
+      break;
+    }
+  }
+
+  return selected;
+};
+
+export const selectHomeMarketChips = (
+  spotlight: HeroSpotlightModel | null,
+  events: ReadonlyArray<PolymarketEvent>,
+  limit = 12,
+): HeroChip[] =>
+  selectHeroContextChips(
+    spotlight,
+    selectHeroTopics(events, Math.max(6, limit - 2)),
+    limit,
+  );
+
 export const buildHomeHeroModel = (
   events: ReadonlyArray<PolymarketEvent>,
   {
@@ -531,11 +696,21 @@ export const buildHomePageModel = (
   {
     spotlightChart = null,
     exploreLimit = 30,
+    marketChipLimit = 12,
   }: {
     spotlightChart?: HeroChartModel | null;
     exploreLimit?: number;
+    marketChipLimit?: number;
   } = {},
-): HomePageModel => ({
-  hero: buildHomeHeroModel(events, { spotlightChart }),
-  exploreEvents: events.slice(0, exploreLimit),
-});
+): HomePageModel => {
+  const hero = buildHomeHeroModel(events, { spotlightChart });
+
+  return {
+    hero,
+    marketChips: selectHomeMarketChips(hero.spotlight, events, marketChipLimit),
+    exploreEvents: selectHomeFeedEvents(events, {
+      spotlightEventId: hero.spotlight?.event.id,
+      limit: exploreLimit,
+    }),
+  };
+};

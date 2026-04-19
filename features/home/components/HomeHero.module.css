@@ -4,17 +4,17 @@
 
 .heroRow {
   display: grid;
-  gap: 20px;
+  gap: 16px;
 }
 
 .spotlightCard {
   display: grid;
-  gap: 18px;
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 24px;
+  gap: 12px;
+  padding: 18px 16px 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, var(--bg-soft));
+  border-radius: 22px;
   background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
-  box-shadow: var(--surface-shadow);
+  box-shadow: 0 10px 26px rgba(15, 23, 32, 0.05);
 }
 
 .spotlightHeader,
@@ -30,14 +30,14 @@
 
 .spotlightIntro {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
 .thumbnailWrap {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   flex: 0 0 auto;
   overflow: hidden;
   border: 1px solid var(--border-soft);
@@ -50,9 +50,9 @@
 }
 
 .breadcrumb {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -60,8 +60,8 @@
 .spotlightTitle {
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(28px, 4vw, 40px);
-  line-height: 0.98;
+  font-size: clamp(22px, 2.8vw, 26px);
+  line-height: 1.04;
   letter-spacing: -0.05em;
 }
 
@@ -82,8 +82,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--border-soft);
   border-radius: 12px;
   background: var(--bg-soft);
@@ -93,20 +93,20 @@
 .priceRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 6px 12px;
   align-items: flex-end;
 }
 
 .spotlightPrice {
   color: var(--accent-brand);
-  font-size: clamp(34px, 5vw, 48px);
+  font-size: clamp(30px, 3.8vw, 40px);
   font-weight: 800;
   letter-spacing: -0.06em;
   line-height: 0.9;
 }
 
 .priceDelta {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -120,12 +120,12 @@
 
 .spotlightBody {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .spotlightCopy {
   display: grid;
-  gap: 14px;
+  gap: 8px;
 }
 
 .outcomeRow {
@@ -138,10 +138,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
-  min-width: 94px;
-  padding: 0 16px;
-  border-radius: 14px;
+  min-height: 46px;
+  min-width: 118px;
+  padding: 0 14px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
 }
@@ -156,39 +156,30 @@
   color: var(--accent-no);
 }
 
-.headline,
 .summary {
   margin: 0;
 }
 
-.headline {
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.45;
-}
-
 .summary {
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .sourceSection {
   display: grid;
-  gap: 10px;
+  gap: 4px;
 }
 
 .sourceMeta {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .sourceList,
-.noteList,
 .railList {
   list-style: none;
   margin: 0;
@@ -201,10 +192,10 @@
 }
 
 .sourceItem,
-.noteItem,
 .railItem {
   display: grid;
-  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--border-soft);
 }
@@ -216,52 +207,60 @@
   border-top: 0;
 }
 
+.sourceBody {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sourceHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
 .sourceLabel {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.sourceMetaText {
+  color: var(--text-subtle);
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .sourceValue {
   color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.noteList {
-  display: grid;
-  gap: 8px;
-}
-
-.noteItem {
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
-}
-
-.noteDot {
-  width: 8px;
-  height: 8px;
-  margin-top: 6px;
-  border-radius: 999px;
-  background: var(--accent-brand);
-}
-
-.noteValue {
-  color: var(--text-secondary);
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.35;
+}
+
+.sourceStat {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sourceStatUp {
+  color: var(--accent-yes);
+}
+
+.sourceStatDown {
+  color: var(--accent-no);
 }
 
 .chartPanel {
   display: grid;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--border-soft);
-  border-radius: 22px;
-  background: color-mix(in srgb, var(--bg-surface-alt) 72%, transparent);
+  gap: 6px;
+  padding: 0 4px 0 6px;
+  border-radius: 18px;
+  background: transparent;
 }
 
 .chartLabel,
@@ -275,7 +274,7 @@
 .chartFigure {
   margin: 0;
   display: grid;
-  gap: 10px;
+  gap: 4px;
 }
 
 .chartSurface {
@@ -306,19 +305,19 @@
 
 .heroRail {
   display: grid;
-  gap: 20px;
+  gap: 18px;
   align-content: start;
 }
 
 .railModule {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .railHeading {
   margin: 0;
   color: var(--text-primary);
-  font-size: 28px;
+  font-size: 17px;
   line-height: 1;
   letter-spacing: -0.04em;
 }
@@ -336,9 +335,9 @@
 .railLink {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: 10px;
   align-items: start;
-  padding: 12px 0;
+  padding: 9px 0;
   border-top: 1px solid var(--border-soft);
 }
 
@@ -362,14 +361,14 @@
 
 .railTitle {
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .railSubtitle {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -382,7 +381,7 @@
 .railChance,
 .railVolume {
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -391,8 +390,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 0 4px;
+  gap: 12px;
+  padding: 2px 2px 0;
 }
 
 .dotGroup,
@@ -436,13 +435,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 34px;
+  padding: 0 14px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -456,25 +455,16 @@
 }
 
 .exploreLink {
-  min-width: 176px;
+  min-width: 146px;
 }
 
 .compactDiscovery {
   display: grid;
-  gap: 14px;
-}
-
-.compactKicker {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  gap: 10px;
 }
 
 .compactChipGroup {
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
 .compactChipActive {
@@ -507,7 +497,7 @@
   }
 
   .spotlightBody {
-    grid-template-columns: minmax(0, 0.95fr) minmax(300px, 1.25fr);
-    align-items: stretch;
+    grid-template-columns: minmax(250px, 0.68fr) minmax(360px, 1.32fr);
+    align-items: start;
   }
 }

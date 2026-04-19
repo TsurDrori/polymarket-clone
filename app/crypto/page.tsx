@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   buildCryptoWorkingSet,
   getCryptoFilterHref,
@@ -9,6 +10,12 @@ import { listEventsKeyset } from "@/features/events/api/gamma";
 import { Hydrator } from "@/features/realtime/Hydrator";
 import { redirect } from "next/navigation";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Crypto Odds & Predictions 2026 | Polymarket",
+  description:
+    "Crypto up/down, range, and target-price markets with client-local filters and a bounded initial visible slice.",
+};
 
 type CryptoPageProps = {
   searchParams: Promise<{
@@ -57,6 +64,8 @@ export default async function CryptoPage({ searchParams }: CryptoPageProps) {
         facets={resolved.facets}
         filters={resolved.filters}
         cards={resolved.cards}
+        initialVisibleCount={18}
+        visibleIncrement={18}
       />
     </main>
   );

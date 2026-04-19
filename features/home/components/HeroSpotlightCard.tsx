@@ -17,6 +17,7 @@ const formatChangeLabel = (change: number): string =>
 
 export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
   const imageSrc = getEventImage(spotlight.event) ?? "/placeholder.svg";
+  const summary = spotlight.summary || spotlight.headline;
 
   return (
     <article className={styles.spotlightCard}>
@@ -86,33 +87,39 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
             </Link>
           </div>
 
-          <p className={styles.headline}>{spotlight.headline}</p>
-          <p className={styles.summary}>{spotlight.summary}</p>
+          <p className={styles.summary}>{summary}</p>
 
           <div className={styles.sourceSection}>
-            <span className={styles.sourceMeta}>
-              Source notes · {spotlight.sourceMode === "fallback-derived"
-                ? "Derived from event description"
-                : "Feed-backed"}
-            </span>
+            <span className={styles.sourceMeta}>Derived market context</span>
             <ul className={styles.sourceList}>
               {spotlight.sourceRows.map((row) => (
                 <li key={`${row.label}-${row.value}`} className={styles.sourceItem}>
-                  <span className={styles.sourceLabel}>{row.label}</span>
-                  <span className={styles.sourceValue}>{row.value}</span>
+                  <div className={styles.sourceBody}>
+                    <span className={styles.sourceHeader}>
+                      <span className={styles.sourceLabel}>{row.label}</span>
+                      {row.meta ? (
+                        <span className={styles.sourceMetaText}>{row.meta}</span>
+                      ) : null}
+                    </span>
+                    <span className={styles.sourceValue}>{row.value}</span>
+                  </div>
+                  {row.stat ? (
+                    <span
+                      className={`${styles.sourceStat} ${
+                        row.statTone === "up"
+                          ? styles.sourceStatUp
+                          : row.statTone === "down"
+                            ? styles.sourceStatDown
+                            : ""
+                      }`.trim()}
+                    >
+                      {row.stat}
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>
           </div>
-
-          <ul className={styles.noteList}>
-            {spotlight.notes.map((note) => (
-              <li key={note} className={styles.noteItem}>
-                <span className={styles.noteDot} aria-hidden="true" />
-                <span className={styles.noteValue}>{note}</span>
-              </li>
-            ))}
-          </ul>
         </div>
 
         <HeroPriceChart

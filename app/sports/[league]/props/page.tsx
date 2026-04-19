@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Hydrator } from "@/features/realtime/Hydrator";
 import { getSportsCardWorkingSet } from "@/features/sports/futures/api";
 import {
@@ -5,9 +6,22 @@ import {
   buildSportsCards,
   selectCardsByLeague,
 } from "@/features/sports/futures/parse";
+import { formatSportsLeagueLabel } from "@/features/sports/leagueLabel";
 import { SportsPropsSurface } from "@/features/sports/props/SportsPropsSurface";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
+
+export async function generateMetadata(
+  props: PageProps<"/sports/[league]/props">,
+): Promise<Metadata> {
+  const { league } = await props.params;
+  const leagueLabel = formatSportsLeagueLabel(league);
+
+  return {
+    title: `${leagueLabel} Props Trading Odds & Predictions 2026 | Polymarket`,
+    description: `${leagueLabel} props-style cards with canonical games and props route switching inside the shared sports shell.`,
+  };
+}
 
 export default async function SportsLeaguePropsPage(
   props: PageProps<"/sports/[league]/props">,

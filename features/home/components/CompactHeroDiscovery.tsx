@@ -11,7 +11,6 @@ export function CompactHeroDiscovery({
 }: CompactHeroDiscoveryProps) {
   return (
     <section className={styles.compactDiscovery} aria-label="Homepage discovery">
-      <p className={styles.compactKicker}>Trending now</p>
       <div className={styles.compactChipGroup}>
         {chips.map((chip, index) =>
           chip.href ? (
