@@ -11,12 +11,12 @@ export const metadata: Metadata = {
     "Politics markets, topic facets, and high-volume election contracts framed with the shared shell and continuation pattern.",
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function PoliticsPage() {
   const events = await listEvents({
     tagSlug: "politics",
-    limit: 30,
+    limit: 18,
     order: "volume_24hr",
     ascending: false,
   });
