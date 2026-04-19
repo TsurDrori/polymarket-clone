@@ -1,0 +1,22 @@
+.section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.list {
+  display: grid;
+}
+
+.row {
+  border-top: 1px solid var(--border);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.row:nth-child(even) {
+  background: var(--bg-page);
+}

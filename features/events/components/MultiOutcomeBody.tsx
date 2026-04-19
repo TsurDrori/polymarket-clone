@@ -6,13 +6,17 @@ import styles from "./MultiOutcomeBody.module.css";
 
 type MultiOutcomeBodyProps = {
   markets: ReadonlyArray<PolymarketMarket>;
+  onNavigate?: () => void;
 };
 
 const getTopMarkets = (
   markets: ReadonlyArray<PolymarketMarket>,
 ): PolymarketMarket[] => [...markets].sort((a, b) => b.volumeNum - a.volumeNum).slice(0, 2);
 
-export function MultiOutcomeBody({ markets }: MultiOutcomeBodyProps) {
+export function MultiOutcomeBody({
+  markets,
+  onNavigate,
+}: MultiOutcomeBodyProps) {
   const topMarkets = getTopMarkets(markets);
 
   return (
@@ -22,7 +26,7 @@ export function MultiOutcomeBody({ markets }: MultiOutcomeBodyProps) {
         const noTokenId = market.clobTokenIds[1];
         const yesLabel = market.outcomes[0] ?? "Outcome 1";
         const noLabel = market.outcomes[1] ?? "Outcome 2";
-        const rowLabel = market.groupItemTitle ?? market.question;
+        const rowLabel = market.groupItemTitle || market.question;
 
         return (
           <div key={market.id} className={styles.row}>
@@ -38,14 +42,24 @@ export function MultiOutcomeBody({ markets }: MultiOutcomeBodyProps) {
               )}
             </div>
 
-            <Button variant="yes" size="sm" className={styles.actionButton}>
+            <Button
+              variant="yes"
+              size="sm"
+              className={styles.actionButton}
+              onClick={onNavigate}
+            >
               <span className={styles.actionLabel} title={yesLabel}>
                 {yesLabel}
               </span>
               {yesTokenId ? <PriceCell tokenId={yesTokenId} format={formatCents} /> : null}
             </Button>
 
-            <Button variant="no" size="sm" className={styles.actionButton}>
+            <Button
+              variant="no"
+              size="sm"
+              className={styles.actionButton}
+              onClick={onNavigate}
+            >
               <span className={styles.actionLabel} title={noLabel}>
                 {noLabel}
               </span>

@@ -140,7 +140,6 @@ export const isValidEvent = (raw: unknown): raw is RawEvent => {
     if (!m || typeof m !== "object") return false;
     if (!isNonEmptyString(m.question)) return false;
     if (!isString(m.outcomes)) return false;
-    if (!isString(m.outcomePrices)) return false;
     if (!isString(m.clobTokenIds)) return false;
   }
   return true;

@@ -8,11 +8,21 @@ import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types"
 import { Hydrator } from "@/features/realtime/Hydrator";
 import { EventCard } from "./EventCard";
 
+const { push } = vi.hoisted(() => ({
+  push: vi.fn(),
+}));
+
 vi.mock("next/image", () => ({
   default: (props: ImgHTMLAttributes<HTMLImageElement>) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img alt="" {...props} />
   ),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push,
+  }),
 }));
 
 const baseEvent = parseEvent(fixture.events[0]);

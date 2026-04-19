@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { getEventImage } from "@/features/events/api/parse";
@@ -8,13 +9,22 @@ import styles from "./CardShell.module.css";
 type CardShellProps = {
   event: PolymarketEvent;
   children: ReactNode;
+  href?: string;
 };
 
-export function CardShell({ event, children }: CardShellProps) {
+export function CardShell({ event, children, href }: CardShellProps) {
   const imageSrc = getEventImage(event) ?? "/placeholder.svg";
 
   return (
     <article className={styles.shell}>
+      {href ? (
+        <Link
+          href={href}
+          className={styles.stretchedLink}
+          aria-label={`Open ${event.title}`}
+        />
+      ) : null}
+
       <div className={styles.header}>
         <div className={styles.imageWrap}>
           <Image

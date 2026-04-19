@@ -55,6 +55,15 @@ describe("isValidEvent", () => {
     };
     expect(isValidEvent(broken)).toBe(false);
   });
+
+  it("accepts markets when outcomePrices are omitted but the token ids and outcomes exist", () => {
+    const base = raw as { markets: Record<string, unknown>[] };
+    const variant = {
+      ...(raw as object),
+      markets: [{ ...base.markets[0], outcomePrices: undefined }],
+    };
+    expect(isValidEvent(variant)).toBe(true);
+  });
 });
 
 describe("parseEvent", () => {

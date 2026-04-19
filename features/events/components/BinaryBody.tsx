@@ -6,9 +6,10 @@ import styles from "./BinaryBody.module.css";
 
 type BinaryBodyProps = {
   market: PolymarketMarket;
+  onNavigate?: () => void;
 };
 
-export function BinaryBody({ market }: BinaryBodyProps) {
+export function BinaryBody({ market, onNavigate }: BinaryBodyProps) {
   const yesTokenId = market.clobTokenIds[0];
   const noTokenId = market.clobTokenIds[1];
 
@@ -27,12 +28,20 @@ export function BinaryBody({ market }: BinaryBodyProps) {
       </div>
 
       <div className={styles.actions}>
-        <Button variant="yes" className={styles.actionButton}>
+        <Button
+          variant="yes"
+          className={styles.actionButton}
+          onClick={onNavigate}
+        >
           <span>Buy Yes</span>
           {yesTokenId ? <PriceCell tokenId={yesTokenId} format={formatCents} /> : null}
         </Button>
 
-        <Button variant="no" className={styles.actionButton}>
+        <Button
+          variant="no"
+          className={styles.actionButton}
+          onClick={onNavigate}
+        >
           <span>Buy No</span>
           {noTokenId ? <PriceCell tokenId={noTokenId} format={formatCents} /> : null}
         </Button>

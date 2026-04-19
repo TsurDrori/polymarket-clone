@@ -36,6 +36,7 @@
   min-width: 0;
   justify-content: space-between;
   overflow: hidden;
+  pointer-events: auto;
 }
 
 .actionLabel {
