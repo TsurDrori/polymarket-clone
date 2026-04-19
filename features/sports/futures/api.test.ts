@@ -84,7 +84,7 @@ describe("getSportsCardWorkingSet", () => {
     listEventsKeyset.mockReset();
   });
 
-  it("keeps hide-from-new sports cards while still excluding restricted and force-hidden events", async () => {
+  it("keeps public sports cards even when Gamma marks them restricted or force-hides the parent sports tag", async () => {
     listEventsKeyset.mockResolvedValueOnce({
       events: [
         buildEvent({
@@ -107,9 +107,9 @@ describe("getSportsCardWorkingSet", () => {
           ],
         }),
         buildEvent({
-          id: "force-hidden",
-          slug: "hidden-market",
-          title: "Hidden Market",
+          id: "force-hidden-taxonomy",
+          slug: "hidden-taxonomy-market",
+          title: "Hidden Taxonomy Market",
           tags: [
             { id: "6", slug: "sports", label: "Sports", forceHide: true },
             { id: "7", slug: "nba", label: "NBA" },
@@ -131,7 +131,12 @@ describe("getSportsCardWorkingSet", () => {
 
     const events = await getSportsCardWorkingSet();
 
-    expect(events.map((event) => event.id)).toEqual(["visible", "hide-tag"]);
+    expect(events.map((event) => event.id)).toEqual([
+      "visible",
+      "hide-tag",
+      "force-hidden-taxonomy",
+      "restricted",
+    ]);
   });
 
   it("keeps paging league routes until the league card set is substantial", async () => {
@@ -161,6 +166,52 @@ describe("getSportsCardWorkingSet", () => {
     expect(
       events.every((event) => getSportsCardLeague(event).slug === "nba"),
     ).toBe(true);
+  });
+
+  it("prefers the desired league feed before falling back to the broad sports feed", async () => {
+    listEventsKeyset
+      .mockResolvedValueOnce({
+        events: [
+          buildEvent({
+            id: "nba-targeted",
+            slug: "nba-targeted",
+            title: "NBA Targeted Card",
+            tags: [
+              { id: "sports", slug: "sports", label: "Sports" },
+              { id: "nba", slug: "nba", label: "NBA" },
+            ],
+          }),
+        ],
+        nextCursor: null,
+      })
+      .mockResolvedValueOnce({
+        events: [
+          buildEvent({
+            id: "nhl-fallback",
+            slug: "nhl-fallback",
+            title: "NHL Fallback Card",
+            tags: [
+              { id: "sports", slug: "sports", label: "Sports" },
+              { id: "nhl", slug: "nhl", label: "NHL" },
+            ],
+          }),
+        ],
+        nextCursor: null,
+      });
+
+    const events = await getSportsCardWorkingSet({
+      desiredLeagueSlug: "NBA",
+    });
+
+    expect(listEventsKeyset).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ tagSlug: "nba" }),
+    );
+    expect(listEventsKeyset).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ tagSlug: "sports" }),
+    );
+    expect(events.map((event) => event.id)).toEqual(["nba-targeted", "nhl-fallback"]);
   });
 
   it("keeps paging the base futures surface until the league rail is broad enough", async () => {

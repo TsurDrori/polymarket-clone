@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { useRetainedLivePrice } from "@/features/realtime/hooks";
 import { cn } from "@/shared/lib/cn";
-import { formatCents, formatPct } from "@/shared/lib/format";
+import { formatCents, formatPct, formatSportsPct } from "@/shared/lib/format";
 import styles from "./PriceCell.module.css";
 
 type PriceCellFormatter = (price: number) => string;
@@ -18,13 +18,14 @@ type PriceCellProps = {
     }
   | {
       format?: never;
-      formatKind: "cents" | "pct";
+      formatKind: "cents" | "pct" | "sportsPct";
     }
 );
 
-const FORMATTERS: Record<"cents" | "pct", PriceCellFormatter> = {
+const FORMATTERS: Record<"cents" | "pct" | "sportsPct", PriceCellFormatter> = {
   cents: formatCents,
   pct: formatPct,
+  sportsPct: formatSportsPct,
 };
 
 function PriceCellInner({

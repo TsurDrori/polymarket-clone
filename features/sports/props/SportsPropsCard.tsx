@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PriceCell } from "@/features/events/components/PriceCell";
+import { formatSportsPct } from "@/shared/lib/format";
 import type { SportsCardModel } from "@/features/sports/futures/parse";
-import { formatSportsPct } from "@/features/sports/futures/parse";
 import styles from "./SportsPropsCard.module.css";
 
 type SportsPropsCardProps = {
@@ -11,7 +11,7 @@ type SportsPropsCardProps = {
 
 const renderPrice = (tokenId: string | null, fallbackPrice: number) =>
   tokenId ? (
-    <PriceCell tokenId={tokenId} format={formatSportsPct} />
+    <PriceCell tokenId={tokenId} formatKind="sportsPct" />
   ) : (
     formatSportsPct(fallbackPrice)
   );

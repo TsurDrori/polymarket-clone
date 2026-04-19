@@ -4,6 +4,7 @@ import type {
   PolymarketMarket,
   PolymarketTag,
 } from "@/features/events/types";
+import { formatSportsPct as formatSportsPctLabel } from "@/shared/lib/format";
 
 export type SportsCardLeague = {
   slug: string;
@@ -379,11 +380,7 @@ const sortLeagueEntries = (
     );
   });
 
-export const formatSportsPct = (price: number): string => {
-  const clamped = clampProbability(price);
-  if (clamped > 0 && clamped < 0.01) return "<1%";
-  return `${Math.round(clamped * 100)}%`;
-};
+export const formatSportsPct = formatSportsPctLabel;
 
 export const isSportsCardEvent = (event: PolymarketEvent): boolean => {
   if (!event.tags.some((tag) => normalizeSlug(tag.slug) === "sports")) return false;

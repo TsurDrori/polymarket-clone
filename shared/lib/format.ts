@@ -18,6 +18,13 @@ export const formatPct = (price: number): string => {
   return `${Math.round(price * 100)}%`;
 };
 
+export const formatSportsPct = (price: number): string => {
+  if (!Number.isFinite(price)) return "0%";
+  const clamped = Math.max(0, Math.min(1, price));
+  if (clamped > 0 && clamped < 0.01) return "<1%";
+  return `${Math.round(clamped * 100)}%`;
+};
+
 export const formatCents = (price: number): string => {
   if (!Number.isFinite(price)) return "0.0¢";
   const cents = price * 100;
