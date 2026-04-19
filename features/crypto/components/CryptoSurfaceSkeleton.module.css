@@ -1,0 +1,159 @@
+.surface {
+  display: grid;
+  gap: 18px;
+}
+
+.layout {
+  display: grid;
+  gap: 24px;
+}
+
+.desktopRail {
+  display: none;
+}
+
+.mobileFilters,
+.railBlock,
+.header,
+.card {
+  display: grid;
+  gap: 12px;
+}
+
+.filterRow,
+.tabRow {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.filterChip,
+.tab,
+.railItem,
+.titleBlock,
+.icon,
+.cardTitleShort,
+.cardTitleLong,
+.row,
+.meta {
+  display: block;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--bg-soft) 92%, transparent),
+      color-mix(in srgb, var(--bg-surface-alt) 80%, transparent),
+      color-mix(in srgb, var(--bg-soft) 92%, transparent)
+    );
+  background-size: 240% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.filterChip {
+  width: 132px;
+  height: 42px;
+}
+
+.titleBlock {
+  width: min(280px, 62%);
+  height: 42px;
+}
+
+.tab {
+  width: 110px;
+  height: 38px;
+}
+
+.railItem {
+  width: 100%;
+  height: 42px;
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 14px;
+  background: var(--bg-surface);
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+}
+
+.cardHeading {
+  display: grid;
+  gap: 8px;
+  flex: 1;
+}
+
+.cardTitleShort {
+  width: 78%;
+  height: 18px;
+}
+
+.cardTitleLong {
+  width: 56%;
+  height: 18px;
+}
+
+.rows {
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  width: 100%;
+  height: 44px;
+}
+
+.meta {
+  width: 46%;
+  height: 14px;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 188px minmax(0, 1fr);
+  }
+
+  .mobileFilters {
+    display: none;
+  }
+
+  .desktopRail {
+    display: block;
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

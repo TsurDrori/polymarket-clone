@@ -1,0 +1,95 @@
+import Link from "next/link";
+import { cn } from "@/shared/lib/cn";
+import {
+  ASSET_LABELS,
+  TIME_LABELS,
+  getCryptoFilterHref,
+  type CryptoFacetRail,
+  type CryptoFilterState,
+} from "../parse";
+import styles from "./CryptoFilterRail.module.css";
+
+type CryptoFilterRailProps = {
+  rail: CryptoFacetRail;
+  filters: CryptoFilterState;
+};
+
+type RailSectionProps = {
+  heading: string;
+  options: ReadonlyArray<{
+    value: string;
+    label: string;
+    count: number;
+  }>;
+  activeValue: string;
+  getHref: (value: string) => string;
+};
+
+function RailSection({
+  heading,
+  options,
+  activeValue,
+  getHref,
+}: RailSectionProps) {
+  return (
+    <section className={styles.section} aria-labelledby={`${heading}-heading`}>
+      <h2 id={`${heading}-heading`} className={styles.heading}>
+        {heading}
+      </h2>
+      <div className={styles.optionList}>
+        {options.map((option) => {
+          const active = activeValue === option.value;
+          return (
+            <Link
+              key={option.value}
+              href={getHref(option.value)}
+              className={cn(styles.option, active && styles.optionActive)}
+              aria-current={active ? "page" : undefined}
+            >
+              <span className={styles.optionLabel}>{option.label}</span>
+              <span className={styles.optionCount}>{option.count}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+export function CryptoFilterRail({
+  rail,
+  filters,
+}: CryptoFilterRailProps) {
+  const timeOptions = rail.timeOptions.map((option) => ({
+    ...option,
+    label: TIME_LABELS[option.value],
+  }));
+  const assetOptions = rail.assetOptions.map((option) => ({
+    ...option,
+    label: ASSET_LABELS[option.value],
+  }));
+
+  return (
+    <aside className={styles.rail}>
+      <RailSection
+        heading="Markets"
+        options={timeOptions}
+        activeValue={filters.time}
+        getHref={(value) =>
+          getCryptoFilterHref(filters, { time: value as CryptoFilterState["time"] })
+        }
+      />
+
+      {assetOptions.length > 0 ? (
+        <RailSection
+          heading="Assets"
+          options={assetOptions}
+          activeValue={filters.asset}
+          getHref={(value) =>
+            getCryptoFilterHref(filters, { asset: value as CryptoFilterState["asset"] })
+          }
+        />
+      ) : null}
+    </aside>
+  );
+}

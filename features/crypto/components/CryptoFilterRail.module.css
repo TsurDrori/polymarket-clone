@@ -1,0 +1,86 @@
+.rail {
+  display: grid;
+  gap: 22px;
+}
+
+.section {
+  display: grid;
+  gap: 10px;
+}
+
+.heading {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.optionList {
+  display: grid;
+  gap: 4px;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  border-radius: 12px;
+  padding: 0 12px;
+  color: var(--text-secondary);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.option:hover {
+  background: var(--bg-soft);
+}
+
+.optionActive {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.optionLabel {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.optionCount {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .rail {
+    position: sticky;
+    top: 108px;
+    align-self: start;
+    width: 188px;
+    padding-right: 18px;
+    border-right: 1px solid var(--border-soft);
+  }
+}
+
+@media (max-width: 1023px) {
+  .optionList {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .optionList::-webkit-scrollbar {
+    display: none;
+  }
+
+  .option {
+    min-width: 140px;
+  }
+}

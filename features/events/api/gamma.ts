@@ -21,6 +21,22 @@ export interface ListEventsParams {
   tagSlug?: string;
 }
 
+export interface ListEventsKeysetParams {
+  limit: number;
+  order?: string;
+  ascending?: boolean;
+  tagSlug?: string;
+  afterCursor?: string;
+}
+
+export type ListEventsKeysetResult = {
+  events: PolymarketEvent[];
+  nextCursor: string | null;
+};
+
+const normalizeKeysetOrder = (order: string): string =>
+  order === "volume_24hr" ? "volume24hr" : order;
+
 const buildListUrl = ({
   limit,
   offset,
@@ -37,6 +53,24 @@ const buildListUrl = ({
   if (ascending !== undefined) params.set("ascending", String(ascending));
   if (tagSlug !== undefined) params.set("tag_slug", tagSlug);
   return `${GAMMA_BASE}/events?${params.toString()}`;
+};
+
+const buildListKeysetUrl = ({
+  limit,
+  order,
+  ascending,
+  tagSlug,
+  afterCursor,
+}: ListEventsKeysetParams): string => {
+  const params = new URLSearchParams();
+  params.set("active", "true");
+  params.set("closed", "false");
+  params.set("limit", String(limit));
+  if (order !== undefined) params.set("order", normalizeKeysetOrder(order));
+  if (ascending !== undefined) params.set("ascending", String(ascending));
+  if (tagSlug !== undefined) params.set("tag_slug", tagSlug);
+  if (afterCursor !== undefined) params.set("after_cursor", afterCursor);
+  return `${GAMMA_BASE}/events/keyset?${params.toString()}`;
 };
 
 const parseEventList = (payload: unknown): PolymarketEvent[] => {
@@ -61,6 +95,34 @@ export const listEvents = async (
   }
   const payload = await res.json();
   return parseEventList(payload);
+};
+
+export const listEventsKeyset = async (
+  params: ListEventsKeysetParams,
+): Promise<ListEventsKeysetResult> => {
+  const url = buildListKeysetUrl(params);
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new GammaError(
+      `listEventsKeyset failed: ${res.status} ${res.statusText}`,
+      res.status,
+    );
+  }
+
+  const payload = await res.json();
+  const events = parseEventList(
+    payload && typeof payload === "object" && "events" in payload
+      ? (payload as { events?: unknown }).events
+      : [],
+  );
+
+  return {
+    events,
+    nextCursor:
+      payload && typeof payload === "object" && "next_cursor" in payload
+        ? String((payload as { next_cursor?: string | null }).next_cursor ?? "")
+        : null,
+  };
 };
 
 export const getEventBySlug = async (
