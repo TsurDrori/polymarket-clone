@@ -1,7 +1,7 @@
 .nav {
   display: flex;
   align-items: stretch;
-  gap: 20px;
+  gap: 18px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -10,8 +10,16 @@
   display: none;
 }
 
+.tab {
+  white-space: nowrap;
+  padding-top: 0;
+  padding-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 @media (min-width: 600px) {
   .nav {
-    gap: 28px;
+    gap: 22px;
   }
 }

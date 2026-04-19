@@ -1,12 +1,7 @@
 import Link from "next/link";
+import { cn } from "@/shared/lib/cn";
+import { CATEGORY_ITEMS } from "./navItems";
 import styles from "./Footer.module.css";
-
-const MARKET_LINKS = [
-  { label: "Trending", href: "/" },
-  { label: "Politics", href: "/politics" },
-  { label: "Sports", href: "/sports" },
-  { label: "Crypto", href: "/crypto" },
-] as const;
 
 const SUPPORT_LINKS = [
   { label: "Learn", href: "https://docs.polymarket.com" },
@@ -30,11 +25,19 @@ export function Footer() {
           </div>
 
           <nav aria-label="Market categories" className={styles.linkRow}>
-            {MARKET_LINKS.map((link) => (
-              <Link key={link.label} href={link.href} className={styles.link}>
-                {link.label}
-              </Link>
-            ))}
+            {CATEGORY_ITEMS.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={cn(styles.link, styles.marketLink)}
+                >
+                  <Icon className={styles.linkIcon} aria-hidden="true" />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           <nav aria-label="Helpful resources" className={styles.linkRow}>

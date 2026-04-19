@@ -3,29 +3,22 @@
 import { usePathname } from "next/navigation";
 import { Tab } from "@/shared/ui/Tab";
 import { isTabActive } from "../activeTab";
+import { HEADER_MARKET_ITEMS } from "./navItems";
 import styles from "./CategoryNav.module.css";
-
-type NavItem = { label: string; href: string };
-
-const ITEMS: readonly NavItem[] = [
-  { label: "Trending", href: "/" },
-  { label: "Politics", href: "/politics" },
-  { label: "Sports", href: "/sports" },
-  { label: "Crypto", href: "/crypto" },
-];
 
 export function CategoryNav() {
   const pathname = usePathname() ?? "/";
   return (
-    <nav aria-label="Categories" className={styles.nav}>
-      {ITEMS.map((item) => {
-        const active = isTabActive(pathname, item.href);
+    <nav aria-label="Browse markets" className={styles.nav}>
+      {HEADER_MARKET_ITEMS.map((item) => {
+        const activeHref = item.activeMatch ?? item.href ?? "/";
+        const active = isTabActive(pathname, activeHref);
         return (
           <Tab
-            key={item.href}
-            href={item.href}
-            role="link"
+            key={item.label}
+            href={item.href ?? "#"}
             aria-current={active ? "page" : undefined}
+            className={styles.tab}
           >
             {item.label}
           </Tab>

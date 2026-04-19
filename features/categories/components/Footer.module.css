@@ -60,6 +60,19 @@
   transition: color 120ms ease-out;
 }
 
+.marketLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+}
+
+.linkIcon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
 .link:hover {
   color: var(--text-primary);
 }
