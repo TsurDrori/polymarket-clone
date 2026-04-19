@@ -15,6 +15,7 @@
 
 .spotlightCard {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 16px;
   padding: 20px 20px 16px;
   border: 1px solid color-mix(in srgb, var(--border) 92%, var(--bg-soft));
@@ -76,10 +77,10 @@
 .spotlightTitle {
   margin: 0;
   color: var(--text-primary);
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 22px;
+  line-height: 28px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   display: -webkit-box;
   overflow: hidden;
   -webkit-line-clamp: 2;
@@ -147,6 +148,7 @@
 
 .spotlightCopy {
   display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 16px;
 }
 
@@ -180,6 +182,7 @@
 }
 
 .sourceSection {
+  display: flex;
   min-height: 0;
 }
 
@@ -195,7 +198,8 @@
 
 .sourceTicker {
   position: relative;
-  height: 219px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -224,8 +228,11 @@
 }
 
 .sourceItemLink {
-  display: block;
-  padding: 10px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 5px 0;
   color: inherit;
 }
 
@@ -235,15 +242,15 @@
 
 .sourceHeader {
   color: var(--text-muted);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 540;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
 }
 
 .sourceValue {
   color: var(--text-primary);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 13px;
+  line-height: 16px;
   font-weight: 400;
   display: -webkit-box;
   overflow: hidden;
@@ -251,12 +258,34 @@
   -webkit-box-orient: vertical;
 }
 
+.sourceStat {
+  padding-top: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sourceStatUp {
+  color: var(--accent-yes);
+}
+
+.sourceStatDown {
+  color: var(--accent-no);
+}
+
+.sourceStatNeutral {
+  color: var(--text-muted);
+}
+
 .chartPanel {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 8px;
   padding: 0;
   border-radius: 18px;
   background: transparent;
+  min-height: 0;
 }
 
 .chartLabel,
@@ -271,10 +300,13 @@
 .chartFigure {
   margin: 0;
   display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 6px;
+  min-height: 0;
 }
 
 .chartSurface {
+  display: block;
   width: 100%;
   height: auto;
 }
@@ -392,9 +424,9 @@
 }
 
 .footerNav {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   height: 40px;
   min-height: 40px;
@@ -432,7 +464,7 @@
 
 .footerChipGroup,
 .compactChipGroup {
-  gap: 0;
+  gap: 10px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -448,15 +480,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 56px;
-  padding: 8px 8px;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
   border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-soft) 92%, white);
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -464,12 +497,8 @@
   color: var(--text-muted);
 }
 
-.footerChipPrev {
-  padding: 8px 6px 8px 8px;
-}
-
-.footerChipNext {
-  padding: 8px 8px 8px 6px;
+.footerChipButton:hover svg {
+  color: var(--text-secondary);
 }
 
 .footerChipButton:hover,
@@ -478,6 +507,14 @@
 .spotlightTitleLink:hover,
 .railLink:hover {
   color: var(--text-secondary);
+}
+
+.footerChipButton:hover {
+  background: color-mix(in srgb, var(--bg-soft) 96%, white);
+}
+
+.footerChipGroup {
+  justify-self: center;
 }
 
 .exploreLink {
@@ -549,8 +586,22 @@
     align-items: start;
   }
 
+  .spotlightCard {
+    height: 483px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
   .spotlightBody {
     grid-template-columns: 346px minmax(0, 1fr);
     align-items: start;
+    min-height: 0;
+  }
+
+  .spotlightCopy,
+  .sourceSection,
+  .chartPanel,
+  .chartFigure {
+    min-height: 0;
   }
 }

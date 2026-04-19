@@ -24,7 +24,7 @@ export function HeroFooterNav({
   const nextSpotlight = spotlights[nextIndex];
 
   return (
-    <div className={styles.footerNav}>
+    <div className={styles.footerNav} data-footer-nav>
       <div className={styles.dotGroup} aria-label="Spotlight pages">
         {spotlights.map((spotlight, index) => (
           <button
@@ -46,6 +46,7 @@ export function HeroFooterNav({
           className={`${styles.footerChipButton} ${styles.footerChipPrev}`.trim()}
           onClick={() => onSelect(previousIndex)}
           aria-label={`Show previous spotlight: ${previousSpotlight.navigationLabel}`}
+          data-footer-prev
         >
           <ChevronLeft size={16} />
           <span>{previousSpotlight.navigationLabel}</span>
@@ -56,6 +57,7 @@ export function HeroFooterNav({
           className={`${styles.footerChipButton} ${styles.footerChipNext}`.trim()}
           onClick={() => onSelect(nextIndex)}
           aria-label={`Show next spotlight: ${nextSpotlight.navigationLabel}`}
+          data-footer-next
         >
           <span>{nextSpotlight.navigationLabel}</span>
           <ChevronRight size={16} />

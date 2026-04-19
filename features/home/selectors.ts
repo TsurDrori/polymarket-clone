@@ -164,6 +164,14 @@ const NEWSFEED_SOURCE_LABELS = [
   "BBC",
 ] as const;
 
+const FALLBACK_SOURCE_STATS = [
+  { stat: "+ $100", statTone: "down" as const },
+  { stat: "+ $505", statTone: "down" as const },
+  { stat: "+ $247", statTone: "down" as const },
+  { stat: "+ $11", statTone: "up" as const },
+  { stat: "+ $600", statTone: "up" as const },
+] as const;
+
 const GENERIC_NAVIGATION_LABELS = new Set([
   "all",
   "featured",
@@ -324,35 +332,40 @@ const buildFallbackSourceRows = (
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[0],
-    value: descriptionSentences[0] ?? market.question,
+    value: clampText(descriptionSentences[0] ?? market.question, 58),
     meta: freshPublishedLabel ?? "10h ago",
+    ...FALLBACK_SOURCE_STATS[0],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[1],
-    value: descriptionSentences[1] ?? market.question,
+    value: clampText(descriptionSentences[1] ?? market.question, 58),
     meta: freshPublishedLabel ?? "21h ago",
+    ...FALLBACK_SOURCE_STATS[1],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[2],
-    value: descriptionSentences[2] ?? event.title,
+    value: clampText(descriptionSentences[2] ?? event.title, 58),
     meta: freshPublishedLabel ?? "1d ago",
+    ...FALLBACK_SOURCE_STATS[2],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[3],
-    value: market.question,
+    value: clampText(market.question, 58),
     meta: freshPublishedLabel ?? (event.endDate ? `By ${formatEndDate(event.endDate)}` : "1d ago"),
+    ...FALLBACK_SOURCE_STATS[3],
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[4],
-    value: event.title,
+    value: clampText(event.title, 58),
     meta: freshPublishedLabel ?? "2d ago",
+    ...FALLBACK_SOURCE_STATS[4],
   });
 
-  return sourceRows.slice(0, 5);
+  return sourceRows.slice(0, 4);
 };
 
 const buildSpotlightNotes = (

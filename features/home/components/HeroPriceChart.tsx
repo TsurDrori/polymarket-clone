@@ -1,10 +1,19 @@
+"use client";
+
+import { useId, useMemo, useState, type PointerEvent } from "react";
 import { formatPct } from "@/shared/lib/format";
 import type { HeroChartModel } from "../selectors";
 import styles from "./HomeHero.module.css";
 
+export type HeroChartHoverState = {
+  t: number;
+  p: number;
+};
+
 type HeroPriceChartProps = {
   chart: HeroChartModel | null;
   currentChance: number;
+  onHoverChange?: (hovered: HeroChartHoverState | null) => void;
 };
 
 const VIEWBOX_WIDTH = 360;
@@ -24,6 +33,14 @@ const formatChartDate = (timestampSeconds: number): string =>
     day: "numeric",
   }).format(new Date(timestampSeconds * 1000));
 
+const formatHoverDate = (timestampSeconds: number): string =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(timestampSeconds * 1000));
+
 const buildChartPath = (chart: HeroChartModel) => {
   const xMin = chart.points[0]?.t ?? 0;
   const xMax = chart.points.at(-1)?.t ?? xMin + 1;
@@ -36,10 +53,16 @@ const buildChartPath = (chart: HeroChartModel) => {
   const yFor = (value: number): number =>
     PADDING.top + (1 - value) * plotHeight;
 
-  const path = chart.points
+  const coordinates = chart.points.map((point) => ({
+    point,
+    x: xFor(point.t),
+    y: yFor(point.p),
+  }));
+
+  const path = coordinates
     .map((point, index) => {
       const command = index === 0 ? "M" : "L";
-      return `${command}${xFor(point.t).toFixed(2)} ${yFor(point.p).toFixed(2)}`;
+      return `${command}${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
     })
     .join(" ");
 
@@ -51,19 +74,84 @@ const buildChartPath = (chart: HeroChartModel) => {
 
   return {
     path,
+    coordinates,
     xTicks,
-    latestPoint: chart.points.at(-1),
     xFor,
     yFor,
     plotWidth,
+    plotHeight,
+  };
+};
+
+const interpolateHoverPoint = (
+  coordinates: Array<{
+    point: HeroChartModel["points"][number];
+    x: number;
+    y: number;
+  }>,
+  targetX: number,
+) => {
+  const clampedX = Math.max(
+    coordinates[0]?.x ?? targetX,
+    Math.min(coordinates.at(-1)?.x ?? targetX, targetX),
+  );
+
+  const nextIndex = coordinates.findIndex((coordinate) => coordinate.x >= clampedX);
+  if (nextIndex <= 0) {
+    const first = coordinates[0];
+    return {
+      x: clampedX,
+      y: first.y,
+      point: first.point,
+    };
+  }
+
+  if (nextIndex === -1) {
+    const last = coordinates.at(-1);
+    return last
+      ? {
+          x: clampedX,
+          y: last.y,
+          point: last.point,
+        }
+      : null;
+  }
+
+  const right = coordinates[nextIndex];
+  const left = coordinates[nextIndex - 1];
+  const span = Math.max(1, right.x - left.x);
+  const ratio = Math.max(0, Math.min(1, (clampedX - left.x) / span));
+  const t = left.point.t + (right.point.t - left.point.t) * ratio;
+  const p = left.point.p + (right.point.p - left.point.p) * ratio;
+  const y = left.y + (right.y - left.y) * ratio;
+
+  return {
+    x: clampedX,
+    y,
+    point: { t, p },
   };
 };
 
 export function HeroPriceChart({
   chart,
   currentChance,
+  onHoverChange,
 }: HeroPriceChartProps) {
-  if (!chart || chart.points.length < 5) {
+  const [hoveredPoint, setHoveredPoint] = useState<{
+    x: number;
+    y: number;
+    point: HeroChartHoverState;
+  } | null>(null);
+  const clipPathId = useId();
+  const chartGeometry = useMemo(() => {
+    if (!chart || chart.points.length < 5) {
+      return null;
+    }
+
+    return buildChartPath(chart);
+  }, [chart]);
+
+  if (!chartGeometry || !chart) {
     return (
       <div className={styles.chartPanel}>
         <div className={styles.chartHeader}>
@@ -87,13 +175,85 @@ export function HeroPriceChart({
     );
   }
 
-  const { path, xTicks, latestPoint, xFor, yFor } = buildChartPath(chart);
+  const { path, coordinates, xTicks, xFor, yFor } = chartGeometry;
+
+  const activeCoordinate =
+    hoveredPoint ??
+    (coordinates.at(-1)
+      ? {
+          x: coordinates.at(-1)!.x,
+          y: coordinates.at(-1)!.y,
+          point: coordinates.at(-1)!.point,
+        }
+      : null);
+  const activePathWidth = activeCoordinate
+    ? Math.min(VIEWBOX_WIDTH - PADDING.right, activeCoordinate.x + 1)
+    : VIEWBOX_WIDTH - PADDING.right;
+  const hoverLabel = hoveredPoint
+    ? `Yes ${formatPct(hoveredPoint.point.p)}`
+    : null;
+  const hoverLabelWidth = hoverLabel ? hoverLabel.length * 6.8 + 16 : 0;
+  const hoverLabelX = hoveredPoint
+    ? Math.max(
+        PADDING.left,
+        Math.min(
+          hoveredPoint.x - hoverLabelWidth / 2,
+          VIEWBOX_WIDTH - PADDING.right - hoverLabelWidth,
+        ),
+      )
+    : 0;
+  const hoverLabelY = hoveredPoint
+    ? Math.max(PADDING.top + 8, hoveredPoint.y - 18)
+    : 0;
+  const axisLabel = hoveredPoint
+    ? formatHoverDate(hoveredPoint.point.t)
+    : null;
+  const axisLabelX = hoveredPoint
+    ? Math.max(
+        PADDING.left,
+        Math.min(hoveredPoint.x, VIEWBOX_WIDTH - PADDING.right),
+      )
+    : 0;
+
+  const updateHoveredPoint = (
+    nextHover: { x: number; y: number; point: HeroChartHoverState } | null,
+  ) => {
+    setHoveredPoint(nextHover);
+    onHoverChange?.(nextHover ? nextHover.point : null);
+  };
+
+  const handlePointerMove = (event: PointerEvent<SVGRectElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const relativeX = Math.max(
+      0,
+      Math.min(bounds.width, event.clientX - bounds.left),
+    );
+    const targetX =
+      PADDING.left + (relativeX / Math.max(1, bounds.width)) * chartGeometry.plotWidth;
+    const nextHover = interpolateHoverPoint(coordinates, targetX);
+    if (!nextHover) {
+      updateHoveredPoint(null);
+      return;
+    }
+
+    if (
+      hoveredPoint &&
+      Math.abs(hoveredPoint.x - nextHover.x) < 0.5 &&
+      Math.abs(hoveredPoint.point.p - nextHover.point.p) < 0.001
+    ) {
+      return;
+    }
+
+    updateHoveredPoint(nextHover);
+  };
 
   return (
     <div className={styles.chartPanel}>
       <div className={styles.chartHeader}>
         <span className={styles.chartLabel}>Price history</span>
-        <span className={styles.chartLabel}>{chart.intervalLabel}</span>
+        <span className={styles.chartLabel}>
+          {hoveredPoint ? formatHoverDate(hoveredPoint.point.t) : chart.intervalLabel}
+        </span>
       </div>
 
       <figure className={styles.chartFigure}>
@@ -102,7 +262,19 @@ export function HeroPriceChart({
           className={styles.chartSurface}
           role="img"
           aria-label="Spotlight market price history"
+          data-chart-surface
         >
+          <defs>
+            <clipPath id={clipPathId}>
+              <rect
+                x="0"
+                y="0"
+                width={activePathWidth.toFixed(2)}
+                height={VIEWBOX_HEIGHT}
+              />
+            </clipPath>
+          </defs>
+
           {Y_TICKS.map((tick) => {
             const y = yFor(tick);
 
@@ -133,44 +305,113 @@ export function HeroPriceChart({
           <path
             d={path}
             fill="none"
-            stroke="var(--accent-brand)"
+            stroke={hoveredPoint ? "currentColor" : "var(--accent-brand)"}
+            strokeOpacity={hoveredPoint ? "0.12" : undefined}
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
 
-          {latestPoint ? (
+          {hoveredPoint ? (
+            <path
+              d={path}
+              fill="none"
+              stroke="var(--accent-brand)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              clipPath={`url(#${clipPathId})`}
+            />
+          ) : null}
+
+          {hoveredPoint ? (
+            <line
+              x1={hoveredPoint.x}
+              x2={hoveredPoint.x}
+              y1={PADDING.top}
+              y2={VIEWBOX_HEIGHT - PADDING.bottom}
+              stroke="currentColor"
+              strokeOpacity="0.08"
+              strokeWidth="1"
+            />
+          ) : null}
+
+          {activeCoordinate ? (
             <>
               <circle
-                cx={xFor(latestPoint.t)}
-                cy={yFor(latestPoint.p)}
+                cx={activeCoordinate.x}
+                cy={activeCoordinate.y}
                 r="8"
                 fill="var(--accent-brand-soft)"
               />
               <circle
-                cx={xFor(latestPoint.t)}
-                cy={yFor(latestPoint.p)}
+                cx={activeCoordinate.x}
+                cy={activeCoordinate.y}
                 r="4"
                 fill="var(--accent-brand)"
               />
             </>
           ) : null}
 
-          {xTicks.map((point, index) => (
+          {hoverLabel && hoveredPoint ? (
+            <g transform={`translate(${hoverLabelX.toFixed(2)} ${hoverLabelY.toFixed(2)})`}>
+              <rect
+                width={hoverLabelWidth.toFixed(2)}
+                height="18"
+                rx="4"
+                fill="var(--accent-brand)"
+              />
+              <text
+                x={hoverLabelWidth / 2}
+                y="12"
+                fill="white"
+                fontSize="11"
+                fontWeight="600"
+                textAnchor="middle"
+              >
+                {hoverLabel}
+              </text>
+            </g>
+          ) : null}
+
+          {hoveredPoint && axisLabel ? (
             <text
-              key={`${point.t}-${index}`}
-              x={xFor(point.t)}
+              x={axisLabelX}
               y={VIEWBOX_HEIGHT - 6}
-              textAnchor={
-                index === 0 ? "start" : index === xTicks.length - 1 ? "end" : "middle"
-              }
+              textAnchor="middle"
               fill="currentColor"
               fillOpacity="0.6"
               fontSize="11"
             >
-              {formatChartDate(point.t)}
+              {axisLabel}
             </text>
-          ))}
+          ) : (
+            xTicks.map((point, index) => (
+              <text
+                key={`${point.t}-${index}`}
+                x={xFor(point.t)}
+                y={VIEWBOX_HEIGHT - 6}
+                textAnchor={
+                  index === 0 ? "start" : index === xTicks.length - 1 ? "end" : "middle"
+                }
+                fill="currentColor"
+                fillOpacity="0.6"
+                fontSize="11"
+              >
+                {formatChartDate(point.t)}
+              </text>
+            ))
+          )}
+
+          <rect
+            x={PADDING.left}
+            y={PADDING.top}
+            width={VIEWBOX_WIDTH - PADDING.left - PADDING.right}
+            height={VIEWBOX_HEIGHT - PADDING.top - PADDING.bottom}
+            fill="transparent"
+            onPointerMove={handlePointerMove}
+            onPointerLeave={() => updateHoveredPoint(null)}
+          />
         </svg>
 
         <figcaption className={styles.chartCaption}>
