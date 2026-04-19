@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { PolymarketEvent, PolymarketMarket, PolymarketTag } from "@/features/events/types";
+import type {
+  PolymarketEvent,
+  PolymarketMarket,
+  PolymarketTag,
+} from "@/features/events/types";
 import {
+  buildHomeHeroModel,
   buildHomePageModel,
   collectTrendingTopics,
   getPrimaryMarket,
-  selectBreakingItems,
-  selectFeaturedEvents,
+  selectHeroBreaking,
+  selectSpotlightEvent,
 } from "./selectors";
 
 const buildMarket = (
@@ -19,6 +24,8 @@ const buildMarket = (
   image: overrides.image,
   icon: overrides.icon,
   endDate: overrides.endDate,
+  sportsMarketType: overrides.sportsMarketType,
+  line: overrides.line ?? null,
   outcomes: overrides.outcomes ?? ["Yes", "No"],
   outcomePrices: overrides.outcomePrices ?? [0.65, 0.35],
   clobTokenIds: overrides.clobTokenIds ?? ["yes-token", "no-token"],
@@ -67,49 +74,74 @@ const buildEvent = (
   showMarketImages: overrides.showMarketImages ?? false,
   markets: overrides.markets ?? [buildMarket()],
   tags,
+  eventMetadata: overrides.eventMetadata,
 });
 
-describe("selectFeaturedEvents", () => {
-  it("prioritizes a varied hero set before filling from ranked events", () => {
-    const politics = buildEvent(
-      "Election Winner",
-      [
-        { id: "1", slug: "politics", label: "Politics" },
-        { id: "2", slug: "election", label: "Election" },
-      ],
-      { featured: true, volume24hr: 500 },
-    );
+describe("selectSpotlightEvent", () => {
+  it("prefers a featured non-sports event with real description copy", () => {
     const sports = buildEvent(
       "Knicks vs. Celtics",
-      [{ id: "3", slug: "sports", label: "Sports" }, { id: "4", slug: "games", label: "Games" }],
-      { featured: false, volume24hr: 400 },
+      [
+        { id: "sports", slug: "sports", label: "Sports" },
+        { id: "games", slug: "games", label: "Games" },
+      ],
+      {
+        featured: true,
+        volume24hr: 800_000,
+        description: "A high-volume sports event, but not the preferred desktop hero.",
+      },
     );
-    const crypto = buildEvent(
-      "Bitcoin Up or Down",
-      [{ id: "5", slug: "crypto", label: "Crypto" }],
-      { featured: false, volume24hr: 350 },
-    );
-    const filler = buildEvent(
-      "Another Market",
-      [{ id: "6", slug: "culture", label: "Culture" }],
-      { volume24hr: 300 },
+    const politics = buildEvent(
+      "Strait of Hormuz traffic returns to normal?",
+      [
+        { id: "economy", slug: "economy", label: "Economy" },
+        { id: "ships", slug: "ships", label: "Ships" },
+      ],
+      {
+        featured: true,
+        volume24hr: 780_000,
+        description:
+          "Ships resumed normal transit through the Strait after the latest regional warning. Resolution depends on continued unrestricted commercial passage.",
+      },
     );
 
-    const picked = selectFeaturedEvents([filler, crypto, sports, politics], 4);
-
-    expect(picked.map((event) => event.title)).toEqual([
-      "Election Winner",
-      "Knicks vs. Celtics",
-      "Bitcoin Up or Down",
-      "Another Market",
-    ]);
+    expect(selectSpotlightEvent([sports, politics])?.id).toBe(politics.id);
   });
 });
 
-describe("selectBreakingItems", () => {
-  it("returns the highest moving unique events", () => {
-    const highMove = buildEvent("High Move", [{ id: "1", slug: "tech", label: "Tech" }], {
-      markets: [buildMarket({ oneDayPriceChange: 0.35, lastTradePrice: 0.71 })],
+describe("getPrimaryMarket", () => {
+  it("prefers the chart-worthy market with the strongest move and token ids", () => {
+    const market = getPrimaryMarket(
+      buildEvent(
+        "Primary market event",
+        [{ id: "1", slug: "crypto", label: "Crypto" }],
+        {
+          markets: [
+            buildMarket({
+              id: "a",
+              clobTokenIds: [],
+              oneDayPriceChange: 0.32,
+              volumeNum: 8_000,
+            }),
+            buildMarket({
+              id: "b",
+              oneDayPriceChange: -0.12,
+              volumeNum: 12_000,
+            }),
+          ],
+        },
+      ),
+    );
+
+    expect(market?.id).toBe("b");
+  });
+});
+
+describe("selectHeroBreaking", () => {
+  it("returns the highest moving unique events and excludes the spotlight event", () => {
+    const spotlight = buildEvent("Spotlight", [{ id: "1", slug: "tech", label: "Tech" }], {
+      id: "spotlight",
+      markets: [buildMarket({ oneDayPriceChange: 0.45 })],
     });
     const mediumMove = buildEvent("Medium Move", [{ id: "2", slug: "sports", label: "Sports" }], {
       markets: [buildMarket({ oneDayPriceChange: -0.2, lastTradePrice: 0.4 })],
@@ -118,13 +150,15 @@ describe("selectBreakingItems", () => {
       markets: [buildMarket({ oneDayPriceChange: 0.04, lastTradePrice: 0.55 })],
     });
 
-    const items = selectBreakingItems([lowMove, mediumMove, highMove], 2);
+    const items = selectHeroBreaking([lowMove, mediumMove, spotlight], {
+      excludeEventId: spotlight.id,
+      limit: 2,
+    });
 
     expect(items.map((item) => item.event.title)).toEqual([
-      "High Move",
       "Medium Move",
+      "Low Move",
     ]);
-    expect(items[0]?.currentPrice).toBe(0.71);
   });
 });
 
@@ -154,28 +188,46 @@ describe("collectTrendingTopics", () => {
   });
 });
 
-describe("getPrimaryMarket", () => {
-  it("prefers the market with the strongest move, then volume", () => {
-    const market = getPrimaryMarket(
-      buildEvent(
-        "Primary market event",
-        [{ id: "1", slug: "crypto", label: "Crypto" }],
-        {
-          markets: [
-            buildMarket({ id: "a", oneDayPriceChange: 0.02, volumeNum: 5_000 }),
-            buildMarket({ id: "b", oneDayPriceChange: -0.12, volumeNum: 4_000 }),
-          ],
-        },
-      ),
+describe("buildHomeHeroModel", () => {
+  it("builds a spotlight-first hero with fallback-derived source rows and chips", () => {
+    const event = buildEvent(
+      "Strait of Hormuz traffic returns to normal?",
+      [
+        { id: "economy", slug: "economy", label: "Economy" },
+        { id: "ships", slug: "ships", label: "Ships" },
+      ],
+      {
+        featured: true,
+        endDate: "2026-04-30T23:59:59.000Z",
+        description:
+          "Commercial shipping resumed after the latest disruption. This market resolves yes if normal transit holds through the listed date.",
+      },
     );
 
-    expect(market?.id).toBe("b");
+    const hero = buildHomeHeroModel([event], {
+      spotlightChart: {
+        intervalLabel: "1W window",
+        sourceLabel: "Polymarket CLOB",
+        points: [
+          { t: 1, p: 0.2 },
+          { t: 2, p: 0.28 },
+          { t: 3, p: 0.31 },
+          { t: 4, p: 0.26 },
+          { t: 5, p: 0.29 },
+        ],
+      },
+    });
+
+    expect(hero.spotlight?.sourceMode).toBe("fallback-derived");
+    expect(hero.spotlight?.sourceRows).toHaveLength(3);
+    expect(hero.contextChips[0]?.label).toBe("All");
+    expect(hero.spotlight?.chart?.points).toHaveLength(5);
   });
 });
 
 describe("buildHomePageModel", () => {
   it("keeps the homepage payload bounded for the server-rendered surface", () => {
-    const events = Array.from({ length: 24 }, (_, index) =>
+    const events = Array.from({ length: 48 }, (_, index) =>
       buildEvent(
         `Market ${index + 1}`,
         [{ id: `tag-${index}`, slug: "politics", label: "Politics" }],
@@ -183,16 +235,19 @@ describe("buildHomePageModel", () => {
           id: `event-${index + 1}`,
           featured: index === 0,
           volume24hr: 10_000 - index,
+          description:
+            index === 0
+              ? "A strong lead item for the spotlight hero. Resolution depends on the listed date."
+              : undefined,
         },
       ),
     );
 
     const model = buildHomePageModel(events);
 
-    expect(model.heroEvent?.id).toBe("event-1");
-    expect(model.featuredEvents).toHaveLength(4);
-    expect(model.breakingItems).toHaveLength(4);
-    expect(model.topicSummaries.length).toBeLessThanOrEqual(6);
-    expect(model.exploreEvents).toHaveLength(18);
+    expect(model.hero.spotlight?.event.id).toBe("event-1");
+    expect(model.hero.breaking).toHaveLength(3);
+    expect(model.hero.topics.length).toBeLessThanOrEqual(5);
+    expect(model.exploreEvents).toHaveLength(30);
   });
 });
