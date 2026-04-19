@@ -8,6 +8,7 @@ import {
   buildHydrationEvents,
   buildSportsCards,
   formatSportsPct,
+  getSportsCardLeague,
   isSportsCardEvent,
   selectCardsByLeague,
 } from "./parse";
@@ -180,6 +181,45 @@ describe("sports futures parser", () => {
 
     expect(nbaCards).toHaveLength(1);
     expect(nbaCards[0]?.league.label).toBe("NBA");
+  });
+
+  it("prefers competition tags over athlete and topic tags", () => {
+    const event = buildEvent({
+      id: "world-cup",
+      slug: "will-neymar-play",
+      title: "Will Neymar play in the 2026 FIFA World Cup?",
+      tags: [
+        { id: "1", slug: "sports", label: "Sports" },
+        { id: "2", slug: "neymar", label: "Neymar" },
+        { id: "3", slug: "soccer", label: "Soccer" },
+        { id: "4", slug: "celebrities", label: "Celebrities" },
+        { id: "5", slug: "fifa-world-cup", label: "FIFA World Cup" },
+      ],
+    });
+
+    expect(getSportsCardLeague(event)).toEqual({
+      slug: "fifa-world-cup",
+      label: "FIFA World Cup",
+    });
+  });
+
+  it("falls back to broad sports categories before person tags", () => {
+    const event = buildEvent({
+      id: "boxing",
+      slug: "bob-menery-vs-johnny-manziel",
+      title: "Will Bob Menery enter the ring against Johnny Manziel?",
+      tags: [
+        { id: "1", slug: "bob-menery", label: "Bob Menery" },
+        { id: "2", slug: "boxing", label: "Boxing" },
+        { id: "3", slug: "sports", label: "Sports" },
+        { id: "4", slug: "combat-sports", label: "Combat Sports" },
+      ],
+    });
+
+    expect(getSportsCardLeague(event)).toEqual({
+      slug: "boxing",
+      label: "Boxing",
+    });
   });
 
   it("hydrates only the preview token ids that are actually rendered", () => {

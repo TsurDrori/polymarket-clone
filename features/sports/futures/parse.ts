@@ -40,10 +40,13 @@ export type SportsCardModel = {
   event: PolymarketEvent;
 };
 
-const GENERIC_LEAGUE_SLUGS = new Set([
+const EXCLUDED_SURFACE_TAG_SLUGS = new Set([
   "sports",
   "games",
   "hide-from-new",
+]);
+
+const BROAD_SURFACE_TAG_SLUGS = new Set([
   "basketball",
   "soccer",
   "football",
@@ -52,6 +55,12 @@ const GENERIC_LEAGUE_SLUGS = new Set([
   "tennis",
   "cricket",
   "esports",
+  "boxing",
+  "golf",
+  "pickleball",
+  "rugby",
+  "combat-sports",
+  "wrestling",
 ]);
 
 const LEAGUE_PRIORITY = [
@@ -64,10 +73,112 @@ const LEAGUE_PRIORITY = [
   "mlb",
   "wta",
   "atp",
+  "fifa-world-cup",
+  "world-cup",
   "league-of-legends",
   "counter-strike-2",
   "dota-2",
 ] as const;
+
+const KNOWN_SURFACE_TAG_SLUGS = new Set([
+  ...LEAGUE_PRIORITY,
+  "american-hockey-league",
+  "aba-league",
+  "a-league-soccer",
+  "bundesliga",
+  "boxing",
+  "brazil-serie-a",
+  "brazil-serie-b",
+  "cba",
+  "cfb",
+  "chile-primera",
+  "chinese-super-league",
+  "colombia-primera-a",
+  "combat-sports",
+  "coppa-italia",
+  "copa-del-rey",
+  "copa-libertadores",
+  "copa-sudamericana",
+  "counter-strike-2",
+  "coupe-de-france",
+  "cwbb",
+  "czech-extraliga",
+  "czechia-fortuna-liga",
+  "deutsche-eishockey-liga",
+  "denmark-superliga",
+  "dfb-pokal",
+  "dota-2",
+  "efl-championship",
+  "efl-cup",
+  "egypt-premier-league",
+  "euroleague-basketball",
+  "europa-conference-league",
+  "european-rugby-champions-cup",
+  "eredivisie",
+  "f1",
+  "fifa-world-cup",
+  "formula1",
+  "germany-bbl",
+  "golf",
+  "greek-basketball-league",
+  "international",
+  "ipl",
+  "j2-league",
+  "japan-b-league",
+  "japan-j-league",
+  "kbl",
+  "kbo",
+  "k-league",
+  "la-liga",
+  "la-liga-2",
+  "league-of-legends",
+  "legends",
+  "liga-endesa",
+  "liga-mx",
+  "ligue-1",
+  "ligue-2",
+  "lnb",
+  "mls",
+  "morocco-botola-pro",
+  "nfl-draft",
+  "norway-eliteserien",
+  "peru-liga-1",
+  "pga",
+  "pickleball",
+  "premiership-rugby",
+  "primeira-liga",
+  "pro-a",
+  "psl",
+  "romania-superliga",
+  "saudi-professional-league",
+  "serie-a",
+  "serie-b",
+  "super-rugby-pacific",
+  "swedish-hockey-league",
+  "top-14",
+  "turkey-bsl",
+  "uefa-europa-conference-league",
+  "uel",
+  "united-rugby-championship",
+  "vtb-united-league",
+  "world-cup",
+]);
+
+const SURFACE_TAG_KEYWORDS = [
+  "championship",
+  "cup",
+  "draft",
+  "league",
+  "liga",
+  "ligue",
+  "masters",
+  "open",
+  "playoff",
+  "playoffs",
+  "prix",
+  "series",
+  "tournament",
+];
 
 const LEAGUE_LABEL_OVERRIDES: Record<string, string> = {
   nba: "NBA",
@@ -82,8 +193,10 @@ const LEAGUE_LABEL_OVERRIDES: Record<string, string> = {
   "league-of-legends": "League of Legends",
   "counter-strike-2": "Counter-Strike 2",
   "dota-2": "Dota 2",
+  "fifa-world-cup": "FIFA World Cup",
   "premier-league": "EPL",
   formula1: "F1",
+  "world-cup": "World Cup",
 };
 
 const clampProbability = (value: number): number => {
@@ -129,22 +242,49 @@ const formatSportsVolume = (value: number): string => {
   return `$${Math.round(value)}`;
 };
 
+const hasSurfaceKeyword = (value: string): boolean => {
+  const normalized = normalizeSlug(value);
+  return SURFACE_TAG_KEYWORDS.some((keyword) => normalized.includes(keyword));
+};
+
+const isShortSurfaceCode = (value: string): boolean => {
+  const trimmed = value.trim();
+  return (
+    trimmed.length > 0 &&
+    trimmed.length <= 4 &&
+    trimmed === trimmed.toUpperCase() &&
+    /^[A-Z0-9 .&+-]+$/.test(trimmed)
+  );
+};
+
+const getSurfaceTagCandidates = (event: PolymarketEvent): PolymarketTag[] =>
+  event.tags.filter((tag) => !EXCLUDED_SURFACE_TAG_SLUGS.has(normalizeSlug(tag.slug)));
+
 const getPreferredTag = (event: PolymarketEvent): PolymarketTag | undefined => {
-  const candidates = event.tags.filter((tag) => {
-    const slug = normalizeSlug(tag.slug);
-    return !["sports", "games", "hide-from-new"].includes(slug);
-  });
+  const candidates = getSurfaceTagCandidates(event);
 
   for (const slug of LEAGUE_PRIORITY) {
     const priorityTag = candidates.find((tag) => normalizeSlug(tag.slug) === slug);
     if (priorityTag) return priorityTag;
   }
 
-  const specificTag = candidates.find(
-    (tag) => !GENERIC_LEAGUE_SLUGS.has(normalizeSlug(tag.slug)),
+  const recognizedTag = candidates.find((tag) =>
+    KNOWN_SURFACE_TAG_SLUGS.has(normalizeSlug(tag.slug)),
   );
+  if (recognizedTag) return recognizedTag;
 
-  return specificTag ?? candidates[0];
+  const keywordTag = candidates.find((tag) => {
+    const slug = normalizeSlug(tag.slug);
+    return hasSurfaceKeyword(slug) || hasSurfaceKeyword(tag.label);
+  });
+  if (keywordTag) return keywordTag;
+
+  const broadSurfaceTag = candidates.find((tag) =>
+    BROAD_SURFACE_TAG_SLUGS.has(normalizeSlug(tag.slug)),
+  );
+  if (broadSurfaceTag) return broadSurfaceTag;
+
+  return candidates.find((tag) => isShortSurfaceCode(tag.label));
 };
 
 const hasGamesSemantics = (event: PolymarketEvent): boolean =>
@@ -254,20 +394,22 @@ export const isSportsCardEvent = (event: PolymarketEvent): boolean => {
 };
 
 export const getSportsCardLeague = (event: PolymarketEvent): SportsCardLeague => {
+  if (event.eventMetadata?.league && typeof event.eventMetadata.league === "string") {
+    const slug = normalizeSlug(event.eventMetadata.league);
+    if (slug.length > 0) {
+      return {
+        slug,
+        label: normalizeLabel(slug, event.eventMetadata.league),
+      };
+    }
+  }
+
   const preferredTag = getPreferredTag(event);
   if (preferredTag) {
     const slug = normalizeSlug(preferredTag.slug);
     return {
       slug,
       label: normalizeLabel(slug, preferredTag.label),
-    };
-  }
-
-  if (event.eventMetadata?.league && typeof event.eventMetadata.league === "string") {
-    const slug = normalizeSlug(event.eventMetadata.league);
-    return {
-      slug,
-      label: normalizeLabel(slug, event.eventMetadata.league),
     };
   }
 

@@ -1,14 +1,14 @@
 import { listEventsKeyset } from "@/features/events/api/gamma";
 import type { PolymarketEvent } from "@/features/events/types";
-import { isEventVisible } from "@/shared/lib/tags";
 import { getSportsCardLeague, isSportsCardEvent } from "./parse";
 
 const PAGE_LIMIT = 50;
-const ALL_SURFACE_MIN_PAGES = 3;
-const ALL_SURFACE_MAX_PAGES = 5;
-const LEAGUE_SURFACE_MIN_PAGES = 2;
-const LEAGUE_SURFACE_MAX_PAGES = 10;
-const TARGET_LEAGUE_CARD_COUNT = 12;
+const ALL_SURFACE_MIN_PAGES = 5;
+const ALL_SURFACE_MAX_PAGES = 10;
+const LEAGUE_SURFACE_MIN_PAGES = 4;
+const LEAGUE_SURFACE_MAX_PAGES = 12;
+const TARGET_BASE_LEAGUE_COUNT = 24;
+const TARGET_LEAGUE_CARD_COUNT = 20;
 
 const countLeagueCards = (
   events: ReadonlyArray<PolymarketEvent>,
@@ -18,6 +18,16 @@ const countLeagueCards = (
     if (!isSportsCardEvent(event)) return false;
     return getSportsCardLeague(event).slug === desiredLeagueSlug;
   }).length;
+
+const countSurfaceLeagues = (events: ReadonlyArray<PolymarketEvent>): number =>
+  new Set(
+    events
+      .filter(isSportsCardEvent)
+      .map((event) => getSportsCardLeague(event).slug),
+  ).size;
+
+const isVisibleSportsCardEvent = (event: PolymarketEvent): boolean =>
+  !event.restricted && event.tags.every((tag) => !tag.forceHide);
 
 export async function getSportsCardWorkingSet({
   desiredLeagueSlug,
@@ -50,15 +60,20 @@ export async function getSportsCardWorkingSet({
       if (seen.has(event.id)) continue;
       seen.add(event.id);
 
-      if (!isEventVisible(event) || event.restricted) continue;
+      if (!isVisibleSportsCardEvent(event)) continue;
       events.push(event);
     }
 
     if (!nextCursor) break;
 
     if (pageCount >= minimumPages) {
-      if (!desiredLeagueSlug) break;
-      if (countLeagueCards(events, desiredLeagueSlug) >= TARGET_LEAGUE_CARD_COUNT) {
+      if (!desiredLeagueSlug) {
+        if (countSurfaceLeagues(events) >= TARGET_BASE_LEAGUE_COUNT) {
+          break;
+        }
+      } else if (
+        countLeagueCards(events, desiredLeagueSlug) >= TARGET_LEAGUE_CARD_COUNT
+      ) {
         break;
       }
     }
