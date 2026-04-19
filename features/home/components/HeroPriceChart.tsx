@@ -8,7 +8,7 @@ type HeroPriceChartProps = {
 };
 
 const VIEWBOX_WIDTH = 360;
-const VIEWBOX_HEIGHT = 220;
+const VIEWBOX_HEIGHT = 198;
 const PADDING = {
   top: 12,
   right: 42,

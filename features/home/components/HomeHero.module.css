@@ -202,6 +202,9 @@
 .sourceTrack {
   display: flex;
   flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   animation: newsTicker 25s linear infinite;
 }
 
@@ -393,8 +396,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  height: 40px;
   min-height: 40px;
   padding-left: 20px;
+  overflow: visible;
 }
 
 .dotGroup,

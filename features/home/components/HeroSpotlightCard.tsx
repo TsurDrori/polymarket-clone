@@ -66,26 +66,26 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
         </div>
       </header>
 
-      <div className={styles.priceRow}>
-        <div className={styles.spotlightPrice}>
-          {spotlight.tokenId ? (
-            <PriceCell tokenId={spotlight.tokenId} formatKind="pct" />
-          ) : (
-            formatPct(spotlight.chance)
-          )}{" "}
-          chance
-        </div>
-        <span
-          className={`${styles.priceDelta} ${
-            spotlight.dayChange >= 0 ? styles.deltaUp : styles.deltaDown
-          }`.trim()}
-        >
-          {formatChangeLabel(spotlight.dayChange)}
-        </span>
-      </div>
-
       <div className={styles.spotlightBody}>
         <div className={styles.spotlightCopy}>
+          <div className={styles.priceRow}>
+            <div className={styles.spotlightPrice}>
+              {spotlight.tokenId ? (
+                <PriceCell tokenId={spotlight.tokenId} formatKind="pct" />
+              ) : (
+                formatPct(spotlight.chance)
+              )}{" "}
+              chance
+            </div>
+            <span
+              className={`${styles.priceDelta} ${
+                spotlight.dayChange >= 0 ? styles.deltaUp : styles.deltaDown
+              }`.trim()}
+            >
+              {formatChangeLabel(spotlight.dayChange)}
+            </span>
+          </div>
+
           <div className={styles.outcomeRow}>
             <Link href={spotlight.href} className={`${styles.outcomePill} ${styles.outcomeYes}`}>
               Yes

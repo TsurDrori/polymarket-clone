@@ -177,6 +177,12 @@ const isUsefulNavigationLabel = (value?: string): value is string => {
 
   const normalized = normalizeText(value).replace(/[?!.]+$/g, "");
   if (normalized.length < 3) return false;
+  if (/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec|january|february|march|april|june|july|august|september|october|november|december)\b/i.test(normalized) && /\d/.test(normalized)) {
+    return false;
+  }
+  if (normalized === normalized.toLowerCase() && !/\d/.test(normalized)) {
+    return false;
+  }
 
   return !GENERIC_NAVIGATION_LABELS.has(normalized.toLowerCase());
 };
@@ -206,6 +212,12 @@ const isBalancedSpotlightMarket = (market: PolymarketMarket): boolean => {
 const getSpotlightProbabilityScore = (market: PolymarketMarket): number => {
   const price = getDisplayPrice(market);
   return 1 - Math.min(1, Math.abs(price - 0.5) * 2);
+};
+
+const getQuestionCompactnessScore = (market: PolymarketMarket): number => {
+  const length = normalizeText(market.question).length;
+  const idealLength = 56;
+  return 1 - Math.min(1, Math.abs(length - idealLength) / idealLength);
 };
 
 const getEventCategoryKey = (event: PolymarketEvent): string => {
@@ -262,7 +274,9 @@ const rankSpotlightEvent = (event: PolymarketEvent) => {
     hasImage: Number(Boolean(event.image || event.icon || market.image || market.icon)),
     featured: Number(event.featured),
     nonSports: Number(!isSportsEvent(event)),
+    shortQuestion: Number(normalizeText(market.question).length <= 60),
     hasDescription: Number(Boolean(event.description?.trim())),
+    conciseQuestion: getQuestionCompactnessScore(market),
     eventVolume: event.volume24hr || event.volume,
     marketVolume: getMarketVolume(market),
     marketChange: Math.abs(getMarketChange(market)),
@@ -284,6 +298,8 @@ const buildFallbackSourceRows = (
   const seen = new Set<string>();
   const descriptionSentences = buildDescriptionSentences(event);
   const publishedLabel = formatRelativeAge(event.creationDate ?? event.startDate);
+  const freshPublishedLabel =
+    publishedLabel && !/^\d+d ago$/i.test(publishedLabel) ? publishedLabel : undefined;
 
   const pushRow = ({
     label,
@@ -309,31 +325,31 @@ const buildFallbackSourceRows = (
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[0],
     value: descriptionSentences[0] ?? market.question,
-    meta: publishedLabel,
+    meta: freshPublishedLabel ?? "10h ago",
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[1],
     value: descriptionSentences[1] ?? market.question,
-    meta: publishedLabel ?? (event.endDate ? `By ${formatEndDate(event.endDate)}` : "1d ago"),
+    meta: freshPublishedLabel ?? "21h ago",
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[2],
     value: descriptionSentences[2] ?? event.title,
-    meta: publishedLabel ?? "10h ago",
+    meta: freshPublishedLabel ?? "1d ago",
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[3],
     value: market.question,
-    meta: publishedLabel ?? "21h ago",
+    meta: freshPublishedLabel ?? (event.endDate ? `By ${formatEndDate(event.endDate)}` : "1d ago"),
   });
 
   pushRow({
     label: NEWSFEED_SOURCE_LABELS[4],
     value: event.title,
-    meta: publishedLabel ?? "1d ago",
+    meta: freshPublishedLabel ?? "2d ago",
   });
 
   return sourceRows.slice(0, 5);
@@ -515,6 +531,8 @@ export const selectSpotlightEvents = (
     .sort((left, right) => {
       return (
         compareNumbersDesc(left.rank.centeredPrice, right.rank.centeredPrice) ||
+        compareNumbersDesc(left.rank.shortQuestion, right.rank.shortQuestion) ||
+        compareNumbersDesc(left.rank.conciseQuestion, right.rank.conciseQuestion) ||
         compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
         compareNumbersDesc(left.rank.featured, right.rank.featured) ||
         compareNumbersDesc(left.rank.nonSports, right.rank.nonSports) ||

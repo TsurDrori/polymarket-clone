@@ -11,8 +11,29 @@ type HomeHeroProps = {
   hero: HomeHeroModel;
 };
 
+const getInitialSpotlightIndex = (
+  spotlights: ReadonlyArray<HomeHeroModel["spotlights"][number]>,
+): number =>
+  spotlights.reduce(
+    (bestIndex, spotlight, index, allSpotlights) => {
+      const currentScore =
+        Number(Boolean(spotlight.chart)) +
+        (1 - Math.min(1, Math.abs(spotlight.market.question.length - 56) / 56));
+      const bestSpotlight = allSpotlights[bestIndex];
+      const bestScore =
+        Number(Boolean(bestSpotlight?.chart)) +
+        (1 -
+          Math.min(1, Math.abs((bestSpotlight?.market.question.length ?? 56) - 56) / 56));
+
+      return currentScore > bestScore ? index : bestIndex;
+    },
+    0,
+  );
+
 export function HomeHero({ hero }: HomeHeroProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(() =>
+    getInitialSpotlightIndex(hero.spotlights),
+  );
   const hasMultipleSpotlights = hero.spotlights.length > 1;
 
   if (!hero.spotlight || hero.spotlights.length === 0) {
