@@ -52,10 +52,21 @@
     "event_type": "price_change"
   },
 
+  "lastTradePrice": {
+    "asset_id": "<<tokenId-yes>>",
+    "event_type": "last_trade_price",
+    "market": "0x<<conditionId>>",
+    "price": "0.998",
+    "side": "BUY",
+    "size": "125",
+    "timestamp": "1776372815000"
+  },
+
   "notes": [
     "All numeric fields in WS messages are JSON STRINGS, not numbers (unlike Gamma REST where lastTradePrice/bestBid/bestAsk are numbers).",
     "The first message after subscribing is an array of book snapshots (one per subscribed asset_id).",
     "Subsequent price_change messages arrive as plain objects.",
+    "last_trade_price arrives as a plain object and carries the latest executed trade price as a string.",
     "Send PING every ~10s to keep the connection alive; server responds PONG.",
     "custom_feature_enabled:true is NOT required for book/price_change — only for the optional best_bid_ask/new_market/market_resolved events."
   ]
