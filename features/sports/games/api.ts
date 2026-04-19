@@ -2,11 +2,10 @@ import { GammaError } from "@/features/events/api/gamma";
 import type { SportsGameEvent } from "./parse";
 
 const GAMMA_BASE = "https://gamma-api.polymarket.com";
-const PAGE_LIMIT = 12;
-const ALL_LEAGUE_MIN_PAGES = 6;
-const ALL_LEAGUE_MAX_PAGES = 6;
-const LEAGUE_MIN_PAGES = 4;
-const LEAGUE_MAX_PAGES = 14;
+const PAGE_LIMIT = 250;
+const ALL_LEAGUE_TARGET_EVENTS = 750;
+const ALL_LEAGUE_MAX_PAGES = 4;
+const LEAGUE_MAX_PAGES = 4;
 const TARGET_LEAGUE_ROWS = 8;
 
 type RawTag = {
@@ -201,6 +200,9 @@ const parseEvent = (raw: RawEvent): SportsGameEvent => {
   };
 };
 
+const isPseudoSportsGameEvent = (event: SportsGameEvent): boolean =>
+  event.slug.endsWith("-more-markets") || event.title.endsWith(" - More Markets");
+
 const parseSportsGameEvents = (payload: unknown): SportsGameEvent[] => {
   if (!Array.isArray(payload)) return [];
   const events: SportsGameEvent[] = [];
@@ -209,6 +211,7 @@ const parseSportsGameEvents = (payload: unknown): SportsGameEvent[] => {
     if (!isValidRawEvent(raw)) continue;
     const event = parseEvent(raw);
     if (event.markets.length === 0) continue;
+    if (isPseudoSportsGameEvent(event)) continue;
     events.push(event);
   }
 
@@ -313,8 +316,6 @@ export async function getSportsGamesWorkingSet({
   const seen = new Set<string>();
   let cursor: string | undefined;
   let pageCount = 0;
-
-  const minimumPages = desiredLeagueSlug ? LEAGUE_MIN_PAGES : ALL_LEAGUE_MIN_PAGES;
   const maximumPages = desiredLeagueSlug ? LEAGUE_MAX_PAGES : ALL_LEAGUE_MAX_PAGES;
 
   while (pageCount < maximumPages) {
@@ -329,9 +330,12 @@ export async function getSportsGamesWorkingSet({
 
     if (!nextCursor) break;
 
-    if (pageCount >= minimumPages) {
-      if (!desiredLeagueSlug) break;
-      if (countLeagueRows(events, desiredLeagueSlug) >= TARGET_LEAGUE_ROWS) break;
+    if (desiredLeagueSlug) {
+      if (countLeagueRows(events, desiredLeagueSlug) >= TARGET_LEAGUE_ROWS) {
+        break;
+      }
+    } else if (events.length >= ALL_LEAGUE_TARGET_EVENTS) {
+      break;
     }
 
     cursor = nextCursor;

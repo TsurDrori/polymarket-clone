@@ -155,6 +155,62 @@ describe("sports games parser", () => {
     expect(row?.total).toHaveLength(0);
   });
 
+  it("composes 3-way soccer moneylines from separate yes/no markets", () => {
+    const event = buildEvent({
+      title: "AZ vs. NEC",
+      teams: [],
+      markets: [
+        buildMarket({
+          id: "az-moneyline",
+          sportsMarketType: "moneyline",
+          question: "Will AZ win on 2026-04-19?",
+          groupItemTitle: "AZ",
+          outcomes: ["Yes", "No"],
+          outcomePrices: [0.385, 0.615],
+          clobTokenIds: ["az-yes", "az-no"],
+          volume24hr: 6_700,
+        }),
+        buildMarket({
+          id: "draw-moneyline",
+          sportsMarketType: "moneyline",
+          question: "Will AZ vs. NEC end in a draw?",
+          groupItemTitle: "Draw (AZ vs. NEC)",
+          outcomes: ["Yes", "No"],
+          outcomePrices: [0.25, 0.75],
+          clobTokenIds: ["draw-yes", "draw-no"],
+          volume24hr: 450,
+        }),
+        buildMarket({
+          id: "nec-moneyline",
+          sportsMarketType: "moneyline",
+          question: "Will NEC win on 2026-04-19?",
+          groupItemTitle: "NEC",
+          outcomes: ["Yes", "No"],
+          outcomePrices: [0.395, 0.605],
+          clobTokenIds: ["nec-yes", "nec-no"],
+          volume24hr: 198_500,
+        }),
+      ],
+    });
+
+    const [row] = buildSportsGameRows([event]);
+
+    expect(row?.competitors.map((competitor) => competitor.name)).toEqual([
+      "AZ",
+      "NEC",
+    ]);
+    expect(row?.moneyline.map((entry) => entry.label)).toEqual([
+      "AZ",
+      "DRAW",
+      "NEC",
+    ]);
+    expect(row?.moneyline.map((entry) => entry.tokenId)).toEqual([
+      "az-yes",
+      "draw-yes",
+      "nec-yes",
+    ]);
+  });
+
   it("filters rows by normalized league slug", () => {
     const rows = buildSportsGameRows([
       buildEvent({

@@ -115,6 +115,11 @@ export type SportsPreviewHydrationSeed = {
   bestAsk: number;
 };
 
+type SportsMoneylineSelection = {
+  cells: SportsbookMarketCell[];
+  competitorLabels: string[];
+};
+
 const GENERIC_LEAGUE_SLUGS = new Set([
   "sports",
   "games",
@@ -361,6 +366,58 @@ const getFallbackAbbreviation = (name: string): string => {
 const normalizeName = (value: string): string =>
   value.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, " ");
 
+const isYesNoOutcomes = (outcomes: ReadonlyArray<string>): boolean =>
+  outcomes.length === 2 &&
+  outcomes.every((outcome) => {
+    const normalized = normalizeName(outcome);
+    return normalized === "yes" || normalized === "no";
+  });
+
+const isDrawMoneylineMarket = (market: SportsGameMarket): boolean =>
+  /draw/i.test(`${market.groupItemTitle ?? ""} ${market.question}`);
+
+const cleanCompetitorLabel = (value: string): string => {
+  const withoutSuffix = value
+    .replace(/\s+\([^)]*\)\s*$/u, "")
+    .replace(/^Will\s+/iu, "")
+    .replace(/\s+win on .+$/iu, "")
+    .trim();
+
+  return withoutSuffix;
+};
+
+const extractTitleCompetitors = (title: string): string[] => {
+  const withoutSuffix = title.split(" - ")[0] ?? title;
+  const withoutPrefix = withoutSuffix.includes(":")
+    ? (withoutSuffix.split(":").at(-1) ?? withoutSuffix).trim()
+    : withoutSuffix.trim();
+
+  return withoutPrefix
+    .split(/\s+vs\.?\s+/iu)
+    .map((part) => cleanCompetitorLabel(part))
+    .filter(Boolean)
+    .slice(0, 2);
+};
+
+const extractMoneylineCompetitorLabel = (
+  market: SportsGameMarket,
+): string | undefined => {
+  if (isDrawMoneylineMarket(market)) {
+    return "Draw";
+  }
+
+  if (market.groupItemTitle) {
+    return cleanCompetitorLabel(market.groupItemTitle);
+  }
+
+  const questionMatch = market.question.match(/^Will\s+(.+?)\s+win on /iu);
+  if (questionMatch?.[1]) {
+    return cleanCompetitorLabel(questionMatch[1]);
+  }
+
+  return undefined;
+};
+
 const findTeamForOutcome = (
   outcome: string,
   teams: ReadonlyArray<SportsGameTeam>,
@@ -393,7 +450,7 @@ const getOutcomeShortLabel = (
 
 const buildCompetitors = (
   event: SportsGameEvent,
-  moneylineMarket?: SportsGameMarket,
+  competitorLabels: ReadonlyArray<string>,
 ): SportsRowCompetitor[] => {
   if (event.teams.length >= 2) {
     return event.teams.slice(0, 2).map((team) => ({
@@ -405,14 +462,14 @@ const buildCompetitors = (
     }));
   }
 
-  const outcomes = moneylineMarket?.outcomes
-    .filter((outcome) => !/draw/i.test(outcome))
-    .slice(0, 2);
+  const titleCompetitors = extractTitleCompetitors(event.title);
+  const fallbackLabels =
+    titleCompetitors.length >= 2 ? titleCompetitors : [...competitorLabels];
 
-  return (outcomes ?? []).map((outcome) => ({
-    key: normalizeSlug(outcome),
-    name: outcome,
-    abbreviation: getFallbackAbbreviation(outcome),
+  return fallbackLabels.slice(0, 2).map((label) => ({
+    key: normalizeSlug(label),
+    name: label,
+    abbreviation: getFallbackAbbreviation(label),
   }));
 };
 
@@ -438,6 +495,94 @@ const buildMoneylineCells = (
   return market.outcomes.map((outcome, outcomeIndex) =>
     buildMarketCell(market, outcomeIndex, getOutcomeShortLabel(outcome, teams)),
   );
+};
+
+const buildSplitMoneylineCells = (
+  event: SportsGameEvent,
+  markets: ReadonlyArray<SportsGameMarket>,
+): SportsMoneylineSelection => {
+  const orderedCompetitors =
+    event.teams.length >= 2
+      ? event.teams.slice(0, 2).map((team) => team.name)
+      : extractTitleCompetitors(event.title);
+
+  const usedMarketIds = new Set<string>();
+  const cells: SportsbookMarketCell[] = [];
+  const competitorLabels: string[] = [];
+
+  for (const competitor of orderedCompetitors) {
+    const normalizedCompetitor = normalizeName(competitor);
+    const market = markets.find((candidate) => {
+      if (usedMarketIds.has(candidate.id)) return false;
+      if (isDrawMoneylineMarket(candidate)) return false;
+
+      const label = extractMoneylineCompetitorLabel(candidate);
+      if (!label) return false;
+
+      const normalizedLabel = normalizeName(label);
+
+      return (
+        normalizedLabel === normalizedCompetitor ||
+        normalizedLabel.includes(normalizedCompetitor) ||
+        normalizedCompetitor.includes(normalizedLabel)
+      );
+    });
+
+    if (!market) continue;
+
+    usedMarketIds.add(market.id);
+    competitorLabels.push(competitor);
+    cells.push(
+      buildMarketCell(market, 0, getOutcomeShortLabel(competitor, event.teams)),
+    );
+  }
+
+  const drawMarket = markets.find(
+    (candidate) =>
+      !usedMarketIds.has(candidate.id) && isDrawMoneylineMarket(candidate),
+  );
+
+  if (drawMarket) {
+    usedMarketIds.add(drawMarket.id);
+    cells.splice(Math.min(1, cells.length), 0, buildMarketCell(drawMarket, 0, "DRAW"));
+  }
+
+  const remainingMarkets = markets.filter((market) => !usedMarketIds.has(market.id));
+  for (const market of remainingMarkets) {
+    const label = extractMoneylineCompetitorLabel(market);
+    if (!label || /draw/i.test(label)) continue;
+
+    competitorLabels.push(label);
+    cells.push(buildMarketCell(market, 0, getOutcomeShortLabel(label, event.teams)));
+  }
+
+  return {
+    cells,
+    competitorLabels: competitorLabels.filter(Boolean),
+  };
+};
+
+const buildMoneylineSelection = (
+  event: SportsGameEvent,
+): SportsMoneylineSelection => {
+  const moneylineMarkets = [...event.markets]
+    .filter(isMoneylineMarket)
+    .sort(compareMarkets);
+
+  const bundledMarket = moneylineMarkets.find(
+    (market) => !isYesNoOutcomes(market.outcomes),
+  );
+
+  if (bundledMarket) {
+    return {
+      cells: buildMoneylineCells(bundledMarket, event.teams),
+      competitorLabels: bundledMarket.outcomes.filter(
+        (outcome) => !/draw/i.test(outcome),
+      ),
+    };
+  }
+
+  return buildSplitMoneylineCells(event, moneylineMarkets);
 };
 
 const buildSpreadCells = (
@@ -492,10 +637,13 @@ export const buildSportsGameRows = (
 ): SportsbookRowModel[] =>
   events
     .map((event) => {
-      const moneylineMarket = pickMoneylineMarket(event);
+      const moneylineSelection = buildMoneylineSelection(event);
       const spreadMarket = pickSpreadMarket(event);
       const totalMarket = pickTotalMarket(event);
-      const competitors = buildCompetitors(event, moneylineMarket);
+      const competitors = buildCompetitors(
+        event,
+        moneylineSelection.competitorLabels,
+      );
       const league = getEventLeague(event);
 
       return {
@@ -511,7 +659,7 @@ export const buildSportsGameRows = (
         }`,
         eventVolume: getEventVolume(event),
         competitors,
-        moneyline: buildMoneylineCells(moneylineMarket, event.teams),
+        moneyline: moneylineSelection.cells,
         spread: buildSpreadCells(spreadMarket, event.teams),
         total: buildTotalCells(totalMarket),
         sortTime: getSortTime(event),
