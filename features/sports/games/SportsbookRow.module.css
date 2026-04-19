@@ -1,0 +1,17 @@
+.row {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-page) 74%, transparent);
+  padding: 16px;
+}
+
+@media (min-width: 1024px) {
+  .row {
+    grid-template-columns: 152px minmax(240px, 1.2fr) repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: 16px;
+    padding: 18px 16px;
+  }
+}

@@ -1,0 +1,50 @@
+.cell {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.team {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.logo,
+.fallbackLogo {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.fallbackLogo {
+  display: inline-grid;
+  place-items: center;
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.record {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.2;
+}

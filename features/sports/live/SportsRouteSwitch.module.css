@@ -1,0 +1,12 @@
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 8px 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
