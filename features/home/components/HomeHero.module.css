@@ -1,0 +1,513 @@
+.desktopHero {
+  display: none;
+}
+
+.heroRow {
+  display: grid;
+  gap: 20px;
+}
+
+.spotlightCard {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  box-shadow: var(--surface-shadow);
+}
+
+.spotlightHeader,
+.spotlightFooter,
+.chartHeader,
+.chartCaption,
+.railHeadingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.spotlightIntro {
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+}
+
+.thumbnailWrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  background: var(--bg-soft);
+}
+
+.thumbnail {
+  object-fit: cover;
+}
+
+.breadcrumb {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.spotlightTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+
+.spotlightTitleLink {
+  color: inherit;
+}
+
+.spotlightTitleLink:hover {
+  color: var(--text-secondary);
+}
+
+.utilityIcons {
+  display: flex;
+  gap: 8px;
+}
+
+.utilityIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  color: var(--text-muted);
+}
+
+.priceRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: flex-end;
+}
+
+.spotlightPrice {
+  color: var(--accent-brand);
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.priceDelta {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.deltaUp {
+  color: var(--accent-yes);
+}
+
+.deltaDown {
+  color: var(--accent-no);
+}
+
+.spotlightBody {
+  display: grid;
+  gap: 18px;
+}
+
+.spotlightCopy {
+  display: grid;
+  gap: 14px;
+}
+
+.outcomeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.outcomePill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  min-width: 94px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.outcomeYes {
+  background: var(--accent-yes-soft);
+  color: var(--accent-yes);
+}
+
+.outcomeNo {
+  background: var(--accent-no-soft);
+  color: var(--accent-no);
+}
+
+.headline,
+.summary {
+  margin: 0;
+}
+
+.headline {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.summary {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sourceSection {
+  display: grid;
+  gap: 10px;
+}
+
+.sourceMeta {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sourceList,
+.noteList,
+.railList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sourceList,
+.railList {
+  display: grid;
+}
+
+.sourceItem,
+.noteItem,
+.railItem {
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.sourceItem:first-child,
+.noteItem:first-child,
+.railItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.sourceLabel {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sourceValue {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.noteList {
+  display: grid;
+  gap: 8px;
+}
+
+.noteItem {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.noteDot {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--accent-brand);
+}
+
+.noteValue {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.chartPanel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--bg-surface-alt) 72%, transparent);
+}
+
+.chartLabel,
+.chartCaption,
+.spotlightFooter {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chartFigure {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.chartSurface {
+  width: 100%;
+  height: auto;
+}
+
+.chartFallback {
+  min-height: 228px;
+  display: grid;
+  gap: 8px;
+  place-items: center;
+  text-align: center;
+}
+
+.chartFallbackTitle {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.chartFallbackCopy {
+  max-width: 28ch;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.heroRail {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+
+.railModule {
+  display: grid;
+  gap: 10px;
+}
+
+.railHeading {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.railHeadingCopy {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.railList {
+  gap: 0;
+}
+
+.railLink {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-soft);
+}
+
+.railLink:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.railRank {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.railBody {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.railTitle {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.railSubtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.railStats {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.railChance,
+.railVolume {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 4px;
+}
+
+.dotGroup,
+.footerChipGroup,
+.compactChipGroup {
+  display: flex;
+  align-items: center;
+}
+
+.dotGroup {
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+}
+
+.dotActive {
+  width: 24px;
+  background: var(--text-primary);
+}
+
+.footerChipGroup,
+.compactChipGroup {
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.footerChipGroup::-webkit-scrollbar,
+.compactChipGroup::-webkit-scrollbar {
+  display: none;
+}
+
+.footerChip,
+.compactChip,
+.exploreLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.footerChip:hover,
+.compactChip:hover,
+.exploreLink:hover,
+.spotlightTitleLink:hover,
+.railLink:hover {
+  color: var(--text-primary);
+}
+
+.exploreLink {
+  min-width: 176px;
+}
+
+.compactDiscovery {
+  display: grid;
+  gap: 14px;
+}
+
+.compactKicker {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.compactChipGroup {
+  padding-bottom: 4px;
+}
+
+.compactChipActive {
+  border-color: color-mix(in srgb, var(--accent-brand) 58%, var(--border));
+  background: color-mix(in srgb, var(--accent-brand-soft) 72%, var(--bg-surface));
+  color: var(--accent-brand);
+}
+
+@media (max-width: 768px) {
+  .compactDiscovery {
+    display: grid;
+  }
+}
+
+@media (min-width: 769px) {
+  .desktopHero {
+    display: grid;
+    gap: 18px;
+  }
+
+  .compactDiscovery {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .heroRow {
+    grid-template-columns: minmax(0, 2.25fr) minmax(280px, 1fr);
+    align-items: start;
+  }
+
+  .spotlightBody {
+    grid-template-columns: minmax(0, 0.95fr) minmax(300px, 1.25fr);
+    align-items: stretch;
+  }
+}
