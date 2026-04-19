@@ -17,7 +17,10 @@ const formatChangeLabel = (change: number): string =>
 
 export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
   const imageSrc = getEventImage(spotlight.event) ?? "/placeholder.svg";
-  const summary = spotlight.summary || spotlight.headline;
+  const sourceRows =
+    spotlight.sourceRows.length > 1
+      ? [...spotlight.sourceRows, ...spotlight.sourceRows]
+      : spotlight.sourceRows;
 
   return (
     <article className={styles.spotlightCard}>
@@ -87,38 +90,43 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
             </Link>
           </div>
 
-          <p className={styles.summary}>{summary}</p>
-
           <div className={styles.sourceSection}>
-            <span className={styles.sourceMeta}>Derived market context</span>
-            <ul className={styles.sourceList}>
-              {spotlight.sourceRows.map((row) => (
-                <li key={`${row.label}-${row.value}`} className={styles.sourceItem}>
-                  <div className={styles.sourceBody}>
-                    <span className={styles.sourceHeader}>
-                      <span className={styles.sourceLabel}>{row.label}</span>
-                      {row.meta ? (
-                        <span className={styles.sourceMetaText}>{row.meta}</span>
-                      ) : null}
-                    </span>
-                    <span className={styles.sourceValue}>{row.value}</span>
-                  </div>
-                  {row.stat ? (
-                    <span
-                      className={`${styles.sourceStat} ${
-                        row.statTone === "up"
-                          ? styles.sourceStatUp
-                          : row.statTone === "down"
-                            ? styles.sourceStatDown
-                            : ""
-                      }`.trim()}
-                    >
-                      {row.stat}
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            <span className={styles.sourceMeta}>Market feed</span>
+            <div className={styles.sourceTicker} data-feed-ticker>
+              <ul className={styles.sourceTrack} data-feed-track>
+                {sourceRows.map((row, index) => (
+                  <li
+                    key={`${row.label}-${row.value}-${index}`}
+                    className={styles.sourceItem}
+                    aria-hidden={index >= spotlight.sourceRows.length}
+                  >
+                    <div className={styles.sourceBody}>
+                      <span className={styles.sourceHeader}>
+                        <span className={styles.sourceMarker} aria-hidden="true" />
+                        <span className={styles.sourceLabel}>{row.label}</span>
+                        {row.meta ? (
+                          <span className={styles.sourceMetaText}>{row.meta}</span>
+                        ) : null}
+                      </span>
+                      <span className={styles.sourceValue}>{row.value}</span>
+                    </div>
+                    {row.stat ? (
+                      <span
+                        className={`${styles.sourceStat} ${
+                          row.statTone === "up"
+                            ? styles.sourceStatUp
+                            : row.statTone === "down"
+                              ? styles.sourceStatDown
+                              : ""
+                        }`.trim()}
+                      >
+                        {row.stat}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 

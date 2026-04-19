@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { HeroChip } from "../selectors";
 import styles from "./HomeHero.module.css";
 
@@ -9,6 +10,8 @@ type HeroFooterNavProps = {
 const FOOTER_DOTS = 5;
 
 export function HeroFooterNav({ chips }: HeroFooterNavProps) {
+  const subjectChips = chips.filter((chip) => chip.slug !== "all").slice(0, 2);
+
   return (
     <div className={styles.footerNav}>
       <div className={styles.dotGroup} aria-label="Spotlight pages">
@@ -21,15 +24,19 @@ export function HeroFooterNav({ chips }: HeroFooterNavProps) {
         ))}
       </div>
 
-      <div className={styles.footerChipGroup} aria-label="Spotlight context chips">
-        {chips.slice(0, 2).map((chip) =>
+      <div className={styles.footerChipGroup} aria-label="Spotlight topic navigation">
+        {subjectChips.map((chip, index) =>
           chip.href ? (
             <Link key={chip.slug} href={chip.href} className={styles.footerChip}>
-              {chip.label}
+              {index === 0 ? <ChevronLeft size={16} /> : null}
+              <span>{chip.label}</span>
+              {index === subjectChips.length - 1 ? <ChevronRight size={16} /> : null}
             </Link>
           ) : (
             <span key={chip.slug} className={styles.footerChip}>
-              {chip.label}
+              {index === 0 ? <ChevronLeft size={16} /> : null}
+              <span>{chip.label}</span>
+              {index === subjectChips.length - 1 ? <ChevronRight size={16} /> : null}
             </span>
           ),
         )}

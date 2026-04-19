@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Activity,
   Bookmark,
@@ -41,6 +42,7 @@ export function Header() {
   const panelRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname() ?? "/";
 
   useEffect(() => {
     return subscribeToThemeChanges(() => {
@@ -222,19 +224,21 @@ export function Header() {
             </button>
           </div>
 
-          <div className={styles.mobileTopics} aria-label="Mobile topics">
-            {HEADER_TOPIC_ITEMS.map((item) =>
-              item.href ? (
-                <Link key={item.label} href={item.href} className={styles.topicPill}>
-                  {item.label}
-                </Link>
-              ) : (
-                <span key={item.label} className={styles.topicPill}>
-                  {item.label}
-                </span>
-              ),
-            )}
-          </div>
+          {pathname === "/" ? null : (
+            <div className={styles.mobileTopics} aria-label="Mobile topics">
+              {HEADER_TOPIC_ITEMS.map((item) =>
+                item.href ? (
+                  <Link key={item.label} href={item.href} className={styles.topicPill}>
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span key={item.label} className={styles.topicPill}>
+                    {item.label}
+                  </span>
+                ),
+              )}
+            </div>
+          )}
         </div>
 
         {isMenuOpen ? (
