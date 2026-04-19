@@ -102,6 +102,12 @@ export type CryptoResolvedSurfaceState = {
   hydrationEvents: ReadonlyArray<PolymarketEvent>;
 };
 
+export const DEFAULT_CRYPTO_FILTERS: CryptoFilterState = {
+  family: "all",
+  time: "all",
+  asset: "all",
+};
+
 const FAMILY_ORDER: readonly CryptoFamily[] = [
   "all",
   "up-down",
@@ -542,20 +548,26 @@ export const parseCryptoSearchParams = (searchParams: {
   time?: SearchParamValue;
   asset?: SearchParamValue;
 }): CryptoFilterState => {
-  const rawFamily = normalizeText(asSingleValue(searchParams.family) ?? "all");
-  const rawTime = normalizeText(asSingleValue(searchParams.time) ?? "all");
-  const rawAsset = normalizeText(asSingleValue(searchParams.asset) ?? "all");
+  const rawFamily = normalizeText(
+    asSingleValue(searchParams.family) ?? DEFAULT_CRYPTO_FILTERS.family,
+  );
+  const rawTime = normalizeText(
+    asSingleValue(searchParams.time) ?? DEFAULT_CRYPTO_FILTERS.time,
+  );
+  const rawAsset = normalizeText(
+    asSingleValue(searchParams.asset) ?? DEFAULT_CRYPTO_FILTERS.asset,
+  );
 
   return {
     family: FAMILY_SET.has(rawFamily as CryptoFamily)
       ? (rawFamily as CryptoFamily)
-      : "all",
+      : DEFAULT_CRYPTO_FILTERS.family,
     time: TIME_SET.has(rawTime as CryptoTimeBucket)
       ? (rawTime as CryptoTimeBucket)
-      : "all",
+      : DEFAULT_CRYPTO_FILTERS.time,
     asset: ASSET_SET.has(rawAsset as CryptoAsset)
       ? (rawAsset as CryptoAsset)
-      : "all",
+      : DEFAULT_CRYPTO_FILTERS.asset,
   };
 };
 

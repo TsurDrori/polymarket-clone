@@ -16,6 +16,7 @@ type CryptoSurfaceProps = {
   cards: ReadonlyArray<CryptoCardModel>;
   initialVisibleCount?: number;
   visibleIncrement?: number;
+  onFiltersChange?: (patch: Partial<CryptoFilterState>) => void;
 };
 
 export function CryptoSurface({
@@ -25,12 +26,17 @@ export function CryptoSurface({
   cards,
   initialVisibleCount,
   visibleIncrement,
+  onFiltersChange,
 }: CryptoSurfaceProps) {
   return (
     <section className={styles.surface}>
       <div className={styles.layout}>
         <div className={styles.rail}>
-          <CryptoFilterRail rail={facets.rail} filters={filters} />
+          <CryptoFilterRail
+            rail={facets.rail}
+            filters={filters}
+            onFiltersChange={onFiltersChange}
+          />
         </div>
 
         <div className={styles.content}>
@@ -43,7 +49,11 @@ export function CryptoSurface({
               </p>
             </div>
 
-            <CryptoFamilyTabs options={facets.familyTabs} filters={filters} />
+            <CryptoFamilyTabs
+              options={facets.familyTabs}
+              filters={filters}
+              onFiltersChange={onFiltersChange}
+            />
           </header>
 
           {cards.length > 0 ? (

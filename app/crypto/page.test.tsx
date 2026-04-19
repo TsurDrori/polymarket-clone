@@ -1,0 +1,110 @@
+import { render } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { PolymarketEvent } from "@/features/events/types";
+
+const { listEventsKeyset, CryptoSurfaceRoute } = vi.hoisted(() => ({
+  listEventsKeyset: vi.fn(),
+  CryptoSurfaceRoute: vi.fn(() => null),
+}));
+
+vi.mock("@/features/events/api/gamma", () => ({
+  listEventsKeyset,
+}));
+
+vi.mock("@/features/crypto/components/CryptoSurfaceRoute", () => ({
+  CryptoSurfaceRoute,
+}));
+
+import CryptoPage from "./page";
+
+const buildEvent = (
+  id: string,
+  overrides: Partial<PolymarketEvent> = {},
+): PolymarketEvent => ({
+  id,
+  ticker: id.toUpperCase(),
+  slug: `${id}-slug`,
+  title: `${id} title`,
+  active: true,
+  closed: false,
+  archived: false,
+  featured: false,
+  restricted: false,
+  liquidity: 10_000,
+  volume: 100_000,
+  volume24hr: 50_000,
+  negRisk: false,
+  showAllOutcomes: true,
+  showMarketImages: false,
+  markets: [
+    {
+      id: `${id}-market`,
+      question: `${id} question`,
+      conditionId: `${id}-condition`,
+      slug: `${id}-market-slug`,
+      outcomes: ["Up", "Down"],
+      outcomePrices: [0.52, 0.48],
+      clobTokenIds: [`${id}-yes`, `${id}-no`],
+      volumeNum: 10_000,
+      liquidityNum: 5_000,
+      lastTradePrice: 0.52,
+      bestBid: 0.51,
+      bestAsk: 0.53,
+      volume24hr: 4_000,
+      oneDayPriceChange: 0.01,
+      spread: 0.01,
+      acceptingOrders: true,
+      closed: false,
+    },
+  ],
+  tags: [
+    { id: `${id}-tag-1`, slug: "crypto", label: "Crypto" },
+    { id: `${id}-tag-2`, slug: "bitcoin", label: "Bitcoin" },
+    { id: `${id}-tag-3`, slug: "up-or-down", label: "Up / Down" },
+  ],
+  ...overrides,
+});
+
+describe("CryptoPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("fetches a bounded working set and hands initial filters to the client route controller", async () => {
+    const events = [buildEvent("btc"), buildEvent("eth")];
+
+    listEventsKeyset.mockResolvedValue({
+      events,
+      nextCursor: "cursor-1",
+    });
+
+    render(
+      await CryptoPage({
+        searchParams: Promise.resolve({
+          family: "hit-price",
+          asset: "bitcoin",
+        }),
+      }),
+    );
+
+    expect(listEventsKeyset).toHaveBeenCalledWith({
+      tagSlug: "crypto",
+      limit: 200,
+      order: "volume24hr",
+      ascending: false,
+    });
+    expect(CryptoSurfaceRoute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        totalCount: 2,
+        initialFilters: {
+          family: "hit-price",
+          time: "all",
+          asset: "bitcoin",
+        },
+        initialVisibleCount: 18,
+        visibleIncrement: 18,
+      }),
+      undefined,
+    );
+  });
+});
