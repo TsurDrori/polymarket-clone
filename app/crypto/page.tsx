@@ -27,12 +27,10 @@ export default async function CryptoPage() {
       <CategoryPage
         eyebrow="Crypto"
         title="Crypto"
-        description="The active crypto surface grouped by explicit asset and market facets when the data supports it, with a safe fallback grid for everything else."
         facets={facets}
         sections={sections}
         events={remainder}
         marketTitle={sections.length > 0 ? "More crypto markets" : "All crypto markets"}
-        marketDescription="Live crypto markets sorted by 24-hour volume."
       />
     </>
   );

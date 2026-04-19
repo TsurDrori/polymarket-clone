@@ -27,10 +27,6 @@ export function Footer() {
               </span>
               <span className={styles.brandText}>Polymarket</span>
             </Link>
-            <p className={styles.brandCopy}>
-              Recruiter-grade Polymarket clone using public market data with a
-              server-first shell and live-price-ready client islands.
-            </p>
           </div>
 
           <nav aria-label="Market categories" className={styles.linkRow}>
@@ -54,18 +50,6 @@ export function Footer() {
               </a>
             ))}
           </nav>
-        </div>
-
-        <div className={styles.legal}>
-          <p className={styles.legalLine}>
-            Adventure One QSS Inc. © 2026 · Built for the PLAEE Frontend
-            Assignment.
-          </p>
-          <p className={styles.disclaimer}>
-            Built by Tsur for the PLAEE Frontend Assignment, April 2026. This
-            clone uses Polymarket public data for interface recreation only and
-            is not an official product or trading venue.
-          </p>
         </div>
       </div>
     </footer>

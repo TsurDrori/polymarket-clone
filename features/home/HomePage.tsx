@@ -179,10 +179,6 @@ export function HomePage({ model }: HomePageProps) {
               Featured markets
             </h1>
           </div>
-          <p className={styles.sectionCopy}>
-            A lighter home surface with one lead market, fast movers, and the
-            highest-volume cards that are safest to wire into realtime next.
-          </p>
         </div>
 
         <div className={styles.featuredLayout}>
@@ -263,10 +259,6 @@ export function HomePage({ model }: HomePageProps) {
               All markets
             </h2>
           </div>
-          <p className={styles.sectionCopy}>
-            Active markets sorted by 24-hour volume. The baseline stays
-            server-rendered, with the card itself remaining the client island.
-          </p>
         </div>
 
         <EventGrid events={exploreEvents} />

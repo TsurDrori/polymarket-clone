@@ -11,9 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Polymarket Clone — PLAEE Assignment",
-  description:
-    "Live-ticking prediction-market dashboard built on Polymarket's Gamma REST and CLOB WebSocket feeds.",
+  title: "Polymarket Clone",
+  description: "Prediction markets across politics, sports, and crypto.",
 };
 
 export default function RootLayout({

@@ -13,13 +13,6 @@ export function Header() {
             </span>
             <span className={styles.logoText}>Polymarket</span>
           </Link>
-
-          <div className={styles.meta}>
-            <span className={styles.metaEyebrow}>Prediction markets</span>
-            <span className={styles.metaCopy}>
-              Server-rendered surfaces over live Polymarket data.
-            </span>
-          </div>
         </div>
 
         <CategoryNav />

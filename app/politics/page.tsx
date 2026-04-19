@@ -24,10 +24,8 @@ export default async function PoliticsPage() {
       <CategoryPage
         eyebrow="Politics"
         title="Politics"
-        description="The biggest politics markets right now, surfaced as a lighter category grid with real topic context instead of bespoke dashboard chrome."
         facets={facets}
         events={visible}
-        marketDescription="Live politics markets sorted by 24-hour volume."
       />
     </>
   );

@@ -11,14 +11,14 @@ export type CategoryFacet = {
 export type CategorySection = {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   events: ReadonlyArray<PolymarketEvent>;
 };
 
 type Props = {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   facets?: ReadonlyArray<CategoryFacet>;
   sections?: ReadonlyArray<CategorySection>;
   events?: ReadonlyArray<PolymarketEvent>;
@@ -56,7 +56,7 @@ export function CategoryPage({
           <p className={styles.kicker}>{eyebrow}</p>
           <h1 className={styles.title}>{title}</h1>
         </div>
-        <p className={styles.description}>{description}</p>
+        {description ? <p className={styles.description}>{description}</p> : null}
       </header>
 
       {facets.length > 0 ? (
@@ -75,7 +75,9 @@ export function CategoryPage({
           <div className={styles.sectionHeader}>
             <div>
               <h2 className={styles.sectionTitle}>{section.title}</h2>
-              <p className={styles.sectionDescription}>{section.description}</p>
+              {section.description ? (
+                <p className={styles.sectionDescription}>{section.description}</p>
+              ) : null}
             </div>
             <span className={styles.sectionMeta}>{section.events.length} markets</span>
           </div>
@@ -88,7 +90,9 @@ export function CategoryPage({
           <div className={styles.sectionHeader}>
             <div>
               <h2 className={styles.sectionTitle}>{marketTitle}</h2>
-              <p className={styles.sectionDescription}>{marketDescription}</p>
+              {marketDescription ? (
+                <p className={styles.sectionDescription}>{marketDescription}</p>
+              ) : null}
             </div>
             <span className={styles.sectionMeta}>{events.length} markets</span>
           </div>
