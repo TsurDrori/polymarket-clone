@@ -1,8 +1,9 @@
 "use client";
 
-import type { HTMLAttributes } from "react";
+import { memo, type HTMLAttributes } from "react";
 import type { PolymarketMarket } from "@/features/events/types";
 import { PriceCell } from "@/features/events/components/PriceCell";
+import { useLivePrice } from "@/features/realtime/hooks";
 import { formatCents, formatPct } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/cn";
 import { Button } from "@/shared/ui/Button";
@@ -34,6 +35,18 @@ const getStaticPrice = (
   return clampPrice(market.lastTradePrice);
 };
 
+const LiveProbabilityBar = memo(function LiveProbabilityBar({
+  tokenId,
+  className,
+}: {
+  tokenId: string;
+  className?: string;
+}) {
+  const { price } = useLivePrice(tokenId);
+
+  return <ProbabilityBar price={price} className={className} />;
+});
+
 export function MarketRow({
   market,
   className,
@@ -54,7 +67,11 @@ export function MarketRow({
           <h2 className={styles.label} title={label}>
             {label}
           </h2>
-          <ProbabilityBar price={yesSeedPrice} className={styles.bar} />
+          {yesTokenId ? (
+            <LiveProbabilityBar tokenId={yesTokenId} className={styles.bar} />
+          ) : (
+            <ProbabilityBar price={yesSeedPrice} className={styles.bar} />
+          )}
         </div>
 
         <div className={styles.headline}>

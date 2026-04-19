@@ -1,11 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "jotai";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import fixture from "@/fixtures/gamma-event-sample.json";
 import { parseEvent } from "@/features/events/api/parse";
 import { PriceCell } from "@/features/events/components/PriceCell";
 import { formatCents, formatPct } from "@/shared/lib/format";
 import { Hydrator } from "./Hydrator";
+
+vi.mock("@/features/realtime/subscriptions", () => ({
+  subscribe: vi.fn(),
+  unsubscribe: vi.fn(),
+}));
 
 const event = parseEvent(fixture.events[0]);
 const market = event.markets[0];

@@ -25,6 +25,11 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/features/realtime/subscriptions", () => ({
+  subscribe: vi.fn(),
+  unsubscribe: vi.fn(),
+}));
+
 const baseEvent = parseEvent(fixture.events[0]);
 const baseMarket = baseEvent.markets[0];
 

@@ -8,6 +8,7 @@ const MAX_RECONNECT_DELAY_MS = 8_000;
 const PREOPEN_BUFFER_LIMIT = 32;
 
 type GetAssetIds = () => ReadonlyArray<string>;
+type OpenCallback = () => void;
 type ReopenCallback = () => void;
 
 type WsClientState = {
@@ -17,6 +18,7 @@ type WsClientState = {
   reconnectDelayMs: number;
   reconnectTimer: ReturnType<typeof setTimeout> | null;
   heartbeatTimer: ReturnType<typeof setInterval> | null;
+  openCallbacks: Set<OpenCallback>;
   reopenCallbacks: Set<ReopenCallback>;
   hasOpenedSuccessfully: boolean;
 };
@@ -35,6 +37,7 @@ const createClientState = (): WsClientState => ({
   reconnectDelayMs: INITIAL_RECONNECT_DELAY_MS,
   reconnectTimer: null,
   heartbeatTimer: null,
+  openCallbacks: new Set(),
   reopenCallbacks: new Set(),
   hasOpenedSuccessfully: false,
 });
@@ -179,6 +182,10 @@ function attachSocketHandlers(state: WsClientState, socket: WebSocket): void {
 
     flushPreOpenBuffer(state);
 
+    for (const callback of state.openCallbacks) {
+      callback();
+    }
+
     if (state.hasOpenedSuccessfully) {
       for (const callback of state.reopenCallbacks) {
         callback();
@@ -231,6 +238,26 @@ export const connect = (nextGetAssetIds: GetAssetIds): WebSocket | null => {
 
   openSocket(state);
   return state.socket;
+};
+
+export const hasOpenSocket = (): boolean => {
+  const state = getClientState();
+
+  return state?.socket?.readyState === WebSocket.OPEN;
+};
+
+export const onOpen = (callback: OpenCallback): (() => void) => {
+  const state = getClientState();
+
+  if (!state) {
+    return () => {};
+  }
+
+  state.openCallbacks.add(callback);
+
+  return () => {
+    state.openCallbacks.delete(callback);
+  };
 };
 
 export const onReopen = (callback: ReopenCallback): (() => void) => {

@@ -6,6 +6,7 @@ import {
   retainTokenAtoms,
 } from "@/features/realtime/atoms";
 import { useFlash, useLivePrice } from "@/features/realtime/hooks";
+import { subscribe, unsubscribe } from "@/features/realtime/subscriptions";
 import { cn } from "@/shared/lib/cn";
 import { formatCents, formatPct } from "@/shared/lib/format";
 import styles from "./PriceCell.module.css";
@@ -43,8 +44,10 @@ function PriceCellInner({
 
   useEffect(() => {
     retainTokenAtoms(tokenId);
+    subscribe([tokenId]);
 
     return () => {
+      unsubscribe([tokenId]);
       releaseTokenAtoms(tokenId);
     };
   }, [tokenId]);
