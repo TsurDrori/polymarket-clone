@@ -95,6 +95,13 @@ export type CryptoWorkingSet = {
   cards: ReadonlyArray<CryptoCardModel>;
 };
 
+export type CryptoResolvedSurfaceState = {
+  filters: CryptoFilterState;
+  facets: CryptoFacetState;
+  cards: ReadonlyArray<CryptoCardModel>;
+  hydrationEvents: ReadonlyArray<PolymarketEvent>;
+};
+
 const FAMILY_ORDER: readonly CryptoFamily[] = [
   "all",
   "up-down",
@@ -555,36 +562,59 @@ export const parseCryptoSearchParams = (searchParams: {
 export const normalizeCryptoFilters = (
   filters: CryptoFilterState,
   workingSet: CryptoWorkingSet,
-): CryptoFilterState => {
-  const normalized = { ...filters };
+): CryptoFilterState =>
+  resolveNormalizedFacetState(workingSet.cards, filters).filters;
 
-  // Normalize from left to right so later dimensions can stay selected when
-  // earlier filters need to broaden back to "all".
-  let facets = buildCryptoFacetState(workingSet.cards, normalized);
-  if (
-    normalized.family !== "all" &&
-    !facets.familyTabs.some((option) => option.value === normalized.family)
-  ) {
-    normalized.family = "all";
+const resolveNormalizedFacetState = (
+  cards: ReadonlyArray<CryptoCardModel>,
+  filters: CryptoFilterState,
+): {
+  filters: CryptoFilterState;
+  facets: CryptoFacetState;
+} => {
+  let nextFilters = { ...filters };
+
+  while (true) {
+    const facets = buildCryptoFacetState(cards, nextFilters);
+
+    if (
+      nextFilters.family !== "all" &&
+      !facets.familyTabs.some((option) => option.value === nextFilters.family)
+    ) {
+      nextFilters = {
+        ...nextFilters,
+        family: "all",
+      };
+      continue;
+    }
+
+    if (
+      nextFilters.time !== "all" &&
+      !facets.rail.timeOptions.some((option) => option.value === nextFilters.time)
+    ) {
+      nextFilters = {
+        ...nextFilters,
+        time: "all",
+      };
+      continue;
+    }
+
+    if (
+      nextFilters.asset !== "all" &&
+      !facets.rail.assetOptions.some((option) => option.value === nextFilters.asset)
+    ) {
+      nextFilters = {
+        ...nextFilters,
+        asset: "all",
+      };
+      continue;
+    }
+
+    return {
+      filters: nextFilters,
+      facets,
+    };
   }
-
-  facets = buildCryptoFacetState(workingSet.cards, normalized);
-  if (
-    normalized.time !== "all" &&
-    !facets.rail.timeOptions.some((option) => option.value === normalized.time)
-  ) {
-    normalized.time = "all";
-  }
-
-  facets = buildCryptoFacetState(workingSet.cards, normalized);
-  if (
-    normalized.asset !== "all" &&
-    !facets.rail.assetOptions.some((option) => option.value === normalized.asset)
-  ) {
-    normalized.asset = "all";
-  }
-
-  return normalized;
 };
 
 export const filterCryptoCards = (
@@ -618,6 +648,24 @@ export const buildHydrationEvents = (
   });
 
   return hydrationEvents;
+};
+
+export const resolveCryptoSurfaceState = (
+  workingSet: CryptoWorkingSet,
+  filters: CryptoFilterState,
+): CryptoResolvedSurfaceState => {
+  const {
+    filters: normalizedFilters,
+    facets,
+  } = resolveNormalizedFacetState(workingSet.cards, filters);
+  const cards = filterCryptoCards(workingSet.cards, normalizedFilters);
+
+  return {
+    filters: normalizedFilters,
+    facets,
+    cards,
+    hydrationEvents: buildHydrationEvents(cards),
+  };
 };
 
 export const getCryptoFilterHref = (

@@ -1,11 +1,8 @@
 import {
-  buildCryptoFacetState,
   buildCryptoWorkingSet,
-  buildHydrationEvents,
-  filterCryptoCards,
   getCryptoFilterHref,
-  normalizeCryptoFilters,
   parseCryptoSearchParams,
+  resolveCryptoSurfaceState,
 } from "@/features/crypto/parse";
 import { CryptoSurface } from "@/features/crypto/components/CryptoSurface";
 import { listEventsKeyset } from "@/features/events/api/gamma";
@@ -33,12 +30,12 @@ export default async function CryptoPage({ searchParams }: CryptoPageProps) {
   ]);
   const workingSet = buildCryptoWorkingSet(events);
   const parsedFilters = parseCryptoSearchParams(query);
-  const filters = normalizeCryptoFilters(parsedFilters, workingSet);
+  const resolved = resolveCryptoSurfaceState(workingSet, parsedFilters);
 
   if (
-    parsedFilters.family !== filters.family ||
-    parsedFilters.time !== filters.time ||
-    parsedFilters.asset !== filters.asset
+    parsedFilters.family !== resolved.filters.family ||
+    parsedFilters.time !== resolved.filters.time ||
+    parsedFilters.asset !== resolved.filters.asset
   ) {
     redirect(
       getCryptoFilterHref(
@@ -47,23 +44,19 @@ export default async function CryptoPage({ searchParams }: CryptoPageProps) {
           time: "all",
           asset: "all",
         },
-        filters,
+        resolved.filters,
       ),
     );
   }
 
-  const facets = buildCryptoFacetState(workingSet.cards, filters);
-  const cards = filterCryptoCards(workingSet.cards, filters);
-  const hydrationEvents = buildHydrationEvents(cards);
-
   return (
     <main className={styles.main}>
-      <Hydrator events={hydrationEvents} />
+      <Hydrator events={resolved.hydrationEvents} />
       <CryptoSurface
         totalCount={workingSet.cards.length}
-        facets={facets}
-        filters={filters}
-        cards={cards}
+        facets={resolved.facets}
+        filters={resolved.filters}
+        cards={resolved.cards}
       />
     </main>
   );

@@ -13,6 +13,7 @@ import {
   filterCryptoCards,
   normalizeCryptoFilters,
   parseCryptoSearchParams,
+  resolveCryptoSurfaceState,
 } from "./parse";
 
 const buildMarket = (
@@ -285,6 +286,70 @@ describe("crypto parser", () => {
       time: "all",
       asset: "dogecoin",
     });
+  });
+
+  it("resolves the crypto surface state from one canonical parse entrypoint", () => {
+    const weeklyAboveBelow = buildEvent({
+      id: "btc-above",
+      slug: "bitcoin-above-weekly",
+      title: "Bitcoin above ___ this week?",
+      tags: [
+        { id: "1", slug: "crypto", label: "Crypto" },
+        { id: "2", slug: "bitcoin", label: "Bitcoin" },
+        { id: "3", slug: "weekly", label: "Weekly" },
+        { id: "4", slug: "multi-strikes", label: "Above / Below" },
+      ],
+    });
+    const monthlyEthereum = buildEvent({
+      id: "eth-hit",
+      slug: "ethereum-hit-monthly",
+      title: "What price will Ethereum hit this month?",
+      tags: [
+        { id: "5", slug: "crypto", label: "Crypto" },
+        { id: "6", slug: "ethereum", label: "Ethereum" },
+        { id: "7", slug: "monthly", label: "Monthly" },
+        { id: "8", slug: "hit-price", label: "Hit Price" },
+      ],
+    });
+    const dailyDogecoin = buildEvent({
+      id: "doge-hit",
+      slug: "dogecoin-hit-daily",
+      title: "What price will Dogecoin hit today?",
+      tags: [
+        { id: "9", slug: "crypto", label: "Crypto" },
+        { id: "10", slug: "dogecoin", label: "Dogecoin" },
+        { id: "11", slug: "daily", label: "Daily" },
+        { id: "12", slug: "hit-price", label: "Hit Price" },
+      ],
+    });
+
+    const workingSet = buildCryptoWorkingSet([
+      weeklyAboveBelow,
+      monthlyEthereum,
+      dailyDogecoin,
+    ]);
+    const resolved = resolveCryptoSurfaceState(workingSet, {
+      family: "all",
+      time: "weekly",
+      asset: "dogecoin",
+    });
+
+    expect(resolved.filters).toEqual({
+      family: "all",
+      time: "all",
+      asset: "dogecoin",
+    });
+    expect(resolved.facets.familyTabs.map((option) => option.value)).toEqual([
+      "all",
+      "hit-price",
+    ]);
+    expect(resolved.facets.rail.timeOptions.map((option) => option.value)).toEqual([
+      "all",
+      "daily",
+    ]);
+    expect(resolved.cards).toHaveLength(1);
+    expect(resolved.cards[0]?.asset).toBe("dogecoin");
+    expect(resolved.hydrationEvents).toHaveLength(1);
   });
 
   it("selects deterministic lead snippets for price-range and hit-price events", () => {
