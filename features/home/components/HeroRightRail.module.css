@@ -7,7 +7,7 @@
 
 .content {
   display: grid;
-  gap: 33px;
+  gap: 26px;
 }
 
 .module {
@@ -42,7 +42,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 14px;
+  gap: 13px;
 }
 
 .item {
@@ -68,14 +68,14 @@
 
 .body {
   display: grid;
-  gap: 2px;
+  gap: 0;
   min-width: 0;
 }
 
 .title {
   color: var(--text-primary);
   font-size: 13px;
-  line-height: 18px;
+  line-height: 19px;
   font-weight: 600;
   letter-spacing: -0.01em;
   display: -webkit-box;
@@ -138,17 +138,9 @@
   align-items: center;
 }
 
-.topicModule .body {
-  gap: 3px;
-}
-
 .topicModule .title {
   font-size: 14px;
   line-height: 18px;
-  -webkit-line-clamp: 1;
-}
-
-.topicModule .subtitle {
   -webkit-line-clamp: 1;
 }
 

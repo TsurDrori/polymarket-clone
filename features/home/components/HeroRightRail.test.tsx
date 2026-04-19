@@ -72,13 +72,14 @@ const hero: HomeHeroModel = {
 };
 
 describe("HeroRightRail", () => {
-  it("formats topic support text with correct singular and plural labels", () => {
+  it("prioritizes breaking question text and keeps topic rows compact", () => {
     render(<HeroRightRail hero={hero} />);
 
     expect(screen.getByRole("heading", { name: "Breaking news" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Hot topics" })).toBeTruthy();
-    expect(screen.getByText("1 market")).toBeTruthy();
-    expect(screen.getByText("15 markets")).toBeTruthy();
+    expect(screen.getByText("Will this happen?")).toBeTruthy();
+    expect(screen.queryByText("1 market")).toBeNull();
+    expect(screen.queryByText("15 markets")).toBeNull();
 
     const exploreLink = screen.getByRole("link", { name: "Explore all" });
     expect(exploreLink.getAttribute("href")).toBe("#all-markets");

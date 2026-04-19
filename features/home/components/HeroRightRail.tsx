@@ -11,8 +11,9 @@ type HeroRightRailProps = {
 const formatChangeLabel = (change: number): string =>
   `${change >= 0 ? "+" : "-"}${Math.round(Math.abs(change) * 100)}%`;
 
-const formatTopicCountLabel = (eventCount: number): string =>
-  `${eventCount} market${eventCount === 1 ? "" : "s"}`;
+const getBreakingTitle = (
+  item: HomeHeroModel["breaking"][number],
+): string => item.market.question || item.event.title || item.label;
 
 export function HeroRightRail({ hero }: HeroRightRailProps) {
   return (
@@ -38,8 +39,7 @@ export function HeroRightRail({ hero }: HeroRightRailProps) {
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className={styles.body}>
-                    <span className={styles.title}>{item.label}</span>
-                    <span className={styles.subtitle}>{item.event.title}</span>
+                    <span className={styles.title}>{getBreakingTitle(item)}</span>
                   </span>
                   <span className={styles.stats}>
                     <span className={styles.primaryStat}>{formatPct(item.chance)}</span>
@@ -75,9 +75,6 @@ export function HeroRightRail({ hero }: HeroRightRailProps) {
                   </span>
                   <span className={styles.body}>
                     <span className={styles.title}>{topic.label}</span>
-                    <span className={styles.subtitle}>
-                      {formatTopicCountLabel(topic.eventCount)}
-                    </span>
                   </span>
                   <span className={styles.stats}>
                     <span className={styles.primaryStat}>
