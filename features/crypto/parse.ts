@@ -59,6 +59,11 @@ export type CryptoFacetRail = {
   assetOptions: ReadonlyArray<CryptoFacetOption<CryptoAsset>>;
 };
 
+export type CryptoFacetState = {
+  familyTabs: ReadonlyArray<CryptoFacetOption<CryptoFamily>>;
+  rail: CryptoFacetRail;
+};
+
 export type CryptoCardSnippet = {
   id: string;
   marketId: string;
@@ -88,8 +93,6 @@ export type CryptoCardModel = {
 
 export type CryptoWorkingSet = {
   cards: ReadonlyArray<CryptoCardModel>;
-  familyTabs: ReadonlyArray<CryptoFacetOption<CryptoFamily>>;
-  rail: CryptoFacetRail;
 };
 
 const FAMILY_ORDER: readonly CryptoFamily[] = [
@@ -413,6 +416,21 @@ const buildCardModel = (event: PolymarketEvent): CryptoCardModel => {
   };
 };
 
+const matchesFamily = (
+  card: CryptoCardModel,
+  family: CryptoFamily,
+): boolean => family === "all" || card.family === family;
+
+const matchesTime = (
+  card: CryptoCardModel,
+  time: CryptoTimeBucket,
+): boolean => time === "all" || card.timeBucket === time;
+
+const matchesAsset = (
+  card: CryptoCardModel,
+  asset: CryptoAsset,
+): boolean => asset === "all" || card.asset === asset;
+
 const incrementCount = <T extends string>(
   counts: Map<T, number>,
   value: T,
@@ -433,35 +451,77 @@ const buildOptions = <T extends string>(
     }))
     .filter((option, index) => index === 0 || option.count > 0);
 
-export const buildCryptoWorkingSet = (
-  events: ReadonlyArray<PolymarketEvent>,
-): CryptoWorkingSet => {
-  const cards = events.map(buildCardModel);
-
+const buildFamilyTabs = (
+  cards: ReadonlyArray<CryptoCardModel>,
+): CryptoFacetState["familyTabs"] => {
   const familyCounts = new Map<CryptoFamily, number>([["all", cards.length]]);
-  const timeCounts = new Map<CryptoTimeBucket, number>([["all", cards.length]]);
-  const assetCounts = new Map<CryptoAsset, number>();
 
   cards.forEach((card) => {
     if (card.family !== "other") {
       incrementCount(familyCounts, card.family);
     }
+  });
+
+  return buildOptions(FAMILY_ORDER, familyCounts, FAMILY_LABELS);
+};
+
+const buildTimeOptions = (
+  cards: ReadonlyArray<CryptoCardModel>,
+): CryptoFacetRail["timeOptions"] => {
+  const timeCounts = new Map<CryptoTimeBucket, number>([["all", cards.length]]);
+
+  cards.forEach((card) => {
     if (card.timeBucket !== "other") {
       incrementCount(timeCounts, card.timeBucket);
     }
+  });
+
+  return buildOptions(TIME_ORDER, timeCounts, TIME_LABELS);
+};
+
+const buildAssetOptions = (
+  cards: ReadonlyArray<CryptoCardModel>,
+): CryptoFacetRail["assetOptions"] => {
+  const assetCounts = new Map<CryptoAsset, number>([["all", cards.length]]);
+
+  cards.forEach((card) => {
     if (card.asset !== "other") {
       incrementCount(assetCounts, card.asset);
     }
   });
 
+  return buildOptions(ASSET_ORDER, assetCounts, ASSET_LABELS);
+};
+
+export const buildCryptoWorkingSet = (
+  events: ReadonlyArray<PolymarketEvent>,
+): CryptoWorkingSet => {
+  const cards = events.map(buildCardModel);
+
   return {
     cards,
-    familyTabs: buildOptions(FAMILY_ORDER, familyCounts, FAMILY_LABELS),
+  };
+};
+
+export const buildCryptoFacetState = (
+  cards: ReadonlyArray<CryptoCardModel>,
+  filters: CryptoFilterState,
+): CryptoFacetState => {
+  const familyCards = cards.filter(
+    (card) => matchesTime(card, filters.time) && matchesAsset(card, filters.asset),
+  );
+  const timeCards = cards.filter(
+    (card) => matchesFamily(card, filters.family) && matchesAsset(card, filters.asset),
+  );
+  const assetCards = cards.filter(
+    (card) => matchesFamily(card, filters.family) && matchesTime(card, filters.time),
+  );
+
+  return {
+    familyTabs: buildFamilyTabs(familyCards),
     rail: {
-      timeOptions: buildOptions(TIME_ORDER, timeCounts, TIME_LABELS),
-      assetOptions: buildOptions(ASSET_ORDER, assetCounts, ASSET_LABELS).filter(
-        (option) => option.value !== "all",
-      ),
+      timeOptions: buildTimeOptions(timeCards),
+      assetOptions: buildAssetOptions(assetCards),
     },
   };
 };
@@ -496,39 +556,47 @@ export const normalizeCryptoFilters = (
   filters: CryptoFilterState,
   workingSet: CryptoWorkingSet,
 ): CryptoFilterState => {
-  const hasFamily =
-    filters.family === "all" ||
-    workingSet.familyTabs.some((option) => option.value === filters.family);
-  const hasTime =
-    filters.time === "all" ||
-    workingSet.rail.timeOptions.some((option) => option.value === filters.time);
-  const hasAsset =
-    filters.asset === "all" ||
-    workingSet.rail.assetOptions.some((option) => option.value === filters.asset);
+  const normalized = { ...filters };
 
-  return {
-    family: hasFamily ? filters.family : "all",
-    time: hasTime ? filters.time : "all",
-    asset: hasAsset ? filters.asset : "all",
-  };
+  // Normalize from left to right so later dimensions can stay selected when
+  // earlier filters need to broaden back to "all".
+  let facets = buildCryptoFacetState(workingSet.cards, normalized);
+  if (
+    normalized.family !== "all" &&
+    !facets.familyTabs.some((option) => option.value === normalized.family)
+  ) {
+    normalized.family = "all";
+  }
+
+  facets = buildCryptoFacetState(workingSet.cards, normalized);
+  if (
+    normalized.time !== "all" &&
+    !facets.rail.timeOptions.some((option) => option.value === normalized.time)
+  ) {
+    normalized.time = "all";
+  }
+
+  facets = buildCryptoFacetState(workingSet.cards, normalized);
+  if (
+    normalized.asset !== "all" &&
+    !facets.rail.assetOptions.some((option) => option.value === normalized.asset)
+  ) {
+    normalized.asset = "all";
+  }
+
+  return normalized;
 };
 
 export const filterCryptoCards = (
   cards: ReadonlyArray<CryptoCardModel>,
   filters: CryptoFilterState,
 ): CryptoCardModel[] =>
-  cards.filter((card) => {
-    if (filters.family !== "all" && card.family !== filters.family) {
-      return false;
-    }
-    if (filters.time !== "all" && card.timeBucket !== filters.time) {
-      return false;
-    }
-    if (filters.asset !== "all" && card.asset !== filters.asset) {
-      return false;
-    }
-    return true;
-  });
+  cards.filter(
+    (card) =>
+      matchesFamily(card, filters.family) &&
+      matchesTime(card, filters.time) &&
+      matchesAsset(card, filters.asset),
+  );
 
 export const buildHydrationEvents = (
   cards: ReadonlyArray<CryptoCardModel>,

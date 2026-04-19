@@ -95,6 +95,14 @@
   font-weight: 800;
 }
 
+.flashUp {
+  animation: flash-up 600ms ease-out;
+}
+
+.flashDown {
+  animation: flash-down 600ms ease-out;
+}
+
 .gaugeLabel {
   margin-top: 2px;
   color: var(--text-muted);

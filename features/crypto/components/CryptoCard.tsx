@@ -1,10 +1,10 @@
-import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PriceCell } from "@/features/events/components/PriceCell";
 import { cn } from "@/shared/lib/cn";
 import { formatPct } from "@/shared/lib/format";
 import { type CryptoCardModel } from "../parse";
+import { CryptoSingleGauge } from "./CryptoSingleGauge";
 import styles from "./CryptoCard.module.css";
 
 type CryptoCardProps = {
@@ -19,16 +19,12 @@ const renderSnippetPrice = (tokenId: string | null, fallbackPrice: number) =>
   );
 
 export function CryptoCard({ card }: CryptoCardProps) {
-  const primaryPrice = Math.round(card.primarySnippet.fallbackPrice * 100);
   const singleLabel =
     card.family === "up-down"
       ? card.primarySnippet.primaryOutcomeLabel
       : card.primarySnippet.primaryOutcomeLabel === "Yes"
         ? "Chance"
         : card.primarySnippet.primaryOutcomeLabel;
-  const cardStyle = {
-    "--crypto-card-progress": `${primaryPrice}%`,
-  } as CSSProperties;
 
   return (
     <article className={styles.card}>
@@ -54,15 +50,11 @@ export function CryptoCard({ card }: CryptoCardProps) {
           </div>
 
           {card.variant === "single" ? (
-            <div className={styles.gauge} style={cardStyle}>
-              <strong className={styles.gaugeValue}>
-                {renderSnippetPrice(
-                  card.primarySnippet.tokenId,
-                  card.primarySnippet.fallbackPrice,
-                )}
-              </strong>
-              <span className={styles.gaugeLabel}>{singleLabel}</span>
-            </div>
+            <CryptoSingleGauge
+              label={singleLabel}
+              fallbackPrice={card.primarySnippet.fallbackPrice}
+              tokenId={card.primarySnippet.tokenId}
+            />
           ) : null}
         </header>
 

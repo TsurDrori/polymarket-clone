@@ -5,11 +5,13 @@ import type {
   PolymarketTag,
 } from "@/features/events/types";
 import {
+  buildCryptoFacetState,
   buildCryptoWorkingSet,
   deriveCryptoAsset,
   deriveCryptoFamily,
   deriveCryptoTimeBucket,
   filterCryptoCards,
+  normalizeCryptoFilters,
   parseCryptoSearchParams,
 } from "./parse";
 
@@ -127,51 +129,43 @@ describe("crypto parser", () => {
     });
 
     const workingSet = buildCryptoWorkingSet([supported, unsupported]);
+    const facets = buildCryptoFacetState(workingSet.cards, {
+      family: "all",
+      time: "all",
+      asset: "all",
+    });
 
-    expect(workingSet.familyTabs.map((option) => option.value)).toEqual([
+    expect(facets.familyTabs.map((option) => option.value)).toEqual([
       "all",
       "above-below",
     ]);
-    expect(workingSet.rail.timeOptions.map((option) => option.value)).toEqual([
+    expect(facets.rail.timeOptions.map((option) => option.value)).toEqual([
       "all",
       "weekly",
     ]);
-    expect(workingSet.rail.assetOptions.map((option) => option.value)).toEqual([
+    expect(facets.rail.assetOptions.map((option) => option.value)).toEqual([
+      "all",
       "ethereum",
     ]);
     expect(workingSet.cards).toHaveLength(2);
   });
 
-  it("applies URL filters only for supported values", () => {
-    const bitcoinEvent = buildEvent({
-      id: "btc-range",
-      slug: "bitcoin-price-on-april-19",
-      title: "Bitcoin price on April 19?",
+  it("builds contextual facet options from the active cross-filter state", () => {
+    const weeklyBitcoin = buildEvent({
+      id: "btc-above",
+      slug: "bitcoin-above-weekly",
+      title: "Bitcoin above ___ this week?",
       tags: [
         { id: "1", slug: "crypto", label: "Crypto" },
         { id: "2", slug: "bitcoin", label: "Bitcoin" },
         { id: "3", slug: "weekly", label: "Weekly" },
-        { id: "4", slug: "neg-risk", label: "Price Range" },
-      ],
-      markets: [
-        buildMarket("btc-range-1", {
-          groupItemTitle: "72,000-74,000",
-          lastTradePrice: 0.06,
-        }),
-        buildMarket("btc-range-2", {
-          groupItemTitle: "74,000-76,000",
-          lastTradePrice: 0.89,
-        }),
-        buildMarket("btc-range-3", {
-          groupItemTitle: "76,000-78,000",
-          lastTradePrice: 0.07,
-        }),
+        { id: "4", slug: "multi-strikes", label: "Above / Below" },
       ],
     });
-    const ethereumEvent = buildEvent({
+    const monthlyEthereum = buildEvent({
       id: "eth-hit",
-      slug: "what-price-will-ethereum-hit-in-april",
-      title: "What price will Ethereum hit in April?",
+      slug: "ethereum-hit-monthly",
+      title: "What price will Ethereum hit this month?",
       tags: [
         { id: "5", slug: "crypto", label: "Crypto" },
         { id: "6", slug: "ethereum", label: "Ethereum" },
@@ -179,25 +173,118 @@ describe("crypto parser", () => {
         { id: "8", slug: "hit-price", label: "Hit Price" },
       ],
     });
-
-    const workingSet = buildCryptoWorkingSet([bitcoinEvent, ethereumEvent]);
-    const filters = parseCryptoSearchParams({
-      family: "price-range",
-      time: "weekly",
-      asset: "bitcoin",
+    const dailyDogecoin = buildEvent({
+      id: "doge-hit",
+      slug: "dogecoin-hit-daily",
+      title: "What price will Dogecoin hit today?",
+      tags: [
+        { id: "9", slug: "crypto", label: "Crypto" },
+        { id: "10", slug: "dogecoin", label: "Dogecoin" },
+        { id: "11", slug: "daily", label: "Daily" },
+        { id: "12", slug: "hit-price", label: "Hit Price" },
+      ],
     });
 
-    expect(filterCryptoCards(workingSet.cards, filters)).toHaveLength(1);
+    const workingSet = buildCryptoWorkingSet([
+      weeklyBitcoin,
+      monthlyEthereum,
+      dailyDogecoin,
+    ]);
+    const facets = buildCryptoFacetState(workingSet.cards, {
+      family: "all",
+      time: "all",
+      asset: "dogecoin",
+    });
+
+    expect(facets.familyTabs.map((option) => option.value)).toEqual([
+      "all",
+      "hit-price",
+    ]);
+    expect(facets.rail.timeOptions.map((option) => option.value)).toEqual([
+      "all",
+      "daily",
+    ]);
     expect(
       filterCryptoCards(
         workingSet.cards,
         parseCryptoSearchParams({
-          family: "unsupported",
-          time: "weekly",
-          asset: "bitcoin",
+          family: "hit-price",
+          time: "daily",
+          asset: "dogecoin",
         }),
       ),
     ).toHaveLength(1);
+  });
+
+  it("normalizes impossible direct URL combinations back to supported filters", () => {
+    const weeklyAboveBelow = buildEvent({
+      id: "btc-above",
+      slug: "bitcoin-above-weekly",
+      title: "Bitcoin above ___ this week?",
+      tags: [
+        { id: "1", slug: "crypto", label: "Crypto" },
+        { id: "2", slug: "bitcoin", label: "Bitcoin" },
+        { id: "3", slug: "weekly", label: "Weekly" },
+        { id: "4", slug: "multi-strikes", label: "Above / Below" },
+      ],
+    });
+    const monthlyEthereum = buildEvent({
+      id: "eth-hit",
+      slug: "ethereum-hit-monthly",
+      title: "What price will Ethereum hit this month?",
+      tags: [
+        { id: "5", slug: "crypto", label: "Crypto" },
+        { id: "6", slug: "ethereum", label: "Ethereum" },
+        { id: "7", slug: "monthly", label: "Monthly" },
+        { id: "8", slug: "hit-price", label: "Hit Price" },
+      ],
+    });
+    const dailyDogecoin = buildEvent({
+      id: "doge-hit",
+      slug: "dogecoin-hit-daily",
+      title: "What price will Dogecoin hit today?",
+      tags: [
+        { id: "9", slug: "crypto", label: "Crypto" },
+        { id: "10", slug: "dogecoin", label: "Dogecoin" },
+        { id: "11", slug: "daily", label: "Daily" },
+        { id: "12", slug: "hit-price", label: "Hit Price" },
+      ],
+    });
+
+    const workingSet = buildCryptoWorkingSet([
+      weeklyAboveBelow,
+      monthlyEthereum,
+      dailyDogecoin,
+    ]);
+
+    expect(
+      normalizeCryptoFilters(
+        {
+          family: "above-below",
+          time: "monthly",
+          asset: "all",
+        },
+        workingSet,
+      ),
+    ).toEqual({
+      family: "all",
+      time: "monthly",
+      asset: "all",
+    });
+    expect(
+      normalizeCryptoFilters(
+        {
+          family: "all",
+          time: "weekly",
+          asset: "dogecoin",
+        },
+        workingSet,
+      ),
+    ).toEqual({
+      family: "all",
+      time: "all",
+      asset: "dogecoin",
+    });
   });
 
   it("selects deterministic lead snippets for price-range and hit-price events", () => {

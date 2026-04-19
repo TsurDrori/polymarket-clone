@@ -1,12 +1,7 @@
 "use client";
 
-import { memo, useEffect } from "react";
-import {
-  releaseTokenAtoms,
-  retainTokenAtoms,
-} from "@/features/realtime/atoms";
-import { useFlash, useLivePrice } from "@/features/realtime/hooks";
-import { subscribe, unsubscribe } from "@/features/realtime/subscriptions";
+import { memo } from "react";
+import { useRetainedLivePrice } from "@/features/realtime/hooks";
 import { cn } from "@/shared/lib/cn";
 import { formatCents, formatPct } from "@/shared/lib/format";
 import styles from "./PriceCell.module.css";
@@ -38,19 +33,11 @@ function PriceCellInner({
   formatKind,
   className,
 }: PriceCellProps) {
-  const { price } = useLivePrice(tokenId);
-  const { seq, dir } = useFlash(tokenId);
+  const {
+    tick: { price },
+    flash: { seq, dir },
+  } = useRetainedLivePrice(tokenId);
   const formatter = format ?? FORMATTERS[formatKind];
-
-  useEffect(() => {
-    retainTokenAtoms(tokenId);
-    subscribe([tokenId]);
-
-    return () => {
-      unsubscribe([tokenId]);
-      releaseTokenAtoms(tokenId);
-    };
-  }, [tokenId]);
 
   return (
     <span

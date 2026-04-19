@@ -15,6 +15,7 @@ type CryptoFilterRailProps = {
 };
 
 type RailSectionProps = {
+  sectionId: string;
   heading: string;
   options: ReadonlyArray<{
     value: string;
@@ -26,14 +27,15 @@ type RailSectionProps = {
 };
 
 function RailSection({
+  sectionId,
   heading,
   options,
   activeValue,
   getHref,
 }: RailSectionProps) {
   return (
-    <section className={styles.section} aria-labelledby={`${heading}-heading`}>
-      <h2 id={`${heading}-heading`} className={styles.heading}>
+    <section className={styles.section} aria-labelledby={sectionId}>
+      <h2 id={sectionId} className={styles.heading}>
         {heading}
       </h2>
       <div className={styles.optionList}>
@@ -70,8 +72,9 @@ export function CryptoFilterRail({
   }));
 
   return (
-    <aside className={styles.rail}>
+    <aside className={styles.rail} aria-label="Crypto filters">
       <RailSection
+        sectionId="crypto-filter-markets-heading"
         heading="Markets"
         options={timeOptions}
         activeValue={filters.time}
@@ -82,6 +85,7 @@ export function CryptoFilterRail({
 
       {assetOptions.length > 0 ? (
         <RailSection
+          sectionId="crypto-filter-assets-heading"
           heading="Assets"
           options={assetOptions}
           activeValue={filters.asset}

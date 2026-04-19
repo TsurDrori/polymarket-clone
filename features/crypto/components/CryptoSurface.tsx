@@ -4,31 +4,29 @@ import { CryptoFamilyTabs } from "./CryptoFamilyTabs";
 import { CryptoFilterRail } from "./CryptoFilterRail";
 import type {
   CryptoCardModel,
+  CryptoFacetState,
   CryptoFilterState,
-  CryptoWorkingSet,
 } from "../parse";
 import styles from "./CryptoSurface.module.css";
 
 type CryptoSurfaceProps = {
-  workingSet: CryptoWorkingSet;
+  totalCount: number;
+  facets: CryptoFacetState;
   filters: CryptoFilterState;
   cards: ReadonlyArray<CryptoCardModel>;
 };
 
 export function CryptoSurface({
-  workingSet,
+  totalCount,
+  facets,
   filters,
   cards,
 }: CryptoSurfaceProps) {
   return (
     <section className={styles.surface}>
-      <div className={styles.mobileRail}>
-        <CryptoFilterRail rail={workingSet.rail} filters={filters} />
-      </div>
-
       <div className={styles.layout}>
-        <div className={styles.desktopRail}>
-          <CryptoFilterRail rail={workingSet.rail} filters={filters} />
+        <div className={styles.rail}>
+          <CryptoFilterRail rail={facets.rail} filters={filters} />
         </div>
 
         <div className={styles.content}>
@@ -36,12 +34,12 @@ export function CryptoSurface({
             <div className={styles.titleWrap}>
               <h1 className={styles.title}>Crypto</h1>
               <p className={styles.summary}>
-                Public Gamma working set of {workingSet.cards.length} crypto events sorted
-                by 24-hour volume.
+                Public Gamma working set of {totalCount} crypto events sorted by
+                24-hour volume.
               </p>
             </div>
 
-            <CryptoFamilyTabs options={workingSet.familyTabs} filters={filters} />
+            <CryptoFamilyTabs options={facets.familyTabs} filters={filters} />
           </header>
 
           {cards.length > 0 ? (

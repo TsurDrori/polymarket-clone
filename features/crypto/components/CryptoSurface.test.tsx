@@ -9,6 +9,7 @@ import type {
 } from "@/features/events/types";
 import { Hydrator } from "@/features/realtime/Hydrator";
 import {
+  buildCryptoFacetState,
   buildCryptoWorkingSet,
   filterCryptoCards,
   normalizeCryptoFilters,
@@ -127,17 +128,26 @@ describe("CryptoSurface", () => {
       },
       workingSet,
     );
+    const facets = buildCryptoFacetState(workingSet.cards, filters);
     const cards = filterCryptoCards(workingSet.cards, filters);
 
     render(
       <Provider>
         <Hydrator events={cards.map((card) => ({ ...card.event, markets: card.event.markets.slice(0, 2) }))} />
-        <CryptoSurface workingSet={workingSet} filters={filters} cards={cards} />
+        <CryptoSurface
+          totalCount={workingSet.cards.length}
+          facets={facets}
+          filters={filters}
+          cards={cards}
+        />
       </Provider>,
     );
 
     expect(screen.getByRole("heading", { name: "Crypto" })).toBeTruthy();
     expect(screen.getByRole("navigation", { name: /crypto market families/i })).toBeTruthy();
+    expect(screen.getByLabelText(/crypto filters/i)).toBeTruthy();
+    expect(screen.getAllByRole("heading", { name: "Markets" })).toHaveLength(1);
+    expect(screen.getAllByRole("heading", { name: "Assets" })).toHaveLength(1);
     expect(screen.getAllByRole("article")).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: /price/i }).length).toBeGreaterThan(0);
   });

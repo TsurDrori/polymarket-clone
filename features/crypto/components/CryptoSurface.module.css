@@ -3,17 +3,13 @@
   gap: 18px;
 }
 
-.mobileRail {
-  display: block;
-}
-
 .layout {
   display: grid;
   gap: 24px;
 }
 
-.desktopRail {
-  display: none;
+.rail {
+  min-width: 0;
 }
 
 .content {
@@ -85,17 +81,9 @@
 }
 
 @media (min-width: 1024px) {
-  .mobileRail {
-    display: none;
-  }
-
   .layout {
     grid-template-columns: 188px minmax(0, 1fr);
     align-items: start;
-  }
-
-  .desktopRail {
-    display: block;
   }
 
   .content {
