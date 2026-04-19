@@ -1,0 +1,17 @@
+.nav {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .nav {
+    gap: 28px;
+  }
+}

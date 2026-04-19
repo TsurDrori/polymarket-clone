@@ -18,6 +18,7 @@ export interface ListEventsParams {
   offset?: number;
   order?: string;
   ascending?: boolean;
+  tagSlug?: string;
 }
 
 const buildListUrl = ({
@@ -25,6 +26,7 @@ const buildListUrl = ({
   offset,
   order,
   ascending,
+  tagSlug,
 }: ListEventsParams): string => {
   const params = new URLSearchParams();
   params.set("active", "true");
@@ -33,6 +35,7 @@ const buildListUrl = ({
   if (offset !== undefined) params.set("offset", String(offset));
   if (order !== undefined) params.set("order", order);
   if (ascending !== undefined) params.set("ascending", String(ascending));
+  if (tagSlug !== undefined) params.set("tag_slug", tagSlug);
   return `${GAMMA_BASE}/events?${params.toString()}`;
 };
 

@@ -13,7 +13,8 @@
   color: var(--text-secondary);
 }
 
-.tab[aria-selected="true"] {
+.tab[aria-selected="true"],
+.tab[aria-current="page"] {
   color: var(--text-primary);
 }
 
@@ -28,7 +29,8 @@
   transition: width 200ms ease-out;
 }
 
-.tab[aria-selected="true"]::after {
+.tab[aria-selected="true"]::after,
+.tab[aria-current="page"]::after {
   width: 100%;
 }
 
