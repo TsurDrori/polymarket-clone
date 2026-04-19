@@ -1,0 +1,15 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="80"
+  height="80"
+  viewBox="0 0 80 80"
+  fill="none"
+>
+  <rect width="80" height="80" rx="16" fill="#242B32" />
+  <path
+    d="M25 53L35.5 42.5L43 50L55 35V55H25V53Z"
+    fill="#586879"
+    opacity="0.8"
+  />
+  <circle cx="31" cy="29" r="5" fill="#586879" opacity="0.8" />
+</svg>
