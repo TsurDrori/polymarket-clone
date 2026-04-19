@@ -63,3 +63,7 @@ temp/
 
 # Private local project notes
 project-notes/
+
+# Local AI assistant instructions
+AGENTS.md
+CLAUDE.md
