@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
 import { SportsRowsHydrator } from "@/features/sports/games/SportsRowsHydrator";
-import { getSportsGamesWorkingSet } from "@/features/sports/games/api";
-import {
-  buildLiveRouteSections,
-  buildSportsGameRows,
-  buildSportsLeagueChips,
-  buildSportsPreviewHydrationSeeds,
-} from "@/features/sports/games/parse";
 import { SportsLiveSurface } from "@/features/sports/live/SportsLiveSurface";
+import { getSportsLivePagePayload } from "@/features/sports/server";
+import { SportsLiveRoute } from "@/features/sports/live/SportsLiveRoute";
 import styles from "./page.module.css";
-
-const SPORTS_LIVE_INITIAL_HYDRATION_ROW_LIMIT = 8;
 
 export const metadata: Metadata = {
   title: "Sports Prediction Markets & Live Odds 2026 | Polymarket",
@@ -19,24 +12,30 @@ export const metadata: Metadata = {
 };
 
 export default async function SportsLivePage() {
-  const events = await getSportsGamesWorkingSet();
-  const rows = buildSportsGameRows(events);
-  const sections = buildLiveRouteSections(rows);
-  const hydrationSeeds = buildSportsPreviewHydrationSeeds(
-    sections.flatMap((section) => section.rows),
-    { rowLimit: SPORTS_LIVE_INITIAL_HYDRATION_ROW_LIMIT },
-  );
-  const leagueChips = buildSportsLeagueChips(rows);
+  const payload = await getSportsLivePagePayload();
 
   return (
     <main className={styles.main}>
-      <SportsRowsHydrator seeds={hydrationSeeds} />
-      <SportsLiveSurface
-        title="Sports Live"
-        description="Public games markets grouped into sportsbook-style live sections."
-        leagueChips={leagueChips}
-        sections={sections}
-      />
+      {payload.hasMoreSections ? (
+        <SportsLiveRoute
+          title="Sports Live"
+          description="Public games markets grouped into sportsbook-style live sections."
+          leagueChips={payload.leagueChips}
+          initialSections={payload.initialSections}
+          hydrationSeeds={payload.hydrationSeeds}
+          catalogEndpoint="/api/sports-sections"
+        />
+      ) : (
+        <>
+          <SportsRowsHydrator seeds={payload.hydrationSeeds} />
+          <SportsLiveSurface
+            title="Sports Live"
+            description="Public games markets grouped into sportsbook-style live sections."
+            leagueChips={payload.leagueChips}
+            sections={payload.initialSections}
+          />
+        </>
+      )}
     </main>
   );
 }

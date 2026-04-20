@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Hydrator } from "@/features/realtime/Hydrator";
-import { getSportsCardWorkingSet } from "@/features/sports/futures/api";
-import {
-  buildHydrationEvents,
-  buildSportsCards,
-  selectCardsByLeague,
-} from "@/features/sports/futures/parse";
 import { formatSportsLeagueLabel } from "@/features/sports/leagueLabel";
+import { Hydrator } from "@/features/realtime/Hydrator";
+import { SportsLeaguePropsRoute } from "@/features/sports/props/SportsLeaguePropsRoute";
 import { SportsPropsSurface } from "@/features/sports/props/SportsPropsSurface";
+import { getSportsLeagueCardCatalogPayload } from "@/features/sports/server";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 
@@ -27,30 +23,39 @@ export default async function SportsLeaguePropsPage(
   props: PageProps<"/sports/[league]/props">,
 ) {
   const { league } = await props.params;
-  const events = await getSportsCardWorkingSet({
-    desiredLeagueSlug: league,
-  });
-  const cards = buildSportsCards(events, {
-    previewLimit: 2,
-  });
-  const leagueCards = selectCardsByLeague(cards, league);
+  const payload = await getSportsLeagueCardCatalogPayload({
+    league,
+    surface: "props",
+  }).catch(() => null);
 
-  if (leagueCards.length === 0) {
+  if (!payload) {
     notFound();
   }
 
-  const normalizedLeague = leagueCards[0]!.league.slug;
-
   return (
     <main className={styles.main}>
-      <Hydrator events={buildHydrationEvents(leagueCards)} />
-      <SportsPropsSurface
-        title={leagueCards[0]!.league.label}
-        description="League props and futures-style cards sourced from the public sports feed, with Games linking back into the sportsbook-row route family."
-        gamesHref={`/sports/${normalizedLeague}/games`}
-        propsHref={`/sports/${normalizedLeague}/props`}
-        cards={leagueCards}
-      />
+      {payload.hasMoreCards ? (
+        <SportsLeaguePropsRoute
+          title={payload.title}
+          description="League props and futures-style cards sourced from the public sports feed, with Games linking back into the sportsbook-row route family."
+          gamesHref={payload.gamesHref}
+          propsHref={payload.propsHref}
+          initialCards={payload.initialCards}
+          hydrationEvents={payload.hydrationEvents}
+          catalogEndpoint={`/api/sports-card-catalog?league=${encodeURIComponent(payload.normalizedLeague)}&surface=props`}
+        />
+      ) : (
+        <>
+          <Hydrator events={payload.hydrationEvents} />
+          <SportsPropsSurface
+            title={payload.title}
+            description="League props and futures-style cards sourced from the public sports feed, with Games linking back into the sportsbook-row route family."
+            gamesHref={payload.gamesHref}
+            propsHref={payload.propsHref}
+            cards={payload.initialCards}
+          />
+        </>
+      )}
     </main>
   );
 }

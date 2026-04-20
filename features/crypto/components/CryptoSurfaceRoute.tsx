@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { Hydrator, type PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import {
   DEFAULT_CRYPTO_FILTERS,
@@ -18,6 +11,7 @@ import {
   type CryptoFilterState,
   type CryptoCardModel,
 } from "../parse";
+import { useDeferredCollection } from "@/shared/lib/useDeferredCollection";
 import { CryptoSurface } from "./CryptoSurface";
 
 type CryptoSurfaceRouteProps = {
@@ -60,14 +54,21 @@ export function CryptoSurfaceRoute({
   catalogEndpoint,
 }: CryptoSurfaceRouteProps) {
   const [filters, setFilters] = useState(initialFilters);
-  const [catalogCards, setCatalogCards] = useState<ReadonlyArray<CryptoCardModel> | null>(
-    null,
-  );
-  const catalogPromiseRef = useRef<Promise<ReadonlyArray<CryptoCardModel>> | null>(null);
   const pendingFiltersRef = useRef<CryptoFilterState | null>(null);
-  const workingCards = catalogCards ?? cards;
+  const {
+    items: workingCards,
+    ensureItems: ensureCatalog,
+    hasLoadedDeferredItems,
+  } = useDeferredCollection<CryptoCardModel>({
+    endpoint: catalogEndpoint,
+    initialItems: cards,
+    selectItems: (payload) =>
+      payload && typeof payload === "object" && "cards" in payload
+        ? (((payload as { cards?: ReadonlyArray<CryptoCardModel> }).cards ?? cards) as ReadonlyArray<CryptoCardModel>)
+        : cards,
+  });
   const resolved = useMemo(() => {
-    if (catalogCards === null && areFiltersEqual(filters, initialFilters)) {
+    if (!hasLoadedDeferredItems && areFiltersEqual(filters, initialFilters)) {
       return {
         filters: initialFilters,
         facets,
@@ -77,50 +78,20 @@ export function CryptoSurfaceRoute({
     }
 
     return resolveCryptoSurfaceState({ cards: workingCards }, filters);
-  }, [cards, catalogCards, facets, filters, hydrationSeeds, initialFilters, workingCards]);
+  }, [
+    cards,
+    facets,
+    filters,
+    hasLoadedDeferredItems,
+    hydrationSeeds,
+    initialFilters,
+    workingCards,
+  ]);
   const canonicalHref = useMemo(
     () => getCryptoFilterHref(DEFAULT_CRYPTO_FILTERS, resolved.filters),
     [resolved.filters],
   );
-  const ensureCatalog = useCallback(async (): Promise<ReadonlyArray<CryptoCardModel>> => {
-    if (catalogCards) {
-      return catalogCards;
-    }
 
-    if (!catalogEndpoint) {
-      return cards;
-    }
-
-    if (catalogPromiseRef.current) {
-      return catalogPromiseRef.current;
-    }
-
-    const nextPromise = fetch(catalogEndpoint, { method: "GET" })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error("Unable to load crypto catalog");
-        }
-
-        const payload = (await response.json()) as {
-          cards?: ReadonlyArray<CryptoCardModel>;
-        };
-
-        return payload.cards ?? cards;
-      })
-      .then((nextCards) => {
-        startTransition(() => {
-          setCatalogCards(nextCards);
-        });
-
-        return nextCards;
-      })
-      .finally(() => {
-        catalogPromiseRef.current = null;
-      });
-
-    catalogPromiseRef.current = nextPromise;
-    return nextPromise;
-  }, [cards, catalogCards, catalogEndpoint]);
   const applyFilterPatch = (patch: Partial<CryptoFilterState>) => {
     const nextFilters = {
       ...filters,
@@ -137,7 +108,7 @@ export function CryptoSurfaceRoute({
       getCryptoFilterHref(DEFAULT_CRYPTO_FILTERS, nextFilters),
     );
 
-    if (catalogCards === null && catalogEndpoint) {
+    if (!hasLoadedDeferredItems && catalogEndpoint) {
       pendingFiltersRef.current = nextFilters;
 
       void ensureCatalog()
@@ -183,14 +154,6 @@ export function CryptoSurfaceRoute({
 
     window.history.replaceState(null, "", canonicalHref);
   }, [canonicalHref]);
-
-  useEffect(() => {
-    if (!catalogEndpoint) {
-      return;
-    }
-
-    void ensureCatalog().catch(() => null);
-  }, [catalogEndpoint, ensureCatalog]);
 
   useEffect(() => {
     const handlePopState = () => {

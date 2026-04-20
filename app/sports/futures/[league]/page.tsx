@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import { Hydrator } from "@/features/realtime/Hydrator";
 import { formatSportsLeagueLabel } from "@/features/sports/leagueLabel";
-import { getSportsCardWorkingSet } from "@/features/sports/futures/api";
-import {
-  buildHydrationEvents,
-  buildSportsCards,
-  buildSportsLeagueChips,
-  selectCardsByLeague,
-} from "@/features/sports/futures/parse";
+import { Hydrator } from "@/features/realtime/Hydrator";
+import { SportsLeagueFuturesRoute } from "@/features/sports/futures/SportsLeagueFuturesRoute";
 import { SportsFuturesSurface } from "@/features/sports/futures/SportsFuturesSurface";
+import { getSportsLeagueCardCatalogPayload } from "@/features/sports/server";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 
@@ -28,36 +23,43 @@ export default async function SportsLeagueFuturesPage(
   props: PageProps<"/sports/futures/[league]">,
 ) {
   const { league } = await props.params;
-  const events = await getSportsCardWorkingSet({
-    desiredLeagueSlug: league,
-  });
-  const cards = buildSportsCards(events, {
-    previewLimit: 6,
-  });
-  const leagueCards = selectCardsByLeague(cards, league);
+  const payload = await getSportsLeagueCardCatalogPayload({
+    league,
+    surface: "futures",
+  }).catch(() => null);
 
-  if (leagueCards.length === 0) {
+  if (!payload) {
     notFound();
   }
 
-  const normalizedLeague = leagueCards[0]!.league.slug;
-  const leagueChips = buildSportsLeagueChips(cards, {
-    hrefBase: "/sports/futures",
-    activeLeagueSlug: normalizedLeague,
-  });
-
   return (
     <main className={styles.main}>
-      <Hydrator events={buildHydrationEvents(leagueCards)} />
-      <SportsFuturesSurface
-        title={leagueCards[0]!.league.label}
-        description="Season-long and non-game sports markets shown as stacked futures cards with bounded live previews."
-        leagueChips={leagueChips}
-        cards={leagueCards}
-        activeLeagueSlug={normalizedLeague}
-        emptyTitle="No results found"
-        emptyCopy="This league does not currently expose any futures cards in the public sports feed."
-      />
+      {payload.hasMoreCards ? (
+        <SportsLeagueFuturesRoute
+          title={payload.title}
+          description="Season-long and non-game sports markets shown as stacked futures cards with bounded live previews."
+          leagueChips={payload.leagueChips ?? []}
+          initialCards={payload.initialCards}
+          hydrationEvents={payload.hydrationEvents}
+          activeLeagueSlug={payload.normalizedLeague}
+          emptyTitle="No results found"
+          emptyCopy="This league does not currently expose any futures cards in the public sports feed."
+          catalogEndpoint={`/api/sports-card-catalog?league=${encodeURIComponent(payload.normalizedLeague)}&surface=futures`}
+        />
+      ) : (
+        <>
+          <Hydrator events={payload.hydrationEvents} />
+          <SportsFuturesSurface
+            title={payload.title}
+            description="Season-long and non-game sports markets shown as stacked futures cards with bounded live previews."
+            leagueChips={payload.leagueChips ?? []}
+            cards={payload.initialCards}
+            activeLeagueSlug={payload.normalizedLeague}
+            emptyTitle="No results found"
+            emptyCopy="This league does not currently expose any futures cards in the public sports feed."
+          />
+        </>
+      )}
     </main>
   );
 }

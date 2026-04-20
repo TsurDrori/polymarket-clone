@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SportsRowsHydrator } from "@/features/sports/games/SportsRowsHydrator";
-import { getSportsGamesWorkingSet } from "@/features/sports/games/api";
-import {
-  buildLeagueRouteSections,
-  buildSportsGameRows,
-  buildSportsLeagueChips,
-  buildSportsPreviewHydrationSeeds,
-  selectRowsByLeague,
-} from "@/features/sports/games/parse";
 import { formatSportsLeagueLabel } from "@/features/sports/leagueLabel";
+import { SportsLiveRoute } from "@/features/sports/live/SportsLiveRoute";
 import { SportsLiveSurface } from "@/features/sports/live/SportsLiveSurface";
+import { getSportsLeagueGamesPagePayload } from "@/features/sports/server";
 import styles from "./page.module.css";
 
 type SportsLeagueGamesPageProps = {
@@ -35,38 +29,55 @@ export default async function SportsLeagueGamesPage({
   params,
 }: SportsLeagueGamesPageProps) {
   const { league } = await params;
-  const events = await getSportsGamesWorkingSet({
-    desiredLeagueSlug: league,
-  });
-  const rows = buildSportsGameRows(events);
-  const leagueRows = selectRowsByLeague(rows, league);
+  const payload = await getSportsLeagueGamesPagePayload(league).catch((error: unknown) => {
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof (error as { digest?: unknown }).digest === "string"
+    ) {
+      throw error;
+    }
 
-  if (leagueRows.length === 0) {
+    notFound();
+  });
+
+  if (!payload) {
     notFound();
   }
 
-  const sections = buildLeagueRouteSections(leagueRows);
-  const hydrationSeeds = buildSportsPreviewHydrationSeeds(
-    sections.flatMap((section) => section.rows),
-  );
-  const leagueChips = buildSportsLeagueChips(rows, league);
-  const leagueTitle = leagueRows[0]?.league.label ?? "League";
-  const normalizedLeague = leagueRows[0]?.league.slug ?? league;
-
   return (
     <main className={styles.main}>
-      <SportsRowsHydrator seeds={hydrationSeeds} />
-      <SportsLiveSurface
-        title={leagueTitle}
-        description="League-specific games feed with live sportsbook rows."
-        leagueChips={leagueChips}
-        sections={sections}
-        activeLeagueSlug={normalizedLeague}
-        leagueTabs={{
-          gamesHref: `/sports/${normalizedLeague}/games`,
-          propsHref: `/sports/${normalizedLeague}/props`,
-        }}
-      />
+      {payload.hasMoreSections ? (
+        <SportsLiveRoute
+          title={payload.title}
+          description="League-specific games feed with live sportsbook rows."
+          leagueChips={payload.leagueChips}
+          initialSections={payload.initialSections}
+          hydrationSeeds={payload.hydrationSeeds}
+          activeLeagueSlug={payload.normalizedLeague}
+          leagueTabs={{
+            gamesHref: `/sports/${payload.normalizedLeague}/games`,
+            propsHref: `/sports/${payload.normalizedLeague}/props`,
+          }}
+          catalogEndpoint={`/api/sports-sections?league=${encodeURIComponent(payload.normalizedLeague)}`}
+        />
+      ) : (
+        <>
+          <SportsRowsHydrator seeds={payload.hydrationSeeds} />
+          <SportsLiveSurface
+            title={payload.title}
+            description="League-specific games feed with live sportsbook rows."
+            leagueChips={payload.leagueChips}
+            sections={payload.initialSections}
+            activeLeagueSlug={payload.normalizedLeague}
+            leagueTabs={{
+              gamesHref: `/sports/${payload.normalizedLeague}/games`,
+              propsHref: `/sports/${payload.normalizedLeague}/props`,
+            }}
+          />
+        </>
+      )}
     </main>
   );
 }
