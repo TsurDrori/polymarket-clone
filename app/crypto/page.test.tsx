@@ -97,12 +97,20 @@ describe("CryptoPage", () => {
       expect.objectContaining({
         totalCount: 2,
         initialFilters: {
-          family: "hit-price",
+          family: "all",
           time: "all",
           asset: "bitcoin",
         },
         initialVisibleCount: 18,
         visibleIncrement: 18,
+        cards: expect.arrayContaining([
+          expect.objectContaining({ id: "btc" }),
+          expect.objectContaining({ id: "eth" }),
+        ]),
+        hydrationSeeds: expect.arrayContaining([
+          expect.objectContaining({ tokenId: "btc-yes" }),
+          expect.objectContaining({ tokenId: "eth-yes" }),
+        ]),
       }),
       undefined,
     );

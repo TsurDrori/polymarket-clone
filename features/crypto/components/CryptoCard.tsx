@@ -18,7 +18,7 @@ type CryptoCardProps = {
 
 const renderSnippetPrice = (tokenId: string | null, fallbackPrice: number) =>
   tokenId ? (
-    <PriceCell tokenId={tokenId} formatKind="pct" />
+    <PriceCell tokenId={tokenId} formatKind="pct" fallbackValue={fallbackPrice} />
   ) : (
     formatPct(fallbackPrice)
   );

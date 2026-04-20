@@ -10,6 +10,8 @@ import {
 import { SportsLiveSurface } from "@/features/sports/live/SportsLiveSurface";
 import styles from "./page.module.css";
 
+const SPORTS_LIVE_INITIAL_HYDRATION_ROW_LIMIT = 8;
+
 export const metadata: Metadata = {
   title: "Sports Prediction Markets & Live Odds 2026 | Polymarket",
   description:
@@ -22,6 +24,7 @@ export default async function SportsLivePage() {
   const sections = buildLiveRouteSections(rows);
   const hydrationSeeds = buildSportsPreviewHydrationSeeds(
     sections.flatMap((section) => section.rows),
+    { rowLimit: SPORTS_LIVE_INITIAL_HYDRATION_ROW_LIMIT },
   );
   const leagueChips = buildSportsLeagueChips(rows);
 

@@ -2,7 +2,10 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { Provider } from "jotai";
 import type { ImgHTMLAttributes } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buildHydrationEvents, buildCryptoWorkingSet } from "@/features/crypto/parse";
+import {
+  buildCryptoHydrationSeeds,
+  buildCryptoWorkingSet,
+} from "@/features/crypto/parse";
 import type {
   PolymarketEvent,
   PolymarketMarket,
@@ -149,8 +152,8 @@ describe("CryptoSurfaceRoute", () => {
       <Provider>
         <CryptoSurfaceRoute
           totalCount={workingSet.cards.length}
-          workingSet={workingSet}
-          hydrationEvents={buildHydrationEvents(workingSet.cards)}
+          cards={workingSet.cards}
+          hydrationSeeds={buildCryptoHydrationSeeds(workingSet.cards)}
           initialFilters={{ family: "all", time: "all", asset: "all" }}
           initialVisibleCount={18}
           visibleIncrement={18}
@@ -187,8 +190,8 @@ describe("CryptoSurfaceRoute", () => {
       <Provider>
         <CryptoSurfaceRoute
           totalCount={workingSet.cards.length}
-          workingSet={workingSet}
-          hydrationEvents={buildHydrationEvents(workingSet.cards)}
+          cards={workingSet.cards}
+          hydrationSeeds={buildCryptoHydrationSeeds(workingSet.cards)}
           initialFilters={{ family: "price-range", time: "5m", asset: "bitcoin" }}
           initialVisibleCount={18}
           visibleIncrement={18}
@@ -209,8 +212,8 @@ describe("CryptoSurfaceRoute", () => {
       <Provider>
         <CryptoSurfaceRoute
           totalCount={workingSet.cards.length}
-          workingSet={workingSet}
-          hydrationEvents={buildHydrationEvents(workingSet.cards)}
+          cards={workingSet.cards}
+          hydrationSeeds={buildCryptoHydrationSeeds(workingSet.cards)}
           initialFilters={{ family: "all", time: "all", asset: "all" }}
           initialVisibleCount={18}
           visibleIncrement={18}

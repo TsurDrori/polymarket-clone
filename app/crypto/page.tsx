@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import {
+  CRYPTO_INITIAL_VISIBLE_COUNT,
+  CRYPTO_OVERSCAN_COUNT,
+  CRYPTO_VISIBLE_INCREMENT,
+  buildCryptoHydrationSeeds,
   buildCryptoWorkingSet,
-  buildHydrationEvents,
   parseCryptoSearchParams,
+  resolveCryptoSurfaceState,
 } from "@/features/crypto/parse";
 import { CryptoSurfaceRoute } from "@/features/crypto/components/CryptoSurfaceRoute";
 import { CryptoSurfaceSkeleton } from "@/features/crypto/components/CryptoSurfaceSkeleton";
@@ -35,19 +39,22 @@ export default async function CryptoPage({ searchParams }: CryptoPageProps) {
     searchParams,
   ]);
   const workingSet = buildCryptoWorkingSet(events);
-  const hydrationEvents = buildHydrationEvents(workingSet.cards);
   const initialFilters = parseCryptoSearchParams(query);
+  const initialState = resolveCryptoSurfaceState(workingSet, initialFilters);
+  const hydrationSeeds = buildCryptoHydrationSeeds(initialState.cards, {
+    cardLimit: CRYPTO_INITIAL_VISIBLE_COUNT + CRYPTO_OVERSCAN_COUNT,
+  });
 
   return (
     <main className={styles.main}>
       <Suspense fallback={<CryptoSurfaceSkeleton />}>
         <CryptoSurfaceRoute
           totalCount={workingSet.cards.length}
-          workingSet={workingSet}
-          hydrationEvents={hydrationEvents}
-          initialFilters={initialFilters}
-          initialVisibleCount={18}
-          visibleIncrement={18}
+          cards={workingSet.cards}
+          hydrationSeeds={hydrationSeeds}
+          initialFilters={initialState.filters}
+          initialVisibleCount={CRYPTO_INITIAL_VISIBLE_COUNT}
+          visibleIncrement={CRYPTO_VISIBLE_INCREMENT}
         />
       </Suspense>
     </main>

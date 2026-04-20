@@ -5,6 +5,9 @@ import type {
   PolymarketTag,
 } from "@/features/events/types";
 import {
+  CRYPTO_INITIAL_VISIBLE_COUNT,
+  CRYPTO_OVERSCAN_COUNT,
+  buildCryptoHydrationSeeds,
   buildCryptoFacetState,
   buildCryptoWorkingSet,
   deriveCryptoAsset,
@@ -349,7 +352,7 @@ describe("crypto parser", () => {
     ]);
     expect(resolved.cards).toHaveLength(1);
     expect(resolved.cards[0]?.asset).toBe("dogecoin");
-    expect(resolved.hydrationEvents).toHaveLength(1);
+    expect(resolved.hydrationSeeds).toHaveLength(2);
   });
 
   it("selects deterministic lead snippets for price-range and hit-price events", () => {
@@ -418,5 +421,37 @@ describe("crypto parser", () => {
       "↑ 80,000",
       "↓ 65,000",
     ]);
+  });
+
+  it("limits hydration seeds to the initial visible plus near-visible cards", () => {
+    const workingSet = buildCryptoWorkingSet(
+      Array.from({ length: 40 }, (_, index) =>
+        buildEvent({
+          id: `btc-${index + 1}`,
+          slug: `btc-${index + 1}`,
+          title: `BTC ${index + 1} Up or Down`,
+          tags: [
+            { id: `${index}-1`, slug: "crypto", label: "Crypto" },
+            { id: `${index}-2`, slug: "bitcoin", label: "Bitcoin" },
+            { id: `${index}-3`, slug: "5M", label: "5M" },
+            { id: `${index}-4`, slug: "up-or-down", label: "Up / Down" },
+          ],
+          markets: [
+            buildMarket(`market-${index + 1}`, {
+              groupItemTitle: undefined,
+              outcomes: ["Up", "Down"],
+            }),
+          ],
+        }),
+      ),
+    );
+
+    const seededCardCount = CRYPTO_INITIAL_VISIBLE_COUNT + CRYPTO_OVERSCAN_COUNT;
+    const seeds = buildCryptoHydrationSeeds(workingSet.cards, {
+      cardLimit: seededCardCount,
+    });
+
+    expect(seeds).toHaveLength(seededCardCount);
+    expect(seeds.at(-1)?.tokenId).toBe(`market-${seededCardCount}-yes`);
   });
 });

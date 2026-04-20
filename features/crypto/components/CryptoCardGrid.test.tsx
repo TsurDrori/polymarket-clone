@@ -7,7 +7,10 @@ import type {
   PolymarketMarket,
   PolymarketTag,
 } from "@/features/events/types";
-import { buildCryptoWorkingSet } from "@/features/crypto/parse";
+import {
+  buildCryptoHydrationSeeds,
+  buildCryptoWorkingSet,
+} from "@/features/crypto/parse";
 import { priceAtomFamily } from "@/features/realtime/atoms";
 import { Hydrator } from "@/features/realtime/Hydrator";
 import {
@@ -110,7 +113,7 @@ describe("CryptoCardGrid", () => {
 
     render(
       <Provider store={store}>
-        <Hydrator events={workingSet.cards.map((card) => card.event)} />
+        <Hydrator seeds={buildCryptoHydrationSeeds(workingSet.cards)} />
         <CryptoCardGrid cards={workingSet.cards} initialCount={2} incrementCount={2} />
       </Provider>,
     );
@@ -173,7 +176,7 @@ describe("CryptoCardGrid", () => {
 
     render(
       <Provider store={store}>
-        <Hydrator events={workingSet.cards.map((card) => card.event)} />
+        <Hydrator seeds={buildCryptoHydrationSeeds(workingSet.cards)} />
         <CryptoCardGrid cards={workingSet.cards} initialCount={2} incrementCount={2} />
       </Provider>,
     );

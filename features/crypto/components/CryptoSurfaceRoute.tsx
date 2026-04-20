@@ -1,25 +1,24 @@
 "use client";
 
 import { startTransition, useEffect, useMemo, useState } from "react";
-import { Hydrator } from "@/features/realtime/Hydrator";
-import type { PolymarketEvent } from "@/features/events/types";
+import { Hydrator, type PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import {
   DEFAULT_CRYPTO_FILTERS,
   getCryptoFilterHref,
   parseCryptoSearchParams,
   resolveCryptoSurfaceState,
   type CryptoFilterState,
-  type CryptoWorkingSet,
+  type CryptoCardModel,
 } from "../parse";
 import { CryptoSurface } from "./CryptoSurface";
 
 type CryptoSurfaceRouteProps = {
   totalCount: number;
-  hydrationEvents: ReadonlyArray<PolymarketEvent>;
+  cards: ReadonlyArray<CryptoCardModel>;
+  hydrationSeeds?: ReadonlyArray<PriceHydrationSeed>;
   initialFilters: CryptoFilterState;
   initialVisibleCount?: number;
   visibleIncrement?: number;
-  workingSet: CryptoWorkingSet;
 };
 
 const areFiltersEqual = (
@@ -41,17 +40,17 @@ const readCurrentFilters = (): CryptoFilterState => {
 };
 
 export function CryptoSurfaceRoute({
+  cards,
   totalCount,
-  hydrationEvents,
+  hydrationSeeds,
   initialFilters,
   initialVisibleCount,
   visibleIncrement,
-  workingSet,
 }: CryptoSurfaceRouteProps) {
   const [filters, setFilters] = useState(initialFilters);
   const resolved = useMemo(
-    () => resolveCryptoSurfaceState(workingSet, filters),
-    [filters, workingSet],
+    () => resolveCryptoSurfaceState({ cards }, filters),
+    [cards, filters],
   );
   const canonicalHref = useMemo(
     () => getCryptoFilterHref(DEFAULT_CRYPTO_FILTERS, resolved.filters),
@@ -122,7 +121,7 @@ export function CryptoSurfaceRoute({
         visibleIncrement={visibleIncrement}
         onFiltersChange={applyFilterPatch}
       />
-      <Hydrator events={hydrationEvents} />
+      <Hydrator seeds={hydrationSeeds} />
     </>
   );
 }

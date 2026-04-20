@@ -9,6 +9,7 @@ import type {
 } from "@/features/events/types";
 import { Hydrator } from "@/features/realtime/Hydrator";
 import {
+  buildCryptoHydrationSeeds,
   buildCryptoFacetState,
   buildCryptoWorkingSet,
   filterCryptoCards,
@@ -133,7 +134,7 @@ describe("CryptoSurface", () => {
 
     render(
       <Provider>
-        <Hydrator events={cards.map((card) => ({ ...card.event, markets: card.event.markets.slice(0, 2) }))} />
+        <Hydrator seeds={buildCryptoHydrationSeeds(cards)} />
         <CryptoSurface
           totalCount={workingSet.cards.length}
           facets={facets}

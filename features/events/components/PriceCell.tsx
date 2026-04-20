@@ -11,6 +11,7 @@ type PriceCellFormatter = (price: number) => string;
 type PriceCellProps = {
   tokenId: string;
   className?: string;
+  fallbackValue?: number;
 } & (
   | {
       format: PriceCellFormatter;
@@ -33,12 +34,15 @@ function PriceCellInner({
   format,
   formatKind,
   className,
+  fallbackValue,
 }: PriceCellProps) {
   const {
-    tick: { price },
+    tick,
     flash: { seq, dir },
   } = useRetainedLivePrice(tokenId);
   const formatter = format ?? FORMATTERS[formatKind];
+  const resolvedPrice =
+    fallbackValue !== undefined && tick.ts <= 0 ? fallbackValue : tick.price;
 
   return (
     <span
@@ -50,7 +54,7 @@ function PriceCellInner({
         className,
       )}
     >
-      {formatter(price)}
+      {formatter(resolvedPrice)}
     </span>
   );
 }

@@ -2,10 +2,10 @@
 
 import { useHydrateAtoms } from "jotai/utils";
 import { priceAtomFamily, type Tick } from "@/features/realtime/atoms";
-import type { SportsPreviewHydrationSeed } from "./parse";
+import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
 
 type SportsRowsHydratorProps = {
-  seeds: ReadonlyArray<SportsPreviewHydrationSeed>;
+  seeds: ReadonlyArray<PriceHydrationSeed>;
 };
 
 export function SportsRowsHydrator({ seeds }: SportsRowsHydratorProps) {
@@ -16,7 +16,7 @@ export function SportsRowsHydrator({ seeds }: SportsRowsHydratorProps) {
       price: seed.price,
       bestBid: seed.bestBid,
       bestAsk: seed.bestAsk,
-      ts: 0,
+      ts: 1,
     });
   }
 

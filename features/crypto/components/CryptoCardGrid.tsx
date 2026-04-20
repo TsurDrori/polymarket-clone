@@ -7,7 +7,11 @@ import { useProjectedSurfaceWindow } from "@/features/realtime/surfaces/hooks";
 import type { SurfaceProjectionPolicy } from "@/features/realtime/surfaces/types";
 import { CryptoCard } from "./CryptoCard";
 import styles from "./CryptoCardGrid.module.css";
-import type { CryptoCardModel, CryptoCardSnippet } from "../parse";
+import {
+  CRYPTO_OVERSCAN_COUNT,
+  type CryptoCardModel,
+  type CryptoCardSnippet,
+} from "../parse";
 
 type CryptoCardGridProps = {
   cards: ReadonlyArray<CryptoCardModel>;
@@ -16,7 +20,6 @@ type CryptoCardGridProps = {
   continuationLabel?: string;
 };
 
-const CRYPTO_OVERSCAN_COUNT = 8;
 const CRYPTO_REORDER_COOLDOWN_MS = 12_000;
 const CRYPTO_HIGHLIGHT_MS = 2_000;
 const CRYPTO_LEAD_CARD_COUNT = 3;
@@ -47,7 +50,7 @@ const getCryptoCardLiveScore = (
     ...card.snippets.map((snippet) => getSnippetLiveDelta(snippet, readPrice)),
   );
   const motionDelta = Math.max(primaryDelta, secondaryDelta);
-  const volume = card.event.volume24hr || card.event.volume || 0;
+  const volume = card.sortVolume;
   const volumeBias = Math.min(volume, 1_000_000) / 1_000_000;
   const singleCardBias = card.variant === "single" ? 0.01 : 0;
 

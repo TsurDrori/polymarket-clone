@@ -25,6 +25,7 @@ export function MarketColumn({ entries }: MarketColumnProps) {
               tokenId={entry.tokenId}
               formatKind="cents"
               className={styles.price}
+              fallbackValue={entry.price}
             />
           ) : (
             <span className={styles.missing}>--</span>

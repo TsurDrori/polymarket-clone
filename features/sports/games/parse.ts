@@ -1,3 +1,5 @@
+import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
+
 export type SportsGameTag = {
   id: string;
   slug: string;
@@ -106,13 +108,6 @@ export type SportsbookSectionModel = {
   href?: string;
   actionLabel?: string;
   rows: SportsbookRowModel[];
-};
-
-export type SportsPreviewHydrationSeed = {
-  tokenId: string;
-  price: number;
-  bestBid: number;
-  bestAsk: number;
 };
 
 type SportsMoneylineSelection = {
@@ -820,10 +815,17 @@ export const buildLeagueRouteSections = (
 
 export const buildSportsPreviewHydrationSeeds = (
   rows: ReadonlyArray<SportsbookRowModel>,
-): SportsPreviewHydrationSeed[] => {
-  const seen = new Map<string, SportsPreviewHydrationSeed>();
+  {
+    rowLimit,
+  }: {
+    rowLimit?: number;
+  } = {},
+): PriceHydrationSeed[] => {
+  const seen = new Map<string, PriceHydrationSeed>();
+  const sourceRows =
+    typeof rowLimit === "number" && rowLimit > 0 ? rows.slice(0, rowLimit) : rows;
 
-  for (const row of rows) {
+  for (const row of sourceRows) {
     for (const marketCell of [...row.moneyline, ...row.spread, ...row.total]) {
       if (!marketCell.tokenId) continue;
       if (seen.has(marketCell.tokenId)) continue;

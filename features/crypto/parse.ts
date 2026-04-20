@@ -1,4 +1,5 @@
 import { getEventImage } from "@/features/events/api/parse";
+import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import type {
   PolymarketEvent,
   PolymarketMarket,
@@ -70,6 +71,8 @@ export type CryptoCardSnippet = {
   label: string;
   tokenId: string | null;
   fallbackPrice: number;
+  bestBid: number;
+  bestAsk: number;
   primaryOutcomeLabel: string;
   secondaryOutcomeLabel: string;
 };
@@ -86,9 +89,9 @@ export type CryptoCardModel = {
   volumeLabel: string;
   metaLabel: string | null;
   variant: "single" | "list";
+  sortVolume: number;
   primarySnippet: CryptoCardSnippet;
   snippets: ReadonlyArray<CryptoCardSnippet>;
-  event: PolymarketEvent;
 };
 
 export type CryptoWorkingSet = {
@@ -99,8 +102,12 @@ export type CryptoResolvedSurfaceState = {
   filters: CryptoFilterState;
   facets: CryptoFacetState;
   cards: ReadonlyArray<CryptoCardModel>;
-  hydrationEvents: ReadonlyArray<PolymarketEvent>;
+  hydrationSeeds: ReadonlyArray<PriceHydrationSeed>;
 };
+
+export const CRYPTO_INITIAL_VISIBLE_COUNT = 18;
+export const CRYPTO_VISIBLE_INCREMENT = 18;
+export const CRYPTO_OVERSCAN_COUNT = 8;
 
 export const DEFAULT_CRYPTO_FILTERS: CryptoFilterState = {
   family: "all",
@@ -335,6 +342,8 @@ const toSnippet = (market: PolymarketMarket): CryptoCardSnippet => ({
   label: getMarketLabel(market),
   tokenId: market.clobTokenIds[0] || null,
   fallbackPrice: getYesPrice(market),
+  bestBid: market.bestBid,
+  bestAsk: market.bestAsk,
   primaryOutcomeLabel: market.outcomes[0] || "Yes",
   secondaryOutcomeLabel: market.outcomes[1] || "No",
 });
@@ -423,9 +432,9 @@ const buildCardModel = (event: PolymarketEvent): CryptoCardModel => {
     volumeLabel: `${formatVolume(event.volume24hr || event.volume)} Vol.`,
     metaLabel: asset !== "other" ? ASSET_LABELS[asset] : null,
     variant: family === "up-down" || snippets.length === 1 ? "single" : "list",
+    sortVolume: event.volume24hr || event.volume,
     primarySnippet,
     snippets,
-    event,
   };
 };
 
@@ -640,26 +649,34 @@ export const filterCryptoCards = (
       matchesAsset(card, filters.asset),
   );
 
-export const buildHydrationEvents = (
+export const buildCryptoHydrationSeeds = (
   cards: ReadonlyArray<CryptoCardModel>,
-): PolymarketEvent[] => {
-  const hydrationEvents: PolymarketEvent[] = [];
+  {
+    cardLimit,
+  }: {
+    cardLimit?: number;
+  } = {},
+): PriceHydrationSeed[] => {
+  const seeds = new Map<string, PriceHydrationSeed>();
+  const cardsToSeed =
+    typeof cardLimit === "number" && cardLimit > 0 ? cards.slice(0, cardLimit) : cards;
 
-  cards.forEach((card) => {
-    const marketIds = new Set(card.snippets.map((snippet) => snippet.marketId));
-    const markets = card.event.markets.filter((market) => marketIds.has(market.id));
+  cardsToSeed.forEach((card) => {
+    card.snippets.forEach((snippet) => {
+      if (!snippet.tokenId || seeds.has(snippet.tokenId)) {
+        return;
+      }
 
-    if (markets.length === 0) {
-      return;
-    }
-
-    hydrationEvents.push({
-      ...card.event,
-      markets,
+      seeds.set(snippet.tokenId, {
+        tokenId: snippet.tokenId,
+        price: snippet.fallbackPrice,
+        bestBid: snippet.bestBid,
+        bestAsk: snippet.bestAsk,
+      });
     });
   });
 
-  return hydrationEvents;
+  return [...seeds.values()];
 };
 
 export const resolveCryptoSurfaceState = (
@@ -676,7 +693,7 @@ export const resolveCryptoSurfaceState = (
     filters: normalizedFilters,
     facets,
     cards,
-    hydrationEvents: buildHydrationEvents(cards),
+    hydrationSeeds: buildCryptoHydrationSeeds(cards),
   };
 };
 
