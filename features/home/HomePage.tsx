@@ -1,7 +1,13 @@
 "use client";
 
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
-import { Bookmark, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
+import {
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import type { HomePageModel } from "./selectors";
 import type { PolymarketEvent } from "@/features/events/types";
 import { fetchHomeChipFeed } from "./api";
@@ -15,6 +21,7 @@ type HomePageProps = {
 };
 
 type EventsByChip = Record<string, PolymarketEvent[]>;
+const CHIP_RAIL_SCROLL_STEP = 240;
 
 export function HomePage({ model }: HomePageProps) {
   const chipRailRef = useRef<HTMLDivElement | null>(null);
@@ -26,6 +33,8 @@ export function HomePage({ model }: HomePageProps) {
   }));
   const [loadingChipSlug, setLoadingChipSlug] = useState<string | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);
+  const [canScrollChipRailBackward, setCanScrollChipRailBackward] = useState(false);
+  const [canScrollChipRailForward, setCanScrollChipRailForward] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const activeEvents = useMemo(
     () => eventsByChip[activeChipSlug] ?? [],
@@ -39,12 +48,45 @@ export function HomePage({ model }: HomePageProps) {
     [],
   );
 
-  const scrollChipRailForward = () => {
+  useEffect(() => {
+    const rail = chipRailRef.current;
+    if (!rail) return;
+
+    const syncChipRailState = () => {
+      const maxScrollLeft = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+      setCanScrollChipRailBackward(rail.scrollLeft > 4);
+      setCanScrollChipRailForward(maxScrollLeft - rail.scrollLeft > 4);
+    };
+
+    syncChipRailState();
+
+    rail.addEventListener("scroll", syncChipRailState, { passive: true });
+    window.addEventListener("resize", syncChipRailState);
+
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(() => {
+            syncChipRailState();
+          });
+
+    resizeObserver?.observe(rail);
+
+    return () => {
+      rail.removeEventListener("scroll", syncChipRailState);
+      window.removeEventListener("resize", syncChipRailState);
+      resizeObserver?.disconnect();
+    };
+  }, [model.marketChips]);
+
+  const scrollChipRail = (direction: "backward" | "forward") => {
     const rail = chipRailRef.current;
     if (!rail) return;
 
     rail.scrollBy({
-      left: Math.max(rail.clientWidth * 0.75, 240),
+      left:
+        Math.max(rail.clientWidth * 0.75, CHIP_RAIL_SCROLL_STEP) *
+        (direction === "forward" ? 1 : -1),
       behavior: "smooth",
     });
   };
@@ -120,7 +162,21 @@ export function HomePage({ model }: HomePageProps) {
         </div>
 
         <div className={styles.marketChipRail}>
-          <div ref={chipRailRef} className={styles.marketChipRow}>
+          {canScrollChipRailBackward ? (
+            <button
+              type="button"
+              aria-label="Scroll market topics backward"
+              className={`${styles.marketChipArrow} ${styles.marketChipArrowLeft}`}
+              onClick={() => scrollChipRail("backward")}
+            >
+              <ChevronLeft size={18} />
+            </button>
+          ) : null}
+          <div
+            ref={chipRailRef}
+            className={styles.marketChipRow}
+            data-testid="market-chip-row"
+          >
             {model.marketChips.map((chip) => (
               <button
                 key={chip.slug}
@@ -135,14 +191,16 @@ export function HomePage({ model }: HomePageProps) {
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            aria-label="Scroll market topics"
-            className={styles.marketChipArrow}
-            onClick={scrollChipRailForward}
-          >
-            <ChevronRight size={18} />
-          </button>
+          {canScrollChipRailForward ? (
+            <button
+              type="button"
+              aria-label="Scroll market topics forward"
+              className={`${styles.marketChipArrow} ${styles.marketChipArrowRight}`}
+              onClick={() => scrollChipRail("forward")}
+            >
+              <ChevronRight size={18} />
+            </button>
+          ) : null}
         </div>
 
         {feedError ? (

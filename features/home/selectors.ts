@@ -782,7 +782,7 @@ export const selectHeroContextChips = (
 
 const buildHomeMarketChips = (
   events: ReadonlyArray<PolymarketEvent>,
-  limit = 16,
+  limit = 30,
 ): HeroChip[] => {
   const chips: HeroChip[] = [{ slug: "all", label: "All" }];
   const topicMap = new Map<string, TopicSummary>();
@@ -887,7 +887,7 @@ export const selectHomeFeedEvents = (
 
 export const selectHomeMarketChips = (
   events: ReadonlyArray<PolymarketEvent>,
-  limit = 16,
+  limit = 30,
 ): HeroChip[] => buildHomeMarketChips(events, limit);
 
 const buildHeroSpotlightModel = (
@@ -973,7 +973,7 @@ export const buildHomePageModel = (
     spotlightChart = null,
     spotlightCharts = {},
     exploreLimit = 30,
-    marketChipLimit = 16,
+    marketChipLimit = 30,
   }: {
     spotlightChart?: HeroChartModel | null;
     spotlightCharts?: Record<string, HeroChartModel | null>;

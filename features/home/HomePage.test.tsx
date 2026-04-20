@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ImgHTMLAttributes } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
@@ -101,6 +101,26 @@ const buildEvent = (
 });
 
 describe("HomePage", () => {
+  const installResizeObserver = () => {
+    let callback: (() => void) | null = null;
+
+    class ResizeObserverMock {
+      constructor(notify: () => void) {
+        callback = notify;
+      }
+
+      observe() {}
+
+      disconnect() {}
+    }
+
+    vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+
+    return () => {
+      callback?.();
+    };
+  };
+
   it("filters the homepage market grid in place when a chip is selected", async () => {
     const sportsEvent = buildEvent(
       "Sports market",
@@ -151,7 +171,7 @@ describe("HomePage", () => {
     expect(screen.queryByRole("heading", { name: "Crypto market" })).toBeNull();
   });
 
-  it("scrolls the chip rail forward when the chevron is clicked", () => {
+  it("shows the backward chevron after the rail has been scrolled", () => {
     const sportsEvent = buildEvent(
       "Sports market",
       [{ id: "sports", slug: "sports", label: "Sports" }],
@@ -174,6 +194,8 @@ describe("HomePage", () => {
       exploreEvents: [sportsEvent],
     };
 
+    const notifyResize = installResizeObserver();
+    let scrollLeft = 0;
     const scrollBy = vi.fn();
     Object.defineProperty(HTMLElement.prototype, "scrollBy", {
       configurable: true,
@@ -182,10 +204,48 @@ describe("HomePage", () => {
 
     render(<HomePage model={model} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Scroll market topics" }));
+    const rail = screen.getByTestId("market-chip-row");
+    Object.defineProperty(rail, "clientWidth", {
+      configurable: true,
+      get: () => 200,
+    });
+    Object.defineProperty(rail, "scrollWidth", {
+      configurable: true,
+      get: () => 520,
+    });
+    Object.defineProperty(rail, "scrollLeft", {
+      configurable: true,
+      get: () => scrollLeft,
+    });
+
+    act(() => {
+      notifyResize();
+    });
+
+    expect(
+      screen.queryByRole("button", { name: "Scroll market topics backward" }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Scroll market topics forward" }));
 
     expect(scrollBy).toHaveBeenCalledWith({
       left: 240,
+      behavior: "smooth",
+    });
+
+    scrollLeft = 240;
+    act(() => {
+      fireEvent.scroll(rail);
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Scroll market topics backward" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Scroll market topics backward" }));
+
+    expect(scrollBy).toHaveBeenLastCalledWith({
+      left: -240,
       behavior: "smooth",
     });
   });
