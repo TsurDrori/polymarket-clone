@@ -16,7 +16,7 @@ import styles from "./page.module.css";
 export const metadata: Metadata = {
   title: "Polymarket | The World's Largest Prediction Market™",
   description:
-    "Featured prediction markets, breaking movers, and the broadest live market feed across the clone's core surfaces.",
+    "Featured prediction markets and the broadest live market feed across the clone's core surfaces.",
 };
 
 export default async function Home() {

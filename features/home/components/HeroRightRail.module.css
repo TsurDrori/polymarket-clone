@@ -130,7 +130,7 @@
   color: var(--accent-no);
 }
 
-.breakingModule .subtitle {
+.pulseModule .subtitle {
   max-width: 24ch;
 }
 

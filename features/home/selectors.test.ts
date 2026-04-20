@@ -9,7 +9,7 @@ import {
   buildHomePageModel,
   collectTrendingTopics,
   getPrimaryMarket,
-  selectHeroBreaking,
+  selectHeroPulse,
   selectSpotlightEvent,
   selectSpotlightEvents,
 } from "./selectors";
@@ -138,7 +138,7 @@ describe("getPrimaryMarket", () => {
   });
 });
 
-describe("selectHeroBreaking", () => {
+describe("selectHeroPulse", () => {
   it("returns the highest moving unique events and excludes the spotlight event", () => {
     const spotlight = buildEvent("Spotlight", [{ id: "1", slug: "tech", label: "Tech" }], {
       id: "spotlight",
@@ -151,7 +151,7 @@ describe("selectHeroBreaking", () => {
       markets: [buildMarket({ oneDayPriceChange: 0.04, lastTradePrice: 0.55 })],
     });
 
-    const items = selectHeroBreaking([lowMove, mediumMove, spotlight], {
+    const items = selectHeroPulse([lowMove, mediumMove, spotlight], {
       excludeEventId: spotlight.id,
       limit: 2,
     });
@@ -333,7 +333,7 @@ describe("buildHomePageModel", () => {
 
     expect(model.hero.spotlight?.event.id).toBe("event-1");
     expect(model.hero.spotlights).toHaveLength(6);
-    expect(model.hero.breaking).toHaveLength(3);
+    expect(model.hero.pulse).toHaveLength(3);
     expect(model.hero.topics.length).toBeLessThanOrEqual(5);
     expect(model.exploreEvents).toHaveLength(30);
   });

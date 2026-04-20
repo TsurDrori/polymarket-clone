@@ -109,7 +109,7 @@ describe("HomeHero", () => {
         buildSpotlight("First spotlight question?", "First"),
         buildSpotlight("Second spotlight question?", "Second"),
       ],
-      breaking: [],
+      pulse: [],
       topics: [],
       contextChips: [],
     };

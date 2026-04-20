@@ -3,21 +3,16 @@
 import { usePathname } from "next/navigation";
 import { Tab } from "@/shared/ui/Tab";
 import { isTabActive } from "../activeTab";
-import { useActiveHomeSection } from "../useActiveHomeSection";
 import { HEADER_MARKET_ITEMS, TrendingMark } from "./navItems";
 import styles from "./CategoryNav.module.css";
 
 export function CategoryNav() {
   const pathname = usePathname() ?? "/";
-  const activeHomeSection = useActiveHomeSection(pathname);
   return (
     <nav aria-label="Browse markets" className={styles.nav}>
       {HEADER_MARKET_ITEMS.flatMap((item, index) => {
         const activeHref = item.activeMatch ?? item.href ?? "/";
-        const active =
-          pathname === "/" && item.sectionId
-            ? activeHomeSection === item.sectionId
-            : isTabActive(pathname, activeHref);
+        const active = isTabActive(pathname, activeHref);
 
         const elements = [
           <Tab
@@ -33,7 +28,7 @@ export function CategoryNav() {
           </Tab>
         ];
 
-        if (index === 2) {
+        if (index === 0) {
           elements.push(
             <span
               key="header-nav-separator"

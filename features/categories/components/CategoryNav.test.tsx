@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CategoryNav } from "./CategoryNav";
 
@@ -22,43 +22,35 @@ describe("CategoryNav", () => {
     expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
       "page",
     );
-    expect(screen.getByRole("link", { name: "Breaking" }).getAttribute("aria-current")).toBe(
+    expect(screen.getByRole("link", { name: "Politics" }).getAttribute("aria-current")).toBe(
       null,
     );
-    expect(screen.getByRole("link", { name: "New" }).getAttribute("aria-current")).toBe(null);
+    expect(screen.getByRole("link", { name: "Sports" }).getAttribute("aria-current")).toBe(null);
   });
 
-  it("activates only the matching home section tab when a hash is present", () => {
-    window.history.replaceState(null, "", "/#breaking-news");
+  it("keeps Trending active when the root route carries a hash", () => {
+    window.history.replaceState(null, "", "/#markets");
+
+    render(<CategoryNav />);
+
+    expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Politics" }).getAttribute("aria-current")).toBe(
+      null,
+    );
+  });
+
+  it("activates the matching category tab on non-home routes", () => {
+    usePathname.mockReturnValue("/sports/live");
 
     render(<CategoryNav />);
 
     expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
       null,
     );
-    expect(screen.getByRole("link", { name: "Breaking" }).getAttribute("aria-current")).toBe(
+    expect(screen.getByRole("link", { name: "Sports" }).getAttribute("aria-current")).toBe(
       "page",
     );
-    expect(screen.getByRole("link", { name: "New" }).getAttribute("aria-current")).toBe(null);
-  });
-
-  it("updates the active tab when the hash changes through history navigation", async () => {
-    render(<CategoryNav />);
-
-    act(() => {
-      window.history.pushState(null, "", "/#all-markets");
-    });
-
-    await waitFor(() => {
-      expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
-        null,
-      );
-      expect(screen.getByRole("link", { name: "Breaking" }).getAttribute("aria-current")).toBe(
-        null,
-      );
-      expect(screen.getByRole("link", { name: "New" }).getAttribute("aria-current")).toBe(
-        "page",
-      );
-    });
   });
 });

@@ -7,7 +7,7 @@ const hero: HomeHeroModel = {
   spotlight: null,
   spotlights: [],
   contextChips: [],
-  breaking: [
+  pulse: [
     {
       event: {
         id: "event-1",
@@ -72,16 +72,16 @@ const hero: HomeHeroModel = {
 };
 
 describe("HeroRightRail", () => {
-  it("prioritizes breaking question text and keeps topic rows compact", () => {
+  it("prioritizes pulse question text and keeps topic rows compact", () => {
     render(<HeroRightRail hero={hero} />);
 
-    expect(screen.getByRole("heading", { name: "Breaking news" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Market pulse" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Hot topics" })).toBeTruthy();
     expect(screen.getByText("Will this happen?")).toBeTruthy();
     expect(screen.queryByText("1 market")).toBeNull();
     expect(screen.queryByText("15 markets")).toBeNull();
 
     const exploreLink = screen.getByRole("link", { name: "Explore all" });
-    expect(exploreLink.getAttribute("href")).toBe("#all-markets");
+    expect(exploreLink.getAttribute("href")).toBe("#markets");
   });
 });

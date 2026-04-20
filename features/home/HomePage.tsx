@@ -17,13 +17,13 @@ export function HomePage({ model }: HomePageProps) {
       <CompactHeroDiscovery chips={model.hero.contextChips} />
 
       <section
-        id="all-markets"
+        id="markets"
         className={styles.marketSection}
-        aria-labelledby="all-markets-heading"
+        aria-labelledby="markets-heading"
       >
         <div className={styles.sectionHeader}>
           <div>
-            <h2 id="all-markets-heading" className={styles.subheading}>
+            <h2 id="markets-heading" className={styles.subheading}>
               All markets
             </h2>
           </div>

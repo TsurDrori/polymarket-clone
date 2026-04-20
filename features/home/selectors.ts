@@ -31,7 +31,7 @@ export type HeroChip = {
   href?: string;
 };
 
-export type HeroBreakingItem = {
+export type HeroPulseItem = {
   event: PolymarketEvent;
   market: PolymarketMarket;
   chance: number;
@@ -82,7 +82,7 @@ export type HeroSpotlightModel = {
 export type HomeHeroModel = {
   spotlights: HeroSpotlightModel[];
   spotlight: HeroSpotlightModel | null;
-  breaking: HeroBreakingItem[];
+  pulse: HeroPulseItem[];
   topics: HeroTopicItem[];
   contextChips: HeroChip[];
 };
@@ -644,7 +644,7 @@ export const selectFeaturedEvents = (
   limit = 5,
 ): PolymarketEvent[] => getRankedEvents(events).slice(0, limit);
 
-export const selectHeroBreaking = (
+export const selectHeroPulse = (
   events: ReadonlyArray<PolymarketEvent>,
   {
     excludeEventId,
@@ -653,8 +653,8 @@ export const selectHeroBreaking = (
     excludeEventId?: string;
     limit?: number;
   } = {},
-): HeroBreakingItem[] => {
-  const selected: HeroBreakingItem[] = [];
+): HeroPulseItem[] => {
+  const selected: HeroPulseItem[] = [];
   const seenEventIds = new Set<string>();
 
   const rankedMarkets = events
@@ -694,10 +694,10 @@ export const selectHeroBreaking = (
   return selected;
 };
 
-export const selectBreakingItems = (
+export const selectPulseItems = (
   events: ReadonlyArray<PolymarketEvent>,
   limit = 4,
-): HeroBreakingItem[] => selectHeroBreaking(events, { limit });
+): HeroPulseItem[] => selectHeroPulse(events, { limit });
 
 export const collectTrendingTopics = (
   events: ReadonlyArray<PolymarketEvent>,
@@ -756,7 +756,7 @@ export const selectHeroContextChips = (
     chips.push(chip);
   };
 
-  pushChip({ slug: "all", label: "All", href: "#all-markets" });
+  pushChip({ slug: "all", label: "All", href: "#markets" });
 
   if (spotlight) {
     const spotlightTags = getPrimaryVisibleTags(spotlight.event);
@@ -879,14 +879,14 @@ export const buildHomeHeroModel = (
     spotlightChart = null,
     spotlightCharts = {},
     spotlightLimit = HOME_HERO_SPOTLIGHT_LIMIT,
-    breakingLimit = 3,
+    pulseLimit = 3,
     topicLimit = 5,
     contextChipLimit = 8,
   }: {
     spotlightChart?: HeroChartModel | null;
     spotlightCharts?: Record<string, HeroChartModel | null>;
     spotlightLimit?: number;
-    breakingLimit?: number;
+    pulseLimit?: number;
     topicLimit?: number;
     contextChipLimit?: number;
   } = {},
@@ -911,9 +911,9 @@ export const buildHomeHeroModel = (
   return {
     spotlights,
     spotlight,
-    breaking: selectHeroBreaking(events, {
+    pulse: selectHeroPulse(events, {
       excludeEventId: spotlight?.event.id,
-      limit: breakingLimit,
+      limit: pulseLimit,
     }),
     topics,
     contextChips: selectHeroContextChips(spotlight, topics, contextChipLimit),

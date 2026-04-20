@@ -33,7 +33,6 @@ export type ShellLinkItem = {
   href?: string;
   description?: string;
   activeMatch?: string;
-  sectionId?: "trending" | "breaking-news" | "all-markets";
 };
 
 export const CATEGORY_ITEMS: readonly CategoryNavItem[] = [
@@ -44,14 +43,7 @@ export const CATEGORY_ITEMS: readonly CategoryNavItem[] = [
 ] as const;
 
 export const HEADER_MARKET_ITEMS: readonly ShellLinkItem[] = [
-  { label: "Trending", href: "/#trending", activeMatch: "/", sectionId: "trending" },
-  {
-    label: "Breaking",
-    href: "/#breaking-news",
-    activeMatch: "/",
-    sectionId: "breaking-news",
-  },
-  { label: "New", href: "/#all-markets", activeMatch: "/", sectionId: "all-markets" },
+  { label: "Trending", href: "/", activeMatch: "/" },
   { label: "Politics", href: "/politics", activeMatch: "/politics" },
   { label: "Sports", href: "/sports/live", activeMatch: "/sports" },
   { label: "Crypto", href: "/crypto", activeMatch: "/crypto" },
@@ -93,17 +85,15 @@ export const DRAWER_DESTINATION_ITEMS: readonly ShellLinkItem[] = [
 export const MOBILE_BOTTOM_ITEMS = [
   {
     label: "Home",
-    href: "/#trending",
+    href: "/",
     icon: House,
     activeMatch: "/",
-    sectionId: "trending",
   },
   { label: "Search", icon: Search },
   {
-    label: "Breaking",
-    href: "/#breaking-news",
-    icon: TrendingMark,
-    activeMatch: "/",
-    sectionId: "breaking-news",
+    label: "Sports",
+    href: "/sports/live",
+    icon: Trophy,
+    activeMatch: "/sports",
   },
 ] as const;
