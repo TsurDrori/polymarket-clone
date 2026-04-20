@@ -9,6 +9,7 @@ import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types"
 import { getEventImage } from "@/features/events/api/parse";
 import { ContinuationButton } from "@/shared/ui/ContinuationButton";
 import { formatPct, formatVolume } from "@/shared/lib/format";
+import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import { getPrimaryMarket, selectSpotlightMarket } from "../selectors";
 import styles from "./HomeMarketGrid.module.css";
 
@@ -79,6 +80,7 @@ function HomeMarketCard({ event }: { event: PolymarketEvent }) {
             alt=""
             fill
             sizes="34px"
+            unoptimized={shouldBypassNextImageOptimization(imageSrc)}
             className={styles.media}
           />
         </div>

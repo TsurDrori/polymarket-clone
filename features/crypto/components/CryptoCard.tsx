@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PriceCell } from "@/features/events/components/PriceCell";
 import { cn } from "@/shared/lib/cn";
 import { formatPct } from "@/shared/lib/format";
+import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import { type CryptoCardModel } from "../parse";
 import { CryptoSingleGauge } from "./CryptoSingleGauge";
 import styles from "./CryptoCard.module.css";
@@ -50,6 +51,7 @@ export function CryptoCard({ card, emphasis }: CryptoCardProps) {
                   alt=""
                   fill
                   sizes="48px"
+                  unoptimized={shouldBypassNextImageOptimization(card.imageSrc)}
                   className={styles.icon}
                 />
               ) : (

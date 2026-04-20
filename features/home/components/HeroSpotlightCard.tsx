@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Bookmark, Link2 } from "lucide-react";
 import { getEventImage } from "@/features/events/api/parse";
 import { formatPct } from "@/shared/lib/format";
+import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import type { HeroSpotlightModel } from "../selectors";
 import { HeroPriceChart, type HeroChartHoverState } from "./HeroPriceChart";
 import styles from "./HomeHero.module.css";
@@ -34,6 +35,8 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
     const hoveredDelta = (hoveredPoint?.p ?? spotlight.chance) - chartStartPoint;
     return hoveredDelta;
   }, [chartStartPoint, hoveredPoint?.p, spotlight.chance, spotlight.dayChange]);
+  const primaryOutcome = spotlight.outcomeItems[0];
+  const secondaryOutcome = spotlight.outcomeItems[1];
 
   return (
     <article className={styles.spotlightCard} data-spotlight-card>
@@ -45,6 +48,7 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
               alt=""
               fill
               sizes="56px"
+              unoptimized={shouldBypassNextImageOptimization(imageSrc)}
               className={styles.thumbnail}
             />
           </div>
@@ -95,14 +99,41 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
             </span>
           </div>
 
-          <div className={styles.outcomeRow}>
-            <Link href={spotlight.href} className={`${styles.outcomePill} ${styles.outcomeYes}`}>
-              Yes
-            </Link>
-            <Link href={spotlight.href} className={`${styles.outcomePill} ${styles.outcomeNo}`}>
-              No
-            </Link>
-          </div>
+          {spotlight.outcomeMode === "multi-market" ? (
+            <div className={styles.marketOutcomeList} data-hero-market-options>
+              {spotlight.outcomeItems.map((outcome) => (
+                <Link
+                  key={outcome.marketId}
+                  href={outcome.href}
+                  className={styles.marketOutcomeRow}
+                >
+                  <span className={styles.marketOutcomeLabel}>{outcome.label}</span>
+                  <span className={styles.marketOutcomeValue}>
+                    {formatPct(outcome.chance)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.outcomeRow}>
+              {primaryOutcome ? (
+                <Link
+                  href={primaryOutcome.href}
+                  className={`${styles.outcomePill} ${styles.outcomeYes}`}
+                >
+                  {primaryOutcome.label}
+                </Link>
+              ) : null}
+              {secondaryOutcome ? (
+                <Link
+                  href={secondaryOutcome.href}
+                  className={`${styles.outcomePill} ${styles.outcomeNo}`}
+                >
+                  {secondaryOutcome.label}
+                </Link>
+              ) : null}
+            </div>
+          )}
 
           <div className={styles.sourceSection}>
             <div className={styles.sourceTicker} data-feed-ticker>

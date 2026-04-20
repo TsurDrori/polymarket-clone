@@ -51,6 +51,13 @@ export type HeroTopicItem = TopicSummary & {
   href?: string;
 };
 
+export type HeroOutcomeItem = {
+  marketId: string;
+  label: string;
+  chance: number;
+  href: string;
+};
+
 export type HeroSpotlightModel = {
   event: PolymarketEvent;
   market: PolymarketMarket;
@@ -66,6 +73,8 @@ export type HeroSpotlightModel = {
   notes: string[];
   sourceRows: HeroSourceRow[];
   sourceMode: "fallback-derived";
+  outcomeItems: HeroOutcomeItem[];
+  outcomeMode: "binary" | "multi-market";
   href: string;
   navigationLabel: string;
 };
@@ -83,6 +92,8 @@ export type HomePageModel = {
   marketChips: HeroChip[];
   exploreEvents: PolymarketEvent[];
 };
+
+export const HOME_HERO_SPOTLIGHT_LIMIT = 6;
 
 const GENERIC_TOPIC_SLUGS = new Set([
   "featured",
@@ -278,13 +289,19 @@ const rankSpotlightEvent = (event: PolymarketEvent) => {
   const market = selectSpotlightMarket(event);
   if (!market) return null;
 
+  const spotlightEligibleMarkets = event.markets.filter(isMarketEligibleForSpotlight);
+
   return {
     hasImage: Number(Boolean(event.image || event.icon || market.image || market.icon)),
     featured: Number(event.featured),
+    hasMultipleMarkets: Number(spotlightEligibleMarkets.length > 1),
+    marketCount: spotlightEligibleMarkets.length,
     nonSports: Number(!isSportsEvent(event)),
     editorialCategory: Number(getEventCategoryKey(event) !== "culture"),
     shortQuestion: Number(normalizeText(market.question).length <= 60),
     hasDescription: Number(Boolean(event.description?.trim())),
+    balancedPrimary: Number(isBalancedSpotlightMarket(market)),
+    activePrimary: Number(Math.abs(getMarketChange(market)) >= 0.05),
     conciseQuestion: getQuestionCompactnessScore(market),
     eventVolume: event.volume24hr || event.volume,
     marketVolume: getMarketVolume(market),
@@ -439,6 +456,75 @@ const buildSpotlightSummary = (
   );
 };
 
+const formatSpotlightOutcomeLabel = (market: PolymarketMarket): string =>
+  clampText(
+    normalizeText(market.groupItemTitle || market.question || "Outcome"),
+    42,
+  );
+
+const buildSpotlightOutcomeItems = (
+  event: PolymarketEvent,
+  market: PolymarketMarket,
+): Pick<HeroSpotlightModel, "outcomeItems" | "outcomeMode"> => {
+  const href = getEventHref(event);
+  const eligibleMarkets = event.markets.filter(isMarketEligibleForSpotlight);
+
+  if (eligibleMarkets.length > 1) {
+    return {
+      outcomeMode: "multi-market",
+      outcomeItems: [...eligibleMarkets]
+        .sort(
+          (left, right) =>
+            compareNumbersDesc(
+              getDisplayPrice(left),
+              getDisplayPrice(right),
+            ) ||
+            compareNumbersDesc(
+              getMarketVolume(left),
+              getMarketVolume(right),
+            ) ||
+            compareNumbersDesc(
+              Number(left.acceptingOrders),
+              Number(right.acceptingOrders),
+            ) ||
+            left.question.localeCompare(right.question),
+        )
+        .slice(0, 4)
+        .map((candidate) => ({
+          marketId: candidate.id,
+          label: formatSpotlightOutcomeLabel(candidate),
+          chance: getDisplayPrice(candidate),
+          href,
+        })),
+    };
+  }
+
+  const yesLabel = normalizeText(market.outcomes[0] ?? "Yes");
+  const noLabel = normalizeText(market.outcomes[1] ?? "No");
+  const yesChance = getDisplayPrice(market);
+  const rawNoChance =
+    market.outcomePrices[1] ?? (Number.isFinite(yesChance) ? 1 - yesChance : 0);
+  const noChance = Math.max(0, Math.min(1, rawNoChance));
+
+  return {
+    outcomeMode: "binary",
+    outcomeItems: [
+      {
+        marketId: `${market.id}-0`,
+        label: yesLabel,
+        chance: yesChance,
+        href,
+      },
+      {
+        marketId: `${market.id}-1`,
+        label: noLabel,
+        chance: noChance,
+        href,
+      },
+    ],
+  };
+};
+
 const buildHeroChipHref = (slug: string): string | undefined =>
   CATEGORY_ROUTES.get(slug);
 
@@ -509,7 +595,7 @@ export const selectSpotlightEvent = (
 
 export const selectSpotlightEvents = (
   events: ReadonlyArray<PolymarketEvent>,
-  limit = 5,
+  limit = HOME_HERO_SPOTLIGHT_LIMIT,
 ): PolymarketEvent[] => {
   const candidates = events
     .map((event) => {
@@ -528,28 +614,19 @@ export const selectSpotlightEvents = (
       } => Boolean(candidate),
     );
 
-  const balancedCandidates = candidates.filter(({ market }) =>
-    isBalancedSpotlightMarket(market),
-  );
-  const activeBalancedCandidates = balancedCandidates.filter(
-    ({ rank }) => rank.marketChange >= 0.05,
-  );
-  const pool =
-    activeBalancedCandidates.length > 0
-      ? activeBalancedCandidates
-      : balancedCandidates.length > 0
-        ? balancedCandidates
-        : candidates;
-
-  return pool
+  return candidates
     .sort((left, right) => {
       return (
         compareNumbersDesc(left.rank.featured, right.rank.featured) ||
+        compareNumbersDesc(left.rank.hasMultipleMarkets, right.rank.hasMultipleMarkets) ||
+        compareNumbersDesc(left.rank.marketCount, right.rank.marketCount) ||
         compareNumbersDesc(left.rank.nonSports, right.rank.nonSports) ||
         compareNumbersDesc(left.rank.editorialCategory, right.rank.editorialCategory) ||
+        compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
+        compareNumbersDesc(left.rank.balancedPrimary, right.rank.balancedPrimary) ||
+        compareNumbersDesc(left.rank.activePrimary, right.rank.activePrimary) ||
         compareNumbersDesc(left.rank.eventVolume, right.rank.eventVolume) ||
         compareNumbersDesc(left.rank.marketVolume, right.rank.marketVolume) ||
-        compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
         compareNumbersDesc(left.rank.marketChange, right.rank.marketChange) ||
         compareNumbersDesc(left.rank.centeredPrice, right.rank.centeredPrice) ||
         compareNumbersDesc(left.rank.hasImage, right.rank.hasImage) ||
@@ -772,6 +849,7 @@ const buildHeroSpotlightModel = (
   chart: HeroChartModel | null,
 ): HeroSpotlightModel => {
   const labels = buildSpotlightLabels(event);
+  const outcomeModel = buildSpotlightOutcomeItems(event, market);
 
   return {
     event,
@@ -789,6 +867,7 @@ const buildHeroSpotlightModel = (
     notes: buildSpotlightNotes(event, market),
     sourceRows: buildFallbackSourceRows(event, market),
     sourceMode: "fallback-derived" as const,
+    ...outcomeModel,
     href: getEventHref(event),
     navigationLabel: buildSpotlightNavigationLabel(event, market, labels),
   };
@@ -799,7 +878,7 @@ export const buildHomeHeroModel = (
   {
     spotlightChart = null,
     spotlightCharts = {},
-    spotlightLimit = 5,
+    spotlightLimit = HOME_HERO_SPOTLIGHT_LIMIT,
     breakingLimit = 3,
     topicLimit = 5,
     contextChipLimit = 8,

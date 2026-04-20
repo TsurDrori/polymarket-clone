@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { PolymarketEvent } from "@/features/events/types";
 import { ContinuationButton } from "@/shared/ui/ContinuationButton";
 import { EventCard } from "./EventCard";
@@ -12,6 +12,19 @@ type EventGridProps = {
   incrementCount?: number;
   continuationLabel?: string;
 };
+
+type PaginationState = {
+  resetKey: string;
+  visibleCount: number;
+};
+
+const createPaginationState = (
+  resetKey: string,
+  initialVisibleCount: number,
+): PaginationState => ({
+  resetKey,
+  visibleCount: initialVisibleCount,
+});
 
 export function EventGrid({
   events,
@@ -25,13 +38,16 @@ export function EventGrid({
     typeof incrementCount === "number" &&
     incrementCount > 0 &&
     events.length > initialCount;
-  const [visibleCount, setVisibleCount] = useState(
-    canPaginate ? initialCount : events.length,
+  const initialVisibleCount = canPaginate ? initialCount : events.length;
+  const eventsKey = useMemo(() => events.map((event) => event.id).join("|"), [events]);
+  const paginationResetKey = `${eventsKey}:${initialVisibleCount}`;
+  const [paginationState, setPaginationState] = useState<PaginationState>(() =>
+    createPaginationState(paginationResetKey, initialVisibleCount),
   );
-
-  useEffect(() => {
-    setVisibleCount(canPaginate ? initialCount : events.length);
-  }, [canPaginate, events.length, initialCount]);
+  const visibleCount =
+    paginationState.resetKey === paginationResetKey
+      ? paginationState.visibleCount
+      : initialVisibleCount;
 
   const visibleEvents = useMemo(
     () => events.slice(0, canPaginate ? visibleCount : events.length),
@@ -51,9 +67,20 @@ export function EventGrid({
         <div className={styles.actionRow}>
           <ContinuationButton
             onClick={() =>
-              setVisibleCount((count) =>
-                Math.min(events.length, count + (incrementCount ?? events.length)),
-              )
+              setPaginationState((currentState) => {
+                const currentVisibleCount =
+                  currentState.resetKey === paginationResetKey
+                    ? currentState.visibleCount
+                    : initialVisibleCount;
+
+                return {
+                  resetKey: paginationResetKey,
+                  visibleCount: Math.min(
+                    events.length,
+                    currentVisibleCount + (incrementCount ?? events.length),
+                  ),
+                };
+              })
             }
           >
             {continuationLabel}

@@ -5,6 +5,7 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -50,6 +51,14 @@ type ProjectedSurfaceWindowState<T> = {
   showMore: () => void;
 };
 
+type SurfaceWindowState = {
+  resetKey: string;
+  visibleCount: number;
+  committedVisibleIds: ReadonlyArray<string>;
+  lastReorderAt: number;
+  highlightedIds: ReadonlyArray<string>;
+};
+
 const EMPTY_TICK: Tick = {
   price: 0,
   bestBid: 0,
@@ -59,6 +68,28 @@ const EMPTY_TICK: Tick = {
 
 const getUniqueTokenIds = (tokenIds: ReadonlyArray<string>): string[] =>
   Array.from(new Set(tokenIds.filter(Boolean)));
+
+const createSurfaceWindowState = (
+  resetKey: string,
+  itemIds: ReadonlyArray<string>,
+  initialVisibleCount: number,
+): SurfaceWindowState => ({
+  resetKey,
+  visibleCount: initialVisibleCount,
+  committedVisibleIds: itemIds.slice(0, initialVisibleCount),
+  lastReorderAt: 0,
+  highlightedIds: [],
+});
+
+const resolveSurfaceWindowState = (
+  state: SurfaceWindowState,
+  resetKey: string,
+  itemIds: ReadonlyArray<string>,
+  initialVisibleCount: number,
+): SurfaceWindowState =>
+  state.resetKey === resetKey
+    ? state
+    : createSurfaceWindowState(resetKey, itemIds, initialVisibleCount);
 
 export function useProjectedSurfaceWindow<T>({
   items,
@@ -71,20 +102,24 @@ export function useProjectedSurfaceWindow<T>({
   const itemIds = useMemo(() => items.map(getItemId), [items, getItemId]);
   const itemIdsKey = itemIds.join("|");
   const initialVisibleCount = clampVisibleCount(items.length, policy.initialVisibleCount);
-  const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
-  const [committedVisibleIds, setCommittedVisibleIds] = useState<ReadonlyArray<string>>(
-    itemIds.slice(0, initialVisibleCount),
+  const resetKey = `${itemIdsKey}:${initialVisibleCount}`;
+  const [surfaceWindowState, setSurfaceWindowState] = useState<SurfaceWindowState>(() =>
+    createSurfaceWindowState(resetKey, itemIds, initialVisibleCount),
   );
-  const [lastReorderAt, setLastReorderAt] = useState(0);
-  const [highlightedIds, setHighlightedIds] = useState<ReadonlyArray<string>>([]);
-
-  useEffect(() => {
-    const nextVisibleCount = clampVisibleCount(items.length, policy.initialVisibleCount);
-    setVisibleCount(nextVisibleCount);
-    setCommittedVisibleIds(itemIds.slice(0, nextVisibleCount));
-    setLastReorderAt(0);
-    setHighlightedIds([]);
-  }, [itemIds, itemIdsKey, items.length, policy.initialVisibleCount]);
+  const {
+    visibleCount,
+    committedVisibleIds,
+    highlightedIds,
+  } = useMemo(
+    () =>
+      resolveSurfaceWindowState(
+        surfaceWindowState,
+        resetKey,
+        itemIds,
+        initialVisibleCount,
+      ),
+    [initialVisibleCount, itemIds, resetKey, surfaceWindowState],
+  );
 
   const candidateCount = getCandidateCount(
     items.length,
@@ -100,7 +135,6 @@ export function useProjectedSurfaceWindow<T>({
       ),
     [candidateCount, getItemTokenIds, items],
   );
-  const candidateTokenIdsKey = candidateTokenIds.join("|");
 
   const tokenVersion = useSyncExternalStore(
     useCallback(
@@ -128,7 +162,7 @@ export function useProjectedSurfaceWindow<T>({
           });
         };
       },
-      [candidateTokenIds, candidateTokenIdsKey, store],
+      [candidateTokenIds, store],
     ),
     () =>
       candidateTokenIds
@@ -171,54 +205,64 @@ export function useProjectedSurfaceWindow<T>({
   const leaderIds = projectedVisibleIds;
   const projectedVisibleIdsKey = projectedVisibleIds.join("|");
 
+  const syncProjectedVisibleIds = useEffectEvent(() => {
+    setSurfaceWindowState((previousState) => {
+      const currentState = resolveSurfaceWindowState(
+        previousState,
+        resetKey,
+        itemIds,
+        initialVisibleCount,
+      );
+
+      if (
+        projectedVisibleIds.length === 0 ||
+        areIdListsEqual(currentState.committedVisibleIds, projectedVisibleIds)
+      ) {
+        return currentState;
+      }
+
+      const now = Date.now();
+      const isWindowResize =
+        currentState.committedVisibleIds.length !== projectedVisibleIds.length;
+
+      if (
+        !isWindowResize &&
+        currentState.lastReorderAt > 0 &&
+        now - currentState.lastReorderAt < policy.reorderCooldownMs
+      ) {
+        return currentState;
+      }
+
+      const nextVisibleIds = isWindowResize
+        ? projectedVisibleIds
+        : limitVisiblePromotions({
+            previousVisibleIds: currentState.committedVisibleIds,
+            projectedVisibleIds,
+            maxPromotionsPerCycle: policy.maxPromotionsPerCycle,
+          });
+
+      if (areIdListsEqual(currentState.committedVisibleIds, nextVisibleIds)) {
+        return currentState;
+      }
+
+      return {
+        ...currentState,
+        committedVisibleIds: nextVisibleIds,
+        highlightedIds: collectInsertedIds(currentState.committedVisibleIds, nextVisibleIds),
+        lastReorderAt: now,
+      };
+    });
+  });
+
   useEffect(() => {
-    if (projectedVisibleIds.length === 0) {
-      setCommittedVisibleIds([]);
-      setHighlightedIds([]);
-      return;
-    }
-
-    if (areIdListsEqual(committedVisibleIds, projectedVisibleIds)) {
-      return;
-    }
-
-    const now = Date.now();
-    const isWindowResize = committedVisibleIds.length !== projectedVisibleIds.length;
-
-    if (
-      !isWindowResize &&
-      lastReorderAt > 0 &&
-      now - lastReorderAt < policy.reorderCooldownMs
-    ) {
-      return;
-    }
-
-    const nextVisibleIds = isWindowResize
-      ? projectedVisibleIds
-      : limitVisiblePromotions({
-          previousVisibleIds: committedVisibleIds,
-          projectedVisibleIds,
-          maxPromotionsPerCycle: policy.maxPromotionsPerCycle,
-        });
-
-    if (areIdListsEqual(committedVisibleIds, nextVisibleIds)) {
-      return;
-    }
-
-    const insertedIds = collectInsertedIds(committedVisibleIds, nextVisibleIds);
-
     startTransition(() => {
-      setCommittedVisibleIds(nextVisibleIds);
-      setHighlightedIds(insertedIds);
-      setLastReorderAt(now);
+      syncProjectedVisibleIds();
     });
   }, [
-    committedVisibleIds,
-    lastReorderAt,
     policy.maxPromotionsPerCycle,
     policy.reorderCooldownMs,
-    projectedVisibleIds,
     projectedVisibleIdsKey,
+    resetKey,
   ]);
 
   useEffect(() => {
@@ -227,13 +271,29 @@ export function useProjectedSurfaceWindow<T>({
     }
 
     const timeoutId = window.setTimeout(() => {
-      setHighlightedIds([]);
+      setSurfaceWindowState((previousState) => {
+        const currentState = resolveSurfaceWindowState(
+          previousState,
+          resetKey,
+          itemIds,
+          initialVisibleCount,
+        );
+
+        if (currentState.highlightedIds.length === 0) {
+          return currentState;
+        }
+
+        return {
+          ...currentState,
+          highlightedIds: [],
+        };
+      });
     }, policy.highlightMs);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [highlightedIds, policy.highlightMs]);
+  }, [highlightedIds, initialVisibleCount, itemIds, policy.highlightMs, resetKey]);
 
   const itemMap = useMemo(
     () => new Map(items.map((item) => [getItemId(item), item])),
@@ -249,11 +309,25 @@ export function useProjectedSurfaceWindow<T>({
   const hasMore = visibleCount < items.length;
   const showMore = useCallback(() => {
     startTransition(() => {
-      setVisibleCount((currentCount) =>
-        expandVisibleCount(currentCount, items.length, policy.visibleIncrement),
-      );
+      setSurfaceWindowState((previousState) => {
+        const currentState = resolveSurfaceWindowState(
+          previousState,
+          resetKey,
+          itemIds,
+          initialVisibleCount,
+        );
+
+        return {
+          ...currentState,
+          visibleCount: expandVisibleCount(
+            currentState.visibleCount,
+            items.length,
+            policy.visibleIncrement,
+          ),
+        };
+      });
     });
-  }, [items.length, policy.visibleIncrement]);
+  }, [initialVisibleCount, itemIds, items.length, policy.visibleIncrement, resetKey]);
 
   return {
     visibleItems,

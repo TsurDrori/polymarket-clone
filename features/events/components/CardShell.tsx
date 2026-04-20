@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { getEventImage } from "@/features/events/api/parse";
 import type { PolymarketEvent } from "@/features/events/types";
 import { formatVolume } from "@/shared/lib/format";
+import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import styles from "./CardShell.module.css";
 
 type CardShellProps = {
@@ -33,6 +34,7 @@ export function CardShell({ event, children, href }: CardShellProps) {
             width={40}
             height={40}
             sizes="40px"
+            unoptimized={shouldBypassNextImageOptimization(imageSrc)}
             className={styles.image}
           />
         </div>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import type { SportsRowCompetitor } from "./parse";
 import styles from "./CompetitorsCell.module.css";
 
@@ -17,6 +18,7 @@ export function CompetitorsCell({ competitors }: CompetitorsCellProps) {
               alt=""
               width={28}
               height={28}
+              unoptimized={shouldBypassNextImageOptimization(competitor.logo)}
               className={styles.logo}
             />
           ) : (

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PriceCell } from "@/features/events/components/PriceCell";
 import { formatSportsPct } from "@/shared/lib/format";
+import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import type { SportsCardModel } from "./parse";
 import styles from "./FuturesEventListCard.module.css";
 
@@ -30,6 +31,7 @@ export function FuturesEventListCard({ card }: FuturesEventListCardProps) {
               alt=""
               fill
               sizes="40px"
+              unoptimized={shouldBypassNextImageOptimization(imageSrc)}
               className={styles.icon}
             />
           </div>

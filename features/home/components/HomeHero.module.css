@@ -158,6 +158,49 @@
   gap: 8px;
 }
 
+.marketOutcomeList {
+  display: grid;
+  gap: 0;
+}
+
+.marketOutcomeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 42px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-primary);
+}
+
+.marketOutcomeRow:last-child {
+  border-bottom: 0;
+}
+
+.marketOutcomeRow:hover .marketOutcomeLabel {
+  color: var(--text-secondary);
+}
+
+.marketOutcomeLabel {
+  min-width: 0;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 540;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marketOutcomeValue {
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .outcomePill {
   display: inline-flex;
   align-items: center;

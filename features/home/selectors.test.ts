@@ -11,6 +11,7 @@ import {
   getPrimaryMarket,
   selectHeroBreaking,
   selectSpotlightEvent,
+  selectSpotlightEvents,
 } from "./selectors";
 
 const buildMarket = (
@@ -220,8 +221,93 @@ describe("buildHomeHeroModel", () => {
 
     expect(hero.spotlight?.sourceMode).toBe("fallback-derived");
     expect(hero.spotlight?.sourceRows.length).toBeGreaterThanOrEqual(3);
+    expect(hero.spotlight?.outcomeMode).toBe("binary");
+    expect(hero.spotlight?.outcomeItems).toHaveLength(2);
     expect(hero.contextChips[0]?.label).toBe("All");
     expect(hero.spotlight?.chart?.points).toHaveLength(5);
+  });
+
+  it("surfaces multi-market outcome rows for bracket-style events", () => {
+    const event = buildEvent(
+      "2026 Championship",
+      [{ id: "sports", slug: "sports", label: "Sports" }],
+      {
+        featured: true,
+        markets: [
+          buildMarket({
+            id: "market-a",
+            question: "Will Team A win the championship?",
+            groupItemTitle: "Team A",
+            lastTradePrice: 0.42,
+            volume24hr: 8_000,
+          }),
+          buildMarket({
+            id: "market-b",
+            question: "Will Team B win the championship?",
+            groupItemTitle: "Team B",
+            lastTradePrice: 0.27,
+            volume24hr: 7_000,
+          }),
+          buildMarket({
+            id: "market-c",
+            question: "Will Team C win the championship?",
+            groupItemTitle: "Team C",
+            lastTradePrice: 0.16,
+            volume24hr: 6_000,
+          }),
+        ],
+      },
+    );
+
+    const hero = buildHomeHeroModel([event]);
+
+    expect(hero.spotlight?.outcomeMode).toBe("multi-market");
+    expect(hero.spotlight?.outcomeItems.map((outcome) => outcome.label)).toEqual([
+      "Team A",
+      "Team B",
+      "Team C",
+    ]);
+  });
+});
+
+describe("selectSpotlightEvents", () => {
+  it("fills the hero carousel with multi-market events before falling back to single markets", () => {
+    const multiOne = buildEvent(
+      "Multi One",
+      [{ id: "economy", slug: "economy", label: "Economy" }],
+      {
+        featured: true,
+        volume24hr: 900_000,
+        markets: [
+          buildMarket({ id: "m1-a", lastTradePrice: 0.46, volume24hr: 9_000 }),
+          buildMarket({ id: "m1-b", lastTradePrice: 0.31, volume24hr: 8_000 }),
+          buildMarket({ id: "m1-c", lastTradePrice: 0.18, volume24hr: 7_000 }),
+        ],
+      },
+    );
+    const multiTwo = buildEvent(
+      "Multi Two",
+      [{ id: "culture", slug: "culture", label: "Culture" }],
+      {
+        volume24hr: 800_000,
+        markets: [
+          buildMarket({ id: "m2-a", lastTradePrice: 0.39, volume24hr: 6_000 }),
+          buildMarket({ id: "m2-b", lastTradePrice: 0.22, volume24hr: 5_000 }),
+        ],
+      },
+    );
+    const single = buildEvent(
+      "Single",
+      [{ id: "politics", slug: "politics", label: "Politics" }],
+      {
+        volume24hr: 700_000,
+        markets: [buildMarket({ id: "single-a", lastTradePrice: 0.51, volume24hr: 12_000 })],
+      },
+    );
+
+    const selected = selectSpotlightEvents([single, multiTwo, multiOne], 2);
+
+    expect(selected.map((event) => event.title)).toEqual(["Multi One", "Multi Two"]);
   });
 });
 
@@ -246,6 +332,7 @@ describe("buildHomePageModel", () => {
     const model = buildHomePageModel(events);
 
     expect(model.hero.spotlight?.event.id).toBe("event-1");
+    expect(model.hero.spotlights).toHaveLength(6);
     expect(model.hero.breaking).toHaveLength(3);
     expect(model.hero.topics.length).toBeLessThanOrEqual(5);
     expect(model.exploreEvents).toHaveLength(30);

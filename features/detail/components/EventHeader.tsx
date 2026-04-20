@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getEventImage } from "@/features/events/api/parse";
 import type { PolymarketEvent } from "@/features/events/types";
 import { formatEndDate, formatFullUSD } from "@/shared/lib/format";
+import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import styles from "./EventHeader.module.css";
 
 type EventHeaderProps = {
@@ -22,6 +23,7 @@ export function EventHeader({ event }: EventHeaderProps) {
           width={80}
           height={80}
           sizes="80px"
+          unoptimized={shouldBypassNextImageOptimization(imageSrc)}
           className={styles.image}
         />
       </div>
