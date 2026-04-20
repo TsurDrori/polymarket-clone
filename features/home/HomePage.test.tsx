@@ -102,10 +102,10 @@ const buildEvent = (
 
 describe("HomePage", () => {
   it("filters the homepage market grid in place when a chip is selected", async () => {
-    const politicsEvent = buildEvent(
-      "Politics market",
-      [{ id: "politics", slug: "politics", label: "Politics" }],
-      { id: "politics-event" },
+    const sportsEvent = buildEvent(
+      "Sports market",
+      [{ id: "sports", slug: "sports", label: "Sports" }],
+      { id: "sports-event" },
     );
     const cryptoEvent = buildEvent(
       "Crypto market",
@@ -123,31 +123,70 @@ describe("HomePage", () => {
       },
       marketChips: [
         { slug: "all", label: "All" },
-        { slug: "politics", label: "Politics" },
+        { slug: "sports", label: "Sports" },
         { slug: "crypto", label: "Crypto" },
       ],
-      exploreEvents: [politicsEvent, cryptoEvent],
+      exploreEvents: [sportsEvent, cryptoEvent],
     };
 
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({
         ok: true,
-        json: async () => ({ events: [politicsEvent] }),
+        json: async () => ({ events: [sportsEvent] }),
       })),
     );
 
     render(<HomePage model={model} />);
 
-    expect(screen.getByRole("heading", { name: "Politics market" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Sports market" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Crypto market" })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Politics" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sports" }));
 
-    expect(screen.getByRole("button", { name: "Politics" }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("button", { name: "Sports" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
-    expect(await screen.findByRole("heading", { name: "Politics market" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Sports market" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Crypto market" })).toBeNull();
+  });
+
+  it("scrolls the chip rail forward when the chevron is clicked", () => {
+    const sportsEvent = buildEvent(
+      "Sports market",
+      [{ id: "sports", slug: "sports", label: "Sports" }],
+      { id: "sports-event" },
+    );
+
+    const model: HomePageModel = {
+      hero: {
+        spotlight: null,
+        spotlights: [],
+        pulse: [],
+        topics: [],
+        contextChips: [],
+      },
+      marketChips: [
+        { slug: "all", label: "All" },
+        { slug: "sports", label: "Sports" },
+        { slug: "crypto", label: "Crypto" },
+      ],
+      exploreEvents: [sportsEvent],
+    };
+
+    const scrollBy = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "scrollBy", {
+      configurable: true,
+      value: scrollBy,
+    });
+
+    render(<HomePage model={model} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Scroll market topics" }));
+
+    expect(scrollBy).toHaveBeenCalledWith({
+      left: 240,
+      behavior: "smooth",
+    });
   });
 });

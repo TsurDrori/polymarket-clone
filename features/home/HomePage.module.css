@@ -95,8 +95,12 @@
 }
 
 .marketChipArrow {
+  border: 0;
+  background: transparent;
   padding: 0;
   min-width: 24px;
+  cursor: pointer;
+  font: inherit;
 }
 
 .marketFeedStatus {

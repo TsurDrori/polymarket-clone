@@ -14,6 +14,7 @@ type HomePageProps = {
 };
 
 export function HomePage({ model }: HomePageProps) {
+  const chipRailRef = useRef<HTMLDivElement | null>(null);
   const [activeChipSlug, setActiveChipSlug] = useState(
     model.marketChips[0]?.slug ?? "all",
   );
@@ -34,6 +35,16 @@ export function HomePage({ model }: HomePageProps) {
     },
     [],
   );
+
+  const scrollChipRailForward = () => {
+    const rail = chipRailRef.current;
+    if (!rail) return;
+
+    rail.scrollBy({
+      left: Math.max(rail.clientWidth * 0.75, 240),
+      behavior: "smooth",
+    });
+  };
 
   const selectChip = (chipSlug: string) => {
     startTransition(() => {
@@ -105,7 +116,7 @@ export function HomePage({ model }: HomePageProps) {
           </div>
         </div>
 
-        <div className={styles.marketChipRow}>
+        <div ref={chipRailRef} className={styles.marketChipRow}>
           {model.marketChips.map((chip) => (
             <button
               key={chip.slug}
@@ -119,9 +130,14 @@ export function HomePage({ model }: HomePageProps) {
               {chip.label}
             </button>
           ))}
-          <span className={styles.marketChipArrow}>
+          <button
+            type="button"
+            aria-label="Scroll market topics"
+            className={styles.marketChipArrow}
+            onClick={scrollChipRailForward}
+          >
             <ChevronRight size={18} />
-          </span>
+          </button>
         </div>
 
         {feedError ? (
