@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import styles from "./error.module.css";
+import { RouteFeedback } from "@/shared/ui/RouteFeedback";
 
 type ErrorProps = {
   error: Error & { digest?: string };
@@ -14,21 +14,18 @@ export default function Error({ error, unstable_retry }: ErrorProps) {
   }, [error]);
 
   return (
-    <main className={styles.wrap}>
-      <div role="alert" className={styles.card}>
-        <h2 className={styles.title}>Something went wrong</h2>
-        <p className={styles.message}>
-          This route failed to render. Retry the request or jump back to a top-level
-          market surface.
-        </p>
+    <RouteFeedback
+      role="alert"
+      title="Something went wrong"
+      message="This route failed to render. Retry the request or jump back to a top-level market surface."
+    >
         <button
           type="button"
-          className={styles.retry}
+          className="route-feedback__action"
           onClick={() => unstable_retry()}
         >
           Try again
         </button>
-      </div>
-    </main>
+    </RouteFeedback>
   );
 }

@@ -1,19 +1,15 @@
 import Link from "next/link";
-import styles from "@/app/error.module.css";
+import { RouteFeedback } from "@/shared/ui/RouteFeedback";
 
 export default function EventNotFound() {
   return (
-    <main className={styles.wrap}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Market not found</h1>
-        <p className={styles.message}>
-          This event slug doesn&apos;t exist or is no longer available from the
-          Gamma feed.
-        </p>
-        <Link href="/" className={styles.retry}>
+    <RouteFeedback
+      title="Market not found"
+      message="This event slug doesn&apos;t exist or is no longer available from the Gamma feed."
+    >
+        <Link href="/" className="route-feedback__action">
           Back to trending markets
         </Link>
-      </div>
-    </main>
+    </RouteFeedback>
   );
 }

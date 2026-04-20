@@ -7,9 +7,22 @@ const URL_CHANGE_EVENT = "polymarket-clone:urlchange";
 
 let restorePatchedHistory: (() => void) | null = null;
 let historySubscriberCount = 0;
+let hasQueuedUrlChange = false;
 
 const emitUrlChange = () => {
   window.dispatchEvent(new Event(URL_CHANGE_EVENT));
+};
+
+const scheduleUrlChange = () => {
+  if (hasQueuedUrlChange) {
+    return;
+  }
+
+  hasQueuedUrlChange = true;
+  queueMicrotask(() => {
+    hasQueuedUrlChange = false;
+    emitUrlChange();
+  });
 };
 
 const ensurePatchedHistory = () => {
@@ -23,12 +36,12 @@ const ensurePatchedHistory = () => {
 
   window.history.pushState = (...args) => {
     originalPushState(...args);
-    emitUrlChange();
+    scheduleUrlChange();
   };
 
   window.history.replaceState = (...args) => {
     originalReplaceState(...args);
-    emitUrlChange();
+    scheduleUrlChange();
   };
 
   historySubscriberCount = 1;

@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CategoryNav } from "./CategoryNav";
 
@@ -42,21 +42,23 @@ describe("CategoryNav", () => {
     expect(screen.getByRole("link", { name: "New" }).getAttribute("aria-current")).toBe(null);
   });
 
-  it("updates the active tab when the hash changes through history navigation", () => {
+  it("updates the active tab when the hash changes through history navigation", async () => {
     render(<CategoryNav />);
 
     act(() => {
       window.history.pushState(null, "", "/#all-markets");
     });
 
-    expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
-      null,
-    );
-    expect(screen.getByRole("link", { name: "Breaking" }).getAttribute("aria-current")).toBe(
-      null,
-    );
-    expect(screen.getByRole("link", { name: "New" }).getAttribute("aria-current")).toBe(
-      "page",
-    );
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
+        null,
+      );
+      expect(screen.getByRole("link", { name: "Breaking" }).getAttribute("aria-current")).toBe(
+        null,
+      );
+      expect(screen.getByRole("link", { name: "New" }).getAttribute("aria-current")).toBe(
+        "page",
+      );
+    });
   });
 });

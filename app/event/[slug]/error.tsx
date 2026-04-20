@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import styles from "@/app/error.module.css";
+import { RouteFeedback } from "@/shared/ui/RouteFeedback";
 
 type ErrorProps = {
   error: Error & { digest?: string };
@@ -14,21 +14,18 @@ export default function Error({ error, unstable_retry }: ErrorProps) {
   }, [error]);
 
   return (
-    <main className={styles.wrap}>
-      <div role="alert" className={styles.card}>
-        <h2 className={styles.title}>Couldn&apos;t load this market</h2>
-        <p className={styles.message}>
-          The event detail request failed. Try again to refetch the latest
-          market data.
-        </p>
+    <RouteFeedback
+      role="alert"
+      title="Couldn&apos;t load this market"
+      message="The event detail request failed. Try again to refetch the latest market data."
+    >
         <button
           type="button"
-          className={styles.retry}
+          className="route-feedback__action"
           onClick={() => unstable_retry()}
         >
           Try again
         </button>
-      </div>
-    </main>
+    </RouteFeedback>
   );
 }
