@@ -92,16 +92,23 @@ describe("CryptoPage", () => {
       limit: 120,
       order: "volume24hr",
       ascending: false,
-      revalidate: 30,
     });
     expect(CryptoSurfaceRoute).toHaveBeenCalledWith(
       expect.objectContaining({
         totalCount: 2,
+        facets: expect.objectContaining({
+          familyTabs: expect.any(Array),
+          rail: expect.objectContaining({
+            timeOptions: expect.any(Array),
+            assetOptions: expect.any(Array),
+          }),
+        }),
         initialFilters: {
           family: "all",
           time: "all",
           asset: "bitcoin",
         },
+        catalogEndpoint: "/api/crypto-cards",
         initialVisibleCount: 18,
         visibleIncrement: 18,
         cards: expect.arrayContaining([

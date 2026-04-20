@@ -84,12 +84,13 @@ const isMarketVisible = (market: PolymarketMarket): boolean => !market.closed;
 
 const getMarketRows = (event: PolymarketEvent): PolymarketMarket[] => {
   const visibleMarkets = event.markets.filter(isMarketVisible);
+  const marketsToDisplay = visibleMarkets.length > 0 ? visibleMarkets : event.markets;
 
-  if (visibleMarkets.length === 0) {
-    return event.markets.slice(0, 3);
+  if (event.showAllOutcomes && marketsToDisplay.length > 1) {
+    return marketsToDisplay;
   }
 
-  return visibleMarkets.slice(0, 3);
+  return marketsToDisplay.slice(0, 2);
 };
 
 const formatChangeLabel = (change: number): string =>
@@ -155,27 +156,7 @@ const getHomeCardLiveScore = (
   return Math.max(primaryDelta, rowDelta) + volumeBias * 0.002 + multiBias;
 };
 
-const getHomeLayoutVariant = (
-  event: PolymarketEvent,
-  index: number,
-): SurfaceFeedLayoutVariant => {
-  const hasGroupedMarkets = event.showAllOutcomes && event.markets.length > 1;
-  const volume = event.volume24hr || event.volume;
-
-  if (index === 0 && hasGroupedMarkets) {
-    return "wide";
-  }
-
-  if (hasGroupedMarkets && event.markets.length >= 4) {
-    return "wide";
-  }
-
-  if (volume >= 2_000_000 || hasGroupedMarkets) {
-    return "standard";
-  }
-
-  return "compact";
-};
+const getHomeLayoutVariant = (): SurfaceFeedLayoutVariant => "compact";
 
 const getHomeFeedItemId = (item: SurfaceFeedItem<PolymarketEvent>): string => item.descriptor.id;
 
@@ -358,10 +339,18 @@ export function HomeMarketGrid({
 }: HomeMarketGridProps) {
   const feedItems = useMemo<SurfaceFeedItem<PolymarketEvent>[]>(
     () =>
-      events.map((event, index) => ({
+      events.map((event) => ({
         descriptor: {
           id: event.id,
-          layoutVariant: getHomeLayoutVariant(event, index),
+          layoutVariant: getHomeLayoutVariant(),
+          layout: {
+            base: 12,
+            sm: 6,
+            md: 4,
+            lg: 3,
+            xl: 3,
+            density: "compact",
+          },
           motionPolicy: "bounded-promote",
           renderVariant: "home-market-card",
           motionKey: getPrimaryLiveMarket(event)?.id ?? event.id,

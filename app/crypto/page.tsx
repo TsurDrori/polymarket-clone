@@ -25,10 +25,12 @@ export default async function CryptoPage({ searchParams }: CryptoPageProps) {
       <CryptoSurfaceRoute
         totalCount={payload.totalCount}
         cards={payload.cards}
+        facets={payload.facets}
         hydrationSeeds={payload.hydrationSeeds}
         initialFilters={payload.initialFilters}
         initialVisibleCount={payload.initialVisibleCount}
         visibleIncrement={payload.visibleIncrement}
+        catalogEndpoint="/api/crypto-cards"
       />
     </main>
   );

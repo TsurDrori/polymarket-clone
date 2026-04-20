@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "jotai";
 import type { ImgHTMLAttributes } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  buildCryptoFacetState,
   buildCryptoHydrationSeeds,
   buildCryptoWorkingSet,
 } from "@/features/crypto/parse";
@@ -143,6 +144,17 @@ const buildWorkingSet = () =>
 describe("CryptoSurfaceRoute", () => {
   beforeEach(() => {
     window.history.replaceState(null, "", "/crypto");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ cards: buildWorkingSet().cards }),
+      }),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("updates the URL and visible cards immediately on family changes", async () => {
@@ -153,10 +165,16 @@ describe("CryptoSurfaceRoute", () => {
         <CryptoSurfaceRoute
           totalCount={workingSet.cards.length}
           cards={workingSet.cards}
+          facets={buildCryptoFacetState(workingSet.cards, {
+            family: "all",
+            time: "all",
+            asset: "all",
+          })}
           hydrationSeeds={buildCryptoHydrationSeeds(workingSet.cards)}
           initialFilters={{ family: "all", time: "all", asset: "all" }}
           initialVisibleCount={18}
           visibleIncrement={18}
+          catalogEndpoint="/api/crypto-cards"
         />
       </Provider>,
     );
@@ -191,10 +209,16 @@ describe("CryptoSurfaceRoute", () => {
         <CryptoSurfaceRoute
           totalCount={workingSet.cards.length}
           cards={workingSet.cards}
+          facets={buildCryptoFacetState(workingSet.cards, {
+            family: "price-range",
+            time: "5m",
+            asset: "bitcoin",
+          })}
           hydrationSeeds={buildCryptoHydrationSeeds(workingSet.cards)}
           initialFilters={{ family: "price-range", time: "5m", asset: "bitcoin" }}
           initialVisibleCount={18}
           visibleIncrement={18}
+          catalogEndpoint="/api/crypto-cards"
         />
       </Provider>,
     );
@@ -213,10 +237,16 @@ describe("CryptoSurfaceRoute", () => {
         <CryptoSurfaceRoute
           totalCount={workingSet.cards.length}
           cards={workingSet.cards}
+          facets={buildCryptoFacetState(workingSet.cards, {
+            family: "all",
+            time: "all",
+            asset: "all",
+          })}
           hydrationSeeds={buildCryptoHydrationSeeds(workingSet.cards)}
           initialFilters={{ family: "all", time: "all", asset: "all" }}
           initialVisibleCount={18}
           visibleIncrement={18}
+          catalogEndpoint="/api/crypto-cards"
         />
       </Provider>,
     );
