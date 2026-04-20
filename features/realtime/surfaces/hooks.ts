@@ -19,7 +19,6 @@ import {
 } from "../atoms";
 import { subscribe, unsubscribe } from "../subscriptions";
 import {
-  areIdListsEqual,
   buildProjectedSurfaceWindow,
   clampVisibleCount,
   commitProjectedVisibleIds,
@@ -100,6 +99,19 @@ const getPrefersReducedMotion = (): boolean =>
   typeof window.matchMedia === "function" &&
   window.matchMedia(REDUCED_MOTION_MEDIA_QUERY).matches;
 
+const subscribeToReducedMotionPreference = (onStoreChange: () => void) => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return () => {};
+  }
+
+  const mediaQueryList = window.matchMedia(REDUCED_MOTION_MEDIA_QUERY);
+  mediaQueryList.addEventListener?.("change", onStoreChange);
+
+  return () => {
+    mediaQueryList.removeEventListener?.("change", onStoreChange);
+  };
+};
+
 export function useProjectedSurfaceWindow<T>({
   items,
   getItemId,
@@ -110,33 +122,12 @@ export function useProjectedSurfaceWindow<T>({
   reducedMotion,
 }: UseProjectedSurfaceWindowOptions<T>): ProjectedSurfaceWindowState<T> {
   const store = useStore();
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() =>
-    reducedMotion ?? getPrefersReducedMotion(),
+  const systemPrefersReducedMotion = useSyncExternalStore(
+    subscribeToReducedMotionPreference,
+    getPrefersReducedMotion,
+    () => false,
   );
-
-  useEffect(() => {
-    if (typeof reducedMotion === "boolean") {
-      setPrefersReducedMotion(reducedMotion);
-      return;
-    }
-
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      setPrefersReducedMotion(false);
-      return;
-    }
-
-    const mediaQueryList = window.matchMedia(REDUCED_MOTION_MEDIA_QUERY);
-    const handleChange = () => {
-      setPrefersReducedMotion(mediaQueryList.matches);
-    };
-
-    handleChange();
-    mediaQueryList.addEventListener?.("change", handleChange);
-
-    return () => {
-      mediaQueryList.removeEventListener?.("change", handleChange);
-    };
-  }, [reducedMotion]);
+  const prefersReducedMotion = reducedMotion ?? systemPrefersReducedMotion;
 
   const itemIds = useMemo(() => items.map(getItemId), [items, getItemId]);
   const itemIdsKey = itemIds.join("|");
