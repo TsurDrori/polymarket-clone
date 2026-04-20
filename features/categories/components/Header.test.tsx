@@ -89,4 +89,17 @@ describe("Header", () => {
     expect(screen.queryByText("Finance")).toBeNull();
     expect(screen.queryByText("Geopolitics")).toBeNull();
   });
+
+  it("keeps the mobile search row and breaking quick action in the shared shell", () => {
+    render(<Header />);
+
+    expect(screen.getByRole("button", { name: /open filters/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /saved markets/i })).toBeTruthy();
+
+    const mobileQuickActions = screen.getByRole("navigation", {
+      name: /mobile quick actions/i,
+    });
+
+    expect(within(mobileQuickActions).getByRole("link", { name: /breaking/i })).toBeTruthy();
+  });
 });

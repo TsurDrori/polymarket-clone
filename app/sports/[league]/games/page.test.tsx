@@ -161,7 +161,7 @@ describe("SportsLeagueGamesPage", () => {
     render(ui);
 
     expect(screen.getByRole("heading", { name: "NBA" })).toBeTruthy();
-    expect(screen.getByText("Oklahoma City Thunder")).toBeTruthy();
+    expect(screen.getAllByText("Oklahoma City Thunder").length).toBeGreaterThan(0);
     expect(
       screen.getByRole("link", { name: "Games" }).getAttribute("href"),
     ).toBe("/sports/nba/games");

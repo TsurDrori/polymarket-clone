@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Link from "next/link";
 import type { SportsLeagueChip } from "@/features/sports/games/parse";
 import styles from "./SportsLeagueRail.module.css";
@@ -5,14 +6,16 @@ import styles from "./SportsLeagueRail.module.css";
 type SportsLeagueRailProps = {
   chips: ReadonlyArray<SportsLeagueChip>;
   activeLeagueSlug?: string;
+  className?: string;
 };
 
 export function SportsLeagueRail({
   chips,
   activeLeagueSlug,
+  className,
 }: SportsLeagueRailProps) {
   return (
-    <nav className={styles.rail} aria-label="Sports leagues">
+    <nav className={clsx(styles.rail, className)} aria-label="Sports leagues">
       <Link
         href="/sports/live"
         className={styles.chip}

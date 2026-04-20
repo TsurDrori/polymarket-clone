@@ -91,9 +91,9 @@ export const MOBILE_BOTTOM_ITEMS = [
   },
   { label: "Search", icon: Search },
   {
-    label: "Sports",
-    href: "/sports/live",
-    icon: Trophy,
-    activeMatch: "/sports",
+    label: "Breaking",
+    href: "/#breaking",
+    icon: TrendingMark,
+    activeMatch: "/__breaking",
   },
 ] as const;

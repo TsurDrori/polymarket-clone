@@ -17,8 +17,7 @@
 }
 
 .utilityRow {
-  display: grid;
-  grid-template-columns: auto auto;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -64,6 +63,21 @@
   color: var(--text-muted);
 }
 
+.mobileSearchShell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 38px;
+  flex: 1 1 auto;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+  color: var(--text-muted);
+  box-shadow: var(--surface-shadow-soft);
+}
+
 .searchIcon {
   width: 16px;
   height: 16px;
@@ -98,10 +112,11 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   justify-self: end;
 }
 
+.languageButton,
 .howItWorks,
 .authLink {
   display: inline-flex;
@@ -113,6 +128,21 @@
   color: var(--accent-brand);
   font-size: 13px;
   font-weight: 700;
+}
+
+.languageButton {
+  min-width: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+  color: var(--text-primary);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.languageFlag {
+  font-size: 15px;
+  line-height: 1;
 }
 
 .howItWorks {
@@ -165,7 +195,7 @@
 }
 
 .menuButton {
-  display: none;
+  display: inline-flex;
 }
 
 .menuButton[aria-expanded="true"] {
@@ -197,19 +227,6 @@
 .mobileSearchRow {
   display: flex;
   gap: 10px;
-}
-
-.mobileSearchRow .iconButton:first-child {
-  flex: 1 1 auto;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 0 12px;
-}
-
-.mobileSearchLabel {
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .navShelf {
@@ -505,10 +522,6 @@
 }
 
 @media (min-width: 768px) {
-  .menuButton {
-    display: inline-flex;
-  }
-
   .backdrop {
     background: transparent;
   }
@@ -590,14 +603,9 @@
 }
 
 @media (min-width: 1024px) {
-  .utilityRow {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 18px;
-  }
-
   .searchShell {
     display: flex;
+    flex: 1 1 auto;
   }
 
   .howItWorks {
@@ -614,6 +622,10 @@
 
   .navShelf {
     display: block;
+  }
+
+  .languageButton {
+    display: none;
   }
 }
 

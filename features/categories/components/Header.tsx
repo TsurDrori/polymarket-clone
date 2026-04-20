@@ -178,7 +178,8 @@ export function Header() {
   const [theme, setTheme] = useState<Theme>(() => readResolvedTheme());
   const panelRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const desktopSearchRef = useRef<HTMLInputElement>(null);
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return subscribeToThemeChanges(() => {
@@ -225,8 +226,11 @@ export function Header() {
   }, [isMenuOpen]);
 
   const focusSearch = () => {
-    searchRef.current?.focus();
-    searchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const searchInput =
+      window.innerWidth >= 1024 ? desktopSearchRef.current : mobileSearchRef.current;
+
+    searchInput?.focus();
+    searchInput?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   return (
@@ -270,7 +274,7 @@ export function Header() {
             <label className={styles.searchShell}>
               <Search className={styles.searchIcon} aria-hidden="true" />
               <input
-                ref={searchRef}
+                ref={desktopSearchRef}
                 type="search"
                 className={styles.searchInput}
                 placeholder="Search polymarkets..."
@@ -282,6 +286,15 @@ export function Header() {
             </label>
 
             <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.languageButton}
+                aria-label="English language"
+              >
+                <span aria-hidden="true" className={styles.languageFlag}>
+                  🇮🇱
+                </span>
+              </button>
               <a
                 href="https://docs.polymarket.com"
                 target="_blank"
@@ -312,26 +325,27 @@ export function Header() {
             </div>
           </div>
 
-          <div className={styles.navShelf}>
-            <CategoryNav />
-          </div>
-
           <div className={styles.mobileSearchRow}>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={focusSearch}
-              aria-label="Focus search"
-            >
-              <Search size={18} strokeWidth={2.2} />
-              <span className={styles.mobileSearchLabel}>Search</span>
-            </button>
+            <label className={styles.mobileSearchShell}>
+              <Search className={styles.searchIcon} aria-hidden="true" />
+              <input
+                ref={mobileSearchRef}
+                type="search"
+                className={styles.searchInput}
+                placeholder="Search"
+                aria-label="Search"
+              />
+            </label>
             <button type="button" className={styles.iconButton} aria-label="Open filters">
               <SlidersHorizontal size={18} strokeWidth={2.2} />
             </button>
             <button type="button" className={styles.iconButton} aria-label="Saved markets">
               <Bookmark size={18} strokeWidth={2.2} />
             </button>
+          </div>
+
+          <div className={styles.navShelf}>
+            <CategoryNav />
           </div>
         </div>
 

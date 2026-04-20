@@ -1,0 +1,185 @@
+.preview {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .preview {
+    position: sticky;
+    top: 104px;
+    display: grid;
+    align-content: start;
+    gap: 20px;
+    height: fit-content;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--bg-surface);
+    box-shadow: var(--surface-shadow-soft);
+    overflow: hidden;
+  }
+
+  .matchupHeader,
+  .tradeTabs,
+  .priceRow,
+  .amountBlock,
+  .footnote {
+    padding-inline: 18px;
+  }
+
+  .matchupHeader {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 14px;
+    padding-top: 18px;
+  }
+
+  .logo,
+  .fallbackLogo {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+
+  .fallbackLogo {
+    display: inline-grid;
+    place-items: center;
+    background: var(--bg-surface-alt);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .matchupCopy {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .badge {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-brand-soft) 42%, transparent);
+    color: var(--accent-brand);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .tradeTabs {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 14px;
+    align-items: end;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tradeTab {
+    min-height: 32px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .tradeTab[data-active="true"] {
+    color: var(--text-primary);
+    box-shadow: inset 0 -2px 0 0 var(--text-primary);
+  }
+
+  .marketButton {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .priceRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .priceButton {
+    min-height: 48px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-soft) 78%, var(--bg-page));
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .priceButton[data-active="true"] {
+    background: linear-gradient(135deg, #2563eb 0%, #1d9bf0 100%);
+    color: #fff;
+  }
+
+  .amountBlock {
+    display: grid;
+    gap: 16px;
+  }
+
+  .amountHeader {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .amountHeader strong {
+    color: var(--text-subtle);
+    font-size: 3.3rem;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+  }
+
+  .amountOptions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .amountOption {
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--bg-soft) 72%, var(--bg-page));
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .tradeButton {
+    min-height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1994f5 0%, #1d9bf0 100%);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  .footnote {
+    margin: 0;
+    padding-bottom: 18px;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}

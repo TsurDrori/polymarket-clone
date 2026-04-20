@@ -42,3 +42,20 @@
   font-size: 12px;
   opacity: 0.74;
 }
+
+@media (min-width: 1024px) {
+  .rail {
+    display: grid;
+    gap: 10px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .chip {
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    white-space: normal;
+  }
+}
