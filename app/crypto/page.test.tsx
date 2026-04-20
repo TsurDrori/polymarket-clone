@@ -89,7 +89,7 @@ describe("CryptoPage", () => {
 
     expect(listEventsKeyset).toHaveBeenCalledWith({
       tagSlug: "crypto",
-      limit: 200,
+      limit: 120,
       order: "volume24hr",
       ascending: false,
     });

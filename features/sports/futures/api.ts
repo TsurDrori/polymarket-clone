@@ -4,14 +4,14 @@ import { getSportsCardLeague, isSportsCardEvent } from "./parse";
 
 const SPORTS_TAG_SLUG = "sports";
 const PAGE_LIMIT = 50;
-const ALL_SURFACE_MIN_PAGES = 5;
-const ALL_SURFACE_MAX_PAGES = 10;
-const LEAGUE_SURFACE_MIN_PAGES = 4;
-const LEAGUE_SURFACE_MAX_PAGES = 12;
+const ALL_SURFACE_MIN_PAGES = 3;
+const ALL_SURFACE_MAX_PAGES = 6;
+const LEAGUE_SURFACE_MIN_PAGES = 2;
+const LEAGUE_SURFACE_MAX_PAGES = 6;
 const LEAGUE_TAG_MIN_PAGES = 1;
-const LEAGUE_TAG_MAX_PAGES = 4;
-const TARGET_BASE_LEAGUE_COUNT = 24;
-const TARGET_LEAGUE_CARD_COUNT = 20;
+const LEAGUE_TAG_MAX_PAGES = 2;
+const TARGET_BASE_LEAGUE_COUNT = 16;
+const TARGET_LEAGUE_CARD_COUNT = 12;
 
 const normalizeLeagueSlug = (value: string): string =>
   value.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replaceAll(/^-|-$/g, "");

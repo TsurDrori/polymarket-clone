@@ -161,8 +161,8 @@ describe("getSportsCardWorkingSet", () => {
       desiredLeagueSlug: "nba",
     });
 
-    expect(listEventsKeyset).toHaveBeenCalledTimes(4);
-    expect(events).toHaveLength(20);
+    expect(listEventsKeyset).toHaveBeenCalledTimes(3);
+    expect(events).toHaveLength(15);
     expect(
       events.every((event) => getSportsCardLeague(event).slug === "nba"),
     ).toBe(true);
@@ -249,9 +249,9 @@ describe("getSportsCardWorkingSet", () => {
 
     const events = await getSportsCardWorkingSet();
 
-    expect(listEventsKeyset).toHaveBeenCalledTimes(8);
+    expect(listEventsKeyset).toHaveBeenCalledTimes(6);
     expect(new Set(events.map((event) => getSportsCardLeague(event).slug)).size).toBe(
-      24,
+      18,
     );
   });
 });

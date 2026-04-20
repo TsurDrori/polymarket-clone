@@ -20,56 +20,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [
-    topEvents,
-    politicsEvents,
-    sportsEvents,
-    cryptoEvents,
-    economyEvents,
-    cultureEvents,
-    worldEvents,
-  ] =
-    await Promise.all([
-    listEvents({
-      limit: 30,
-      order: "volume_24hr",
-      ascending: false,
-    }),
-    listEvents({
-      limit: 6,
-      tagSlug: "politics",
-    }),
-    listEvents({
-      limit: 6,
-      tagSlug: "sports",
-    }),
-    listEvents({
-      limit: 6,
-      tagSlug: "crypto",
-    }),
-    listEvents({
-      limit: 6,
-      tagSlug: "economy",
-    }),
-    listEvents({
-      limit: 6,
-      tagSlug: "pop-culture",
-    }),
-    listEvents({
-      limit: 6,
-      tagSlug: "world",
-    }),
-  ]);
+  const topEvents = await listEvents({
+    limit: 24,
+    order: "volume_24hr",
+    ascending: false,
+  });
 
-  const visible = [
-    ...topEvents,
-    ...politicsEvents,
-    ...sportsEvents,
-    ...cryptoEvents,
-    ...economyEvents,
-    ...cultureEvents,
-    ...worldEvents,
-  ].filter(
+  const visible = topEvents.filter(
     (event, index, allEvents) =>
       isEventVisible(event) &&
       allEvents.findIndex((candidate) => candidate.id === event.id) === index,

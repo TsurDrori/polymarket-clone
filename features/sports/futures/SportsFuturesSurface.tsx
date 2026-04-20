@@ -1,5 +1,5 @@
 import { SportsModeSwitch } from "@/features/sports/live/SportsModeSwitch";
-import { FuturesEventListCard } from "./FuturesEventListCard";
+import { SportsFuturesCardFeed } from "./SportsFuturesCardFeed";
 import { SportsFuturesFilterBar } from "./SportsFuturesFilterBar";
 import { SportsFuturesLeagueRail } from "./SportsFuturesLeagueRail";
 import type { SportsCardModel, SportsLeagueChip } from "./parse";
@@ -45,11 +45,7 @@ export function SportsFuturesSurface({
       <SportsFuturesFilterBar />
 
       {cards.length > 0 ? (
-        <div className={styles.cards}>
-          {cards.map((card) => (
-            <FuturesEventListCard key={card.id} card={card} />
-          ))}
-        </div>
+        <SportsFuturesCardFeed cards={cards} />
       ) : (
         <div className={styles.emptyState}>
           <h2 className={styles.emptyTitle}>{emptyTitle}</h2>

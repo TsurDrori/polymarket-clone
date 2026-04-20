@@ -1,13 +1,22 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, Gift, Repeat2 } from "lucide-react";
-import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types";
+import { PriceCell } from "@/features/events/components/PriceCell";
+import { SurfaceFeed } from "@/features/events/feed/SurfaceFeed";
+import type {
+  SurfaceFeedItem,
+  SurfaceFeedLayoutVariant,
+} from "@/features/events/feed/types";
 import { getEventImage } from "@/features/events/api/parse";
-import { ContinuationButton } from "@/shared/ui/ContinuationButton";
+import { useFlash, useLivePrice } from "@/features/realtime/hooks";
+import { useProjectedSurfaceWindow } from "@/features/realtime/surfaces/hooks";
+import type { SurfaceProjectionPolicy } from "@/features/realtime/surfaces/types";
+import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types";
+import { cn } from "@/shared/lib/cn";
 import { formatPct, formatVolume } from "@/shared/lib/format";
 import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import { getPrimaryMarket, selectSpotlightMarket } from "../selectors";
@@ -18,6 +27,20 @@ type HomeMarketGridProps = {
   initialCount?: number;
   incrementCount?: number;
 };
+
+type HomeMarketCardProps = {
+  event: PolymarketEvent;
+  emphasis?: {
+    isLiveLeader?: boolean;
+    isPromoted?: boolean;
+  };
+  layoutVariant: SurfaceFeedLayoutVariant;
+};
+
+const HOME_OVERSCAN_COUNT = 6;
+const HOME_REORDER_COOLDOWN_MS = 10_000;
+const HOME_HIGHLIGHT_MS = 1_800;
+const HOME_LEADER_COUNT = 4;
 
 const formatShortEndDate = (iso?: string): string => {
   if (!iso) return "";
@@ -31,8 +54,13 @@ const formatShortEndDate = (iso?: string): string => {
   }).format(date);
 };
 
+const clampPrice = (value: number): number => {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(1, value));
+};
+
 const getDisplayPrice = (market: PolymarketMarket): number =>
-  market.lastTradePrice || market.outcomePrices[0] || market.bestBid || 0;
+  clampPrice(market.lastTradePrice || market.outcomePrices[0] || market.bestBid || 0);
 
 const normalizeOutcomeLabel = (value: string | undefined, fallback: string): string => {
   if (!value) return fallback;
@@ -57,47 +85,194 @@ const getMarketRows = (event: PolymarketEvent): PolymarketMarket[] =>
 const formatChangeLabel = (change: number): string =>
   `${change >= 0 ? "+" : "-"}${Math.round(Math.abs(change) * 100)}%`;
 
-function HomeMarketCard({ event }: { event: PolymarketEvent }) {
+const getPrimaryLiveMarket = (event: PolymarketEvent): PolymarketMarket | undefined =>
+  selectSpotlightMarket(event) ?? getPrimaryMarket(event);
+
+const getHomeCardTokenIds = (item: SurfaceFeedItem<PolymarketEvent>): string[] => {
+  const tokenIds = new Set<string>();
+  const primaryMarket = getPrimaryLiveMarket(item.model);
+  const primaryTokenId = primaryMarket?.clobTokenIds[0];
+
+  if (primaryTokenId) {
+    tokenIds.add(primaryTokenId);
+  }
+
+  for (const market of getMarketRows(item.model)) {
+    const tokenId = market.clobTokenIds[0];
+    if (tokenId) {
+      tokenIds.add(tokenId);
+    }
+  }
+
+  return [...tokenIds];
+};
+
+const getTokenDelta = (
+  tokenId: string | undefined,
+  fallbackPrice: number,
+  readPrice: (tokenId: string) => number,
+): number => {
+  if (!tokenId) {
+    return 0;
+  }
+
+  return Math.abs(readPrice(tokenId) - fallbackPrice);
+};
+
+const getHomeCardLiveScore = (
+  item: SurfaceFeedItem<PolymarketEvent>,
+  readTick: (tokenId: string) => { price: number },
+): number => {
+  const primaryMarket = getPrimaryLiveMarket(item.model);
+  const primaryDelta = getTokenDelta(
+    primaryMarket?.clobTokenIds[0],
+    primaryMarket ? getDisplayPrice(primaryMarket) : 0,
+    (tokenId) => readTick(tokenId).price,
+  );
+  const rowDelta = Math.max(
+    0,
+    ...getMarketRows(item.model).map((market) =>
+      getTokenDelta(
+        market.clobTokenIds[0],
+        getDisplayPrice(market),
+        (tokenId) => readTick(tokenId).price,
+      ),
+    ),
+  );
+  const volumeBias = Math.min(item.model.volume24hr || item.model.volume, 5_000_000) / 5_000_000;
+  const multiBias = item.model.showAllOutcomes && item.model.markets.length > 1 ? 0.01 : 0;
+
+  return Math.max(primaryDelta, rowDelta) + volumeBias * 0.002 + multiBias;
+};
+
+const getHomeLayoutVariant = (
+  event: PolymarketEvent,
+  index: number,
+): SurfaceFeedLayoutVariant => {
+  const hasGroupedMarkets = event.showAllOutcomes && event.markets.length > 1;
+  const volume = event.volume24hr || event.volume;
+
+  if (index === 0 && hasGroupedMarkets) {
+    return "wide";
+  }
+
+  if (hasGroupedMarkets && event.markets.length >= 4) {
+    return "wide";
+  }
+
+  if (volume >= 2_000_000 || hasGroupedMarkets) {
+    return "standard";
+  }
+
+  return "compact";
+};
+
+const getHomeFeedItemId = (item: SurfaceFeedItem<PolymarketEvent>): string => item.descriptor.id;
+
+function LiveGauge({
+  tokenId,
+  fallbackPrice,
+  label,
+}: {
+  tokenId?: string | null;
+  fallbackPrice: number;
+  label: string;
+}) {
+  const tick = tokenId ? useLivePrice(tokenId) : { price: fallbackPrice, ts: 0 };
+  const flash = tokenId ? useFlash(tokenId) : { dir: null, seq: 0 };
+  const resolvedPrice = tokenId && tick.ts > 0 ? clampPrice(tick.price) : fallbackPrice;
+  const gaugeStyle = {
+    "--fill": `${Math.round(resolvedPrice * 360)}deg`,
+  } as CSSProperties;
+
+  return (
+    <div
+      className={cn(
+        styles.gauge,
+        flash.dir === "up" && styles.flashUp,
+        flash.dir === "down" && styles.flashDown,
+      )}
+      style={gaugeStyle}
+    >
+      <div className={styles.gaugeInner}>
+        {tokenId ? (
+          <PriceCell tokenId={tokenId} formatKind="pct" fallbackValue={fallbackPrice} />
+        ) : (
+          <span className={styles.gaugeValue}>{formatPct(fallbackPrice)}</span>
+        )}
+        <span className={styles.gaugeLabel}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
+function HomeMarketCard({
+  event,
+  emphasis,
+  layoutVariant,
+}: HomeMarketCardProps) {
   const imageSrc = getEventImage(event) ?? "/placeholder.svg";
   const href = `/event/${event.slug}`;
   const rowMarkets = getMarketRows(event);
-  const primaryMarket = selectSpotlightMarket(event) ?? getPrimaryMarket(event);
+  const primaryMarket = getPrimaryLiveMarket(event);
   const [primaryYesLabel, primaryNoLabel] = primaryMarket
     ? getOutcomeLabels(primaryMarket)
     : ["Yes", "No"];
   const chance = primaryMarket ? getDisplayPrice(primaryMarket) : 0;
+  const primaryTokenId = primaryMarket?.clobTokenIds[0];
   const isBinary = !event.showAllOutcomes || event.markets.length <= 1;
-  const gaugeStyle = {
-    "--fill": `${Math.round(chance * 360)}deg`,
-  } as CSSProperties;
 
   return (
-    <Link href={href} className={styles.card}>
+    <Link
+      href={href}
+      className={cn(
+        styles.card,
+        emphasis?.isLiveLeader && styles.cardLeader,
+        emphasis?.isPromoted && styles.cardPromoted,
+        layoutVariant === "wide" && styles.cardWide,
+        layoutVariant === "compact" && styles.cardCompact,
+      )}
+    >
       <div className={styles.header}>
-        <div className={styles.mediaWrap}>
-          <Image
-            src={imageSrc}
-            alt=""
-            fill
-            sizes="34px"
-            unoptimized={shouldBypassNextImageOptimization(imageSrc)}
-            className={styles.media}
-          />
+        <div className={styles.titleRow}>
+          <div className={styles.mediaWrap}>
+            <Image
+              src={imageSrc}
+              alt=""
+              fill
+              sizes="34px"
+              unoptimized={shouldBypassNextImageOptimization(imageSrc)}
+              className={styles.media}
+            />
+          </div>
+
+          <div className={styles.titleStack}>
+            <h3 className={styles.title}>{event.title}</h3>
+            {emphasis?.isLiveLeader ? (
+              <span className={styles.liveBadge}>Live</span>
+            ) : null}
+          </div>
         </div>
 
-        <h3 className={styles.title}>{event.title}</h3>
-
         {isBinary ? (
-          <div className={styles.gauge} style={gaugeStyle}>
-            <div className={styles.gaugeInner}>
-              <span className={styles.gaugeValue}>{formatPct(chance)}</span>
-              <span className={styles.gaugeLabel}>
-                {primaryMarket?.outcomes[0] ?? "chance"}
-              </span>
-            </div>
-          </div>
+          <LiveGauge
+            tokenId={primaryTokenId}
+            fallbackPrice={chance}
+            label={primaryMarket?.outcomes[0] ?? "chance"}
+          />
         ) : (
-          <span className={styles.chanceBadge}>{formatPct(chance)} chance</span>
+          <span className={styles.chanceBadge}>
+            {primaryTokenId ? (
+              <PriceCell
+                tokenId={primaryTokenId}
+                formatKind="pct"
+                fallbackValue={chance}
+              />
+            ) : (
+              formatPct(chance)
+            )}{" "}
+            chance
+          </span>
         )}
       </div>
 
@@ -127,6 +302,7 @@ function HomeMarketCard({ event }: { event: PolymarketEvent }) {
         <div className={styles.rows}>
           {rowMarkets.map((market) => {
             const [yesLabel, noLabel] = getOutcomeLabels(market);
+            const rowTokenId = market.clobTokenIds[0];
 
             return (
               <div key={market.id} className={styles.row}>
@@ -135,7 +311,17 @@ function HomeMarketCard({ event }: { event: PolymarketEvent }) {
                     market.groupItemTitle ||
                     market.question}
                 </span>
-                <span className={styles.rowChance}>{formatPct(getDisplayPrice(market))}</span>
+                <span className={styles.rowChance}>
+                  {rowTokenId ? (
+                    <PriceCell
+                      tokenId={rowTokenId}
+                      formatKind="pct"
+                      fallbackValue={getDisplayPrice(market)}
+                    />
+                  ) : (
+                    formatPct(getDisplayPrice(market))
+                  )}
+                </span>
                 <span className={styles.outcomePair}>
                   <span className={`${styles.outcomePill} ${styles.outcomeYes}`}>
                     {yesLabel}
@@ -167,30 +353,71 @@ export function HomeMarketGrid({
   initialCount = 12,
   incrementCount = 12,
 }: HomeMarketGridProps) {
-  const [visibleCount, setVisibleCount] = useState(initialCount);
-
-  const visibleEvents = events.slice(0, visibleCount);
-  const hasMore = visibleCount < events.length;
+  const feedItems = useMemo<SurfaceFeedItem<PolymarketEvent>[]>(
+    () =>
+      events.map((event, index) => ({
+        descriptor: {
+          id: event.id,
+          layoutVariant: getHomeLayoutVariant(event, index),
+          motionPolicy: "bounded-promote",
+          renderVariant: "home-market-card",
+          motionKey: getPrimaryLiveMarket(event)?.id ?? event.id,
+        },
+        model: event,
+      })),
+    [events],
+  );
+  const projectionPolicy = useMemo<SurfaceProjectionPolicy>(
+    () => ({
+      initialVisibleCount: Math.min(initialCount, feedItems.length),
+      visibleIncrement: incrementCount,
+      overscanCount: HOME_OVERSCAN_COUNT,
+      maxPromotionsPerCycle: 1,
+      reorderCooldownMs: HOME_REORDER_COOLDOWN_MS,
+      highlightMs: HOME_HIGHLIGHT_MS,
+    }),
+    [feedItems.length, incrementCount, initialCount],
+  );
+  const {
+    visibleItems,
+    leaderIds,
+    highlightedIds,
+    hasMore,
+    showMore,
+  } = useProjectedSurfaceWindow({
+    items: feedItems,
+    getItemId: getHomeFeedItemId,
+    getItemTokenIds: getHomeCardTokenIds,
+    getItemLiveScore: getHomeCardLiveScore,
+    policy: projectionPolicy,
+  });
+  const liveLeaderIds = useMemo(
+    () => leaderIds.slice(0, HOME_LEADER_COUNT),
+    [leaderIds],
+  );
 
   return (
-    <div className={styles.stack}>
-      <div className={styles.grid}>
-        {visibleEvents.map((event) => (
-          <HomeMarketCard key={event.id} event={event} />
-        ))}
-      </div>
-
-      {hasMore ? (
-        <div className={styles.actionRow}>
-          <ContinuationButton
-            onClick={() =>
-              setVisibleCount((count) => Math.min(events.length, count + incrementCount))
-            }
-          >
-            Show more markets
-          </ContinuationButton>
-        </div>
-      ) : null}
-    </div>
+    <SurfaceFeed
+      items={visibleItems}
+      highlightedIds={highlightedIds}
+      leaderIds={liveLeaderIds}
+      continuation={{
+        hasMore,
+        onContinue: showMore,
+      }}
+      className={styles.stack}
+      gridClassName={styles.grid}
+      actionRowClassName={styles.actionRow}
+      renderItem={(item, meta) => (
+        <HomeMarketCard
+          event={item.model}
+          layoutVariant={item.descriptor.layoutVariant}
+          emphasis={{
+            isLiveLeader: meta.isLiveLeader,
+            isPromoted: meta.isHighlighted,
+          }}
+        />
+      )}
+    />
   );
 }

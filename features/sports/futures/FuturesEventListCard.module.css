@@ -6,6 +6,27 @@
   border-radius: 22px;
   background: var(--bg-surface);
   box-shadow: var(--surface-shadow-soft);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--accent-brand) 24%, var(--border));
+  box-shadow: 0 16px 32px rgba(15, 23, 32, 0.08);
+  transform: translateY(-2px);
+}
+
+.cardLeader {
+  border-color: color-mix(in srgb, var(--accent-yes) 30%, var(--border));
+  box-shadow:
+    0 18px 34px color-mix(in srgb, var(--accent-yes) 10%, transparent),
+    var(--surface-shadow-soft);
+}
+
+.cardPromoted {
+  animation: futures-card-promote 1.4s ease-out;
 }
 
 .header {
@@ -58,9 +79,27 @@
 
 .meta {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-muted);
   font-size: 13px;
   line-height: 1.4;
+}
+
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-no) 12%, transparent);
+  color: var(--accent-no);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .showMoreLink {
@@ -107,4 +146,32 @@
   color: var(--text-primary);
   font-size: 15px;
   font-weight: 800;
+}
+
+@keyframes futures-card-promote {
+  0% {
+    transform: translateY(0);
+  }
+
+  30% {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 12px color-mix(in srgb, var(--accent-brand) 0%, transparent),
+      0 18px 34px color-mix(in srgb, var(--accent-brand) 12%, transparent),
+      var(--surface-shadow-soft);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:hover,
+  .cardPromoted {
+    animation: none;
+    transform: none;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
 }

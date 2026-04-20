@@ -4,8 +4,6 @@
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 
@@ -24,12 +22,56 @@
   box-shadow: 0 8px 18px rgba(15, 23, 32, 0.04);
   transition:
     border-color 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    transform 180ms ease;
 }
 
 .card:hover {
   border-color: color-mix(in srgb, var(--accent-brand) 26%, var(--border));
   box-shadow: 0 10px 20px rgba(15, 23, 32, 0.06);
+  transform: translateY(-2px);
+}
+
+.cardLeader {
+  border-color: color-mix(in srgb, var(--accent-yes) 30%, var(--border));
+  box-shadow:
+    0 16px 32px color-mix(in srgb, var(--accent-yes) 10%, transparent),
+    0 8px 18px rgba(15, 23, 32, 0.04);
+}
+
+.cardPromoted {
+  animation: home-card-promote 1.4s ease-out;
+}
+
+.cardWide {
+  gap: 12px;
+  padding: 16px;
+}
+
+.cardCompact {
+  gap: 8px;
+}
+
+.titleStack {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-no) 12%, transparent);
+  color: var(--accent-no);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .header {
@@ -103,6 +145,14 @@
 .gaugeValue {
   font-size: 11px;
   line-height: 1;
+}
+
+.flashUp {
+  animation: flash-up 600ms ease-out;
+}
+
+.flashDown {
+  animation: flash-down 600ms ease-out;
 }
 
 .gaugeLabel {
@@ -217,14 +267,57 @@
   color: var(--text-subtle);
 }
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@keyframes home-card-promote {
+  0% {
+    transform: translateY(0);
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--accent-brand) 18%, transparent),
+      0 8px 18px rgba(15, 23, 32, 0.04);
+  }
+
+  30% {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 12px color-mix(in srgb, var(--accent-brand) 0%, transparent),
+      0 16px 26px color-mix(in srgb, var(--accent-brand) 14%, transparent),
+      0 8px 18px rgba(15, 23, 32, 0.04);
+  }
+
+  100% {
+    transform: translateY(0);
   }
 }
 
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+@keyframes flash-up {
+  0%,
+  100% {
+    color: inherit;
+  }
+
+  50% {
+    color: var(--accent-yes);
+  }
+}
+
+@keyframes flash-down {
+  0%,
+  100% {
+    color: inherit;
+  }
+
+  50% {
+    color: var(--accent-no);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:hover,
+  .cardPromoted,
+  .flashUp,
+  .flashDown {
+    animation: none;
+    transform: none;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
   }
 }

@@ -32,7 +32,7 @@ export default async function CryptoPage({ searchParams }: CryptoPageProps) {
   const [{ events }, query] = await Promise.all([
     listEventsKeyset({
       tagSlug: "crypto",
-      limit: 200,
+      limit: 120,
       order: "volume24hr",
       ascending: false,
     }),
