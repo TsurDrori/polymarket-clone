@@ -2,7 +2,7 @@
   display: none;
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1360px) {
   .preview {
     position: sticky;
     top: 104px;
@@ -22,7 +22,7 @@
   .priceRow,
   .amountBlock,
   .footnote {
-    padding-inline: 18px;
+    padding-inline: 16px;
   }
 
   .matchupHeader {
@@ -59,7 +59,7 @@
   .title {
     margin: 0;
     color: var(--text-primary);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 800;
     letter-spacing: -0.03em;
   }
@@ -111,7 +111,7 @@
   .priceRow {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
   }
 
   .priceButton {
@@ -119,7 +119,7 @@
     border-radius: 12px;
     background: color-mix(in srgb, var(--bg-soft) 78%, var(--bg-page));
     color: var(--text-muted);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
   }
 
@@ -145,7 +145,7 @@
 
   .amountHeader strong {
     color: var(--text-subtle);
-    font-size: 3.3rem;
+    font-size: 3rem;
     line-height: 0.95;
     letter-spacing: -0.05em;
   }
@@ -171,7 +171,7 @@
     border-radius: 12px;
     background: linear-gradient(135deg, #1994f5 0%, #1d9bf0 100%);
     color: #fff;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
   }
 

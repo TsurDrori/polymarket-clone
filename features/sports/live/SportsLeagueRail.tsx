@@ -9,6 +9,36 @@ type SportsLeagueRailProps = {
   className?: string;
 };
 
+const LEAGUE_MARKS: Record<string, string> = {
+  nba: "NB",
+  ucl: "UC",
+  nhl: "NH",
+  ufc: "UF",
+  nfl: "NF",
+  mlb: "ML",
+  epl: "EP",
+  atp: "AT",
+  wta: "WT",
+  tennis: "TN",
+  cricket: "CR",
+  rugby: "RG",
+  golf: "GF",
+  formula1: "F1",
+  football: "FB",
+  soccer: "SC",
+  baseball: "BS",
+  hockey: "HK",
+  basketball: "BK",
+  valorant: "VL",
+  "counter-strike-2": "CS",
+  "league-of-legends": "LG",
+  "dota-2": "D2",
+};
+
+const getLeagueMark = (slug: string, label: string): string =>
+  LEAGUE_MARKS[slug] ??
+  (label.replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "SP");
+
 export function SportsLeagueRail({
   chips,
   activeLeagueSlug,
@@ -31,7 +61,12 @@ export function SportsLeagueRail({
           className={styles.chip}
           data-active={chip.active || chip.slug === activeLeagueSlug}
         >
-          <span>{chip.label}</span>
+          <span className={styles.labelWrap}>
+            <span className={styles.mark} aria-hidden="true">
+              {getLeagueMark(chip.slug, chip.label)}
+            </span>
+            <span>{chip.label}</span>
+          </span>
           <span className={styles.count}>{chip.count}</span>
         </Link>
       ))}

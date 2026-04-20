@@ -1,6 +1,6 @@
 .column {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -29,7 +29,7 @@
 .missing {
   flex-shrink: 0;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 

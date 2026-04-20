@@ -12,6 +12,12 @@
   gap: 18px;
 }
 
+.board {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+}
+
 .sidebarModeSwitch {
   display: none;
 }
@@ -19,6 +25,7 @@
 .header {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .titleWrap {
@@ -99,6 +106,7 @@
 .sections {
   display: grid;
   gap: 18px;
+  min-width: 0;
 }
 
 .emptyState {
@@ -126,9 +134,9 @@
 
 @media (min-width: 1024px) {
   .layout {
-    grid-template-columns: 192px minmax(0, 1fr);
+    grid-template-columns: 176px minmax(0, 1fr);
     align-items: start;
-    gap: 28px;
+    gap: 24px;
   }
 
   .sidebarModeSwitch {
@@ -151,8 +159,8 @@
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1360px) {
   .layout {
-    grid-template-columns: 192px minmax(0, 1fr) 320px;
+    grid-template-columns: 176px minmax(0, 1fr) 292px;
   }
 }

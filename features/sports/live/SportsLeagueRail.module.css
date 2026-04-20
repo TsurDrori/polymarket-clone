@@ -27,6 +27,17 @@
     color 140ms ease-out;
 }
 
+.labelWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mark {
+  display: none;
+}
+
 .chip:hover {
   border-color: var(--border-soft);
   background: var(--bg-surface-alt);
@@ -46,16 +57,57 @@
 @media (min-width: 1024px) {
   .rail {
     display: grid;
-    gap: 10px;
+    gap: 6px;
     overflow: visible;
     padding-bottom: 0;
   }
 
   .chip {
     justify-content: space-between;
-    min-height: 44px;
-    padding: 0 14px;
-    border-radius: 14px;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 700;
     white-space: normal;
+  }
+
+  .mark {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-surface-alt) 90%, var(--bg-page));
+    color: var(--text-secondary);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .chip:hover {
+    border-color: color-mix(in srgb, var(--border) 78%, transparent);
+    background: color-mix(in srgb, var(--bg-surface) 42%, transparent);
+  }
+
+  .chip[data-active="true"] {
+    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+    background: color-mix(in srgb, var(--bg-surface) 92%, var(--bg-page));
+    color: var(--text-primary);
+  }
+
+  .chip[data-active="true"] .mark {
+    background: color-mix(in srgb, var(--accent-brand-soft) 48%, var(--bg-page));
+    color: var(--accent-brand);
+  }
+
+  .count {
+    font-size: 13px;
+    opacity: 0.9;
   }
 }
