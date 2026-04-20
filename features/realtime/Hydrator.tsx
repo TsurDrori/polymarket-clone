@@ -40,6 +40,9 @@ const getSeedTick = (market: PolymarketMarket, outcomeIndex: number): Tick => ({
   bestBid: outcomeIndex === 0 ? market.bestBid : 0,
   bestAsk: outcomeIndex === 0 ? market.bestAsk : 0,
   ts: HYDRATION_TS,
+  prevPrice: getSeedPrice(market, outcomeIndex),
+  changedAt: 0,
+  changeMagnitude: 0,
 });
 
 type HydratorProps = {
@@ -83,6 +86,9 @@ export function Hydrator({ events, seeds: explicitSeeds }: HydratorProps) {
       bestBid: seed.bestBid,
       bestAsk: seed.bestAsk,
       ts: HYDRATION_TS,
+      prevPrice: seed.price,
+      changedAt: 0,
+      changeMagnitude: 0,
     });
   }
 

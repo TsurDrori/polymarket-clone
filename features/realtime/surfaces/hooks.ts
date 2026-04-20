@@ -66,6 +66,9 @@ const EMPTY_TICK: Tick = {
   bestBid: 0,
   bestAsk: 0,
   ts: 0,
+  prevPrice: 0,
+  changedAt: 0,
+  changeMagnitude: 0,
 };
 const REDUCED_MOTION_MEDIA_QUERY = "(prefers-reduced-motion: reduce)";
 

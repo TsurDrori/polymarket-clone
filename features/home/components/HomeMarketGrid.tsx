@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -170,39 +170,73 @@ const getHomeLayoutVariant = (
 const getHomeFeedItemId = (item: SurfaceFeedItem<PolymarketEvent>): string => item.descriptor.id;
 
 function LiveGauge({
-  tokenId,
   fallbackPrice,
   label,
+  flashDirection,
+  value,
 }: {
-  tokenId?: string | null;
   fallbackPrice: number;
+  flashDirection?: "up" | "down" | null;
   label: string;
+  value?: ReactNode;
 }) {
-  const tick = tokenId ? useLivePrice(tokenId) : { price: fallbackPrice, ts: 0 };
-  const flash = tokenId ? useFlash(tokenId) : { dir: null, seq: 0 };
-  const resolvedPrice = tokenId && tick.ts > 0 ? clampPrice(tick.price) : fallbackPrice;
   const gaugeStyle = {
-    "--fill": `${Math.round(resolvedPrice * 360)}deg`,
+    "--fill": `${Math.round(fallbackPrice * 360)}deg`,
   } as CSSProperties;
 
   return (
     <div
       className={cn(
         styles.gauge,
-        flash.dir === "up" && styles.flashUp,
-        flash.dir === "down" && styles.flashDown,
+        flashDirection === "up" && styles.flashUp,
+        flashDirection === "down" && styles.flashDown,
       )}
       style={gaugeStyle}
     >
       <div className={styles.gaugeInner}>
-        {tokenId ? (
-          <PriceCell tokenId={tokenId} formatKind="pct" fallbackValue={fallbackPrice} />
-        ) : (
-          <span className={styles.gaugeValue}>{formatPct(fallbackPrice)}</span>
-        )}
+        {value ?? <span className={styles.gaugeValue}>{formatPct(fallbackPrice)}</span>}
         <span className={styles.gaugeLabel}>{label}</span>
       </div>
     </div>
+  );
+}
+
+function StaticGauge({
+  fallbackPrice,
+  label,
+}: {
+  fallbackPrice: number;
+  label: string;
+}) {
+  return (
+    <LiveGauge
+      fallbackPrice={fallbackPrice}
+      label={label}
+      value={<span className={styles.gaugeValue}>{formatPct(fallbackPrice)}</span>}
+    />
+  );
+}
+
+function TokenGauge({
+  tokenId,
+  fallbackPrice,
+  label,
+}: {
+  tokenId: string;
+  fallbackPrice: number;
+  label: string;
+}) {
+  const tick = useLivePrice(tokenId);
+  const flash = useFlash(tokenId);
+  const resolvedPrice = tick.ts > 0 ? clampPrice(tick.price) : fallbackPrice;
+
+  return (
+    <LiveGauge
+      fallbackPrice={resolvedPrice}
+      label={label}
+      flashDirection={flash.dir}
+      value={<PriceCell tokenId={tokenId} formatKind="pct" fallbackValue={fallbackPrice} />}
+    />
   );
 }
 
@@ -255,11 +289,20 @@ function HomeMarketCard({
         </div>
 
         {isBinary ? (
-          <LiveGauge
-            tokenId={primaryTokenId}
-            fallbackPrice={chance}
-            label={primaryMarket?.outcomes[0] ?? "chance"}
-          />
+          primaryTokenId
+            ? (
+                <TokenGauge
+                  tokenId={primaryTokenId}
+                  fallbackPrice={chance}
+                  label={primaryMarket?.outcomes[0] ?? "chance"}
+                />
+              )
+            : (
+                <StaticGauge
+                  fallbackPrice={chance}
+                  label={primaryMarket?.outcomes[0] ?? "chance"}
+                />
+              )
         ) : (
           <span className={styles.chanceBadge}>
             {primaryTokenId ? (

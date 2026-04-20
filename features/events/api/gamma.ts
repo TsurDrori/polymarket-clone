@@ -27,6 +27,7 @@ export interface ListEventsKeysetParams {
   ascending?: boolean;
   tagSlug?: string;
   afterCursor?: string;
+  revalidate?: number;
 }
 
 export type ListEventsKeysetResult = {
@@ -101,7 +102,12 @@ export const listEventsKeyset = async (
   params: ListEventsKeysetParams,
 ): Promise<ListEventsKeysetResult> => {
   const url = buildListKeysetUrl(params);
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(
+    url,
+    typeof params.revalidate === "number"
+      ? { next: { revalidate: params.revalidate } }
+      : { cache: "no-store" },
+  );
   if (!res.ok) {
     throw new GammaError(
       `listEventsKeyset failed: ${res.status} ${res.statusText}`,

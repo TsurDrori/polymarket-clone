@@ -92,6 +92,7 @@ describe("CryptoPage", () => {
       limit: 120,
       order: "volume24hr",
       ascending: false,
+      revalidate: 30,
     });
     expect(CryptoSurfaceRoute).toHaveBeenCalledWith(
       expect.objectContaining({

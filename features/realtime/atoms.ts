@@ -6,6 +6,9 @@ export type Tick = {
   bestBid: number;
   bestAsk: number;
   ts: number;
+  prevPrice: number;
+  changedAt: number;
+  changeMagnitude: number;
 };
 
 export type FlashDirection = "up" | "down" | null;
@@ -20,6 +23,9 @@ const createEmptyTick = (): Tick => ({
   bestBid: 0,
   bestAsk: 0,
   ts: 0,
+  prevPrice: 0,
+  changedAt: 0,
+  changeMagnitude: 0,
 });
 
 const createEmptyFlash = (): FlashState => ({

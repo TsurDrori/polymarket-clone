@@ -43,6 +43,9 @@ describe("rafBatcher", () => {
       bestBid: 0,
       bestAsk: 0,
       ts: 11,
+      prevPrice: 0,
+      changedAt: 0,
+      changeMagnitude: 0,
     });
   });
 
@@ -54,6 +57,9 @@ describe("rafBatcher", () => {
       bestBid: 0.39,
       bestAsk: 0.41,
       ts: 1,
+      prevPrice: 0.4,
+      changedAt: 0,
+      changeMagnitude: 0,
     });
 
     enqueue("token-a", { price: 0.44, ts: 2 });
@@ -65,6 +71,9 @@ describe("rafBatcher", () => {
       bestBid: 0.39,
       bestAsk: 0.41,
       ts: 2,
+      prevPrice: 0.4,
+      changedAt: 0,
+      changeMagnitude: 0,
     });
   });
 
@@ -76,6 +85,9 @@ describe("rafBatcher", () => {
       bestBid: 0.49,
       bestAsk: 0.51,
       ts: 1,
+      prevPrice: 0.5,
+      changedAt: 0,
+      changeMagnitude: 0,
     });
     store.set(flashAtomFamily("token-a"), {
       seq: 2,
@@ -95,6 +107,9 @@ describe("rafBatcher", () => {
       bestBid: 0.5,
       bestAsk: 0.52,
       ts: 2,
+      prevPrice: 0.5,
+      changedAt: 0,
+      changeMagnitude: 0,
     });
   });
 });

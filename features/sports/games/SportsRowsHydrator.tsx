@@ -17,6 +17,9 @@ export function SportsRowsHydrator({ seeds }: SportsRowsHydratorProps) {
       bestBid: seed.bestBid,
       bestAsk: seed.bestAsk,
       ts: 1,
+      prevPrice: seed.price,
+      changedAt: 0,
+      changeMagnitude: 0,
     });
   }
 

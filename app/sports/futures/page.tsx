@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import { getSportsCardWorkingSet } from "@/features/sports/futures/api";
-import {
-  buildSportsCards,
-  buildSportsLeagueChips,
-} from "@/features/sports/futures/parse";
+import { buildSportsLeagueChips } from "@/features/sports/futures/parse";
 import { SportsFuturesSurface } from "@/features/sports/futures/SportsFuturesSurface";
 import styles from "./page.module.css";
 
@@ -13,12 +9,8 @@ export const metadata: Metadata = {
     "Season-long sports futures cards with league rails and the same empty aggregate-state contract the live site exposes.",
 };
 
-export default async function SportsFuturesPage() {
-  const events = await getSportsCardWorkingSet();
-  const cards = buildSportsCards(events, {
-    previewLimit: 6,
-  });
-  const leagueChips = buildSportsLeagueChips(cards, {
+export default function SportsFuturesPage() {
+  const leagueChips = buildSportsLeagueChips([], {
     hrefBase: "/sports/futures",
   });
 
