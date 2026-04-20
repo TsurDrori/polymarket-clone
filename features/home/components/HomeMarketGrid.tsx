@@ -1,10 +1,9 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
 import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bookmark, Gift, Repeat2 } from "lucide-react";
+import { Bookmark, Link2 } from "lucide-react";
 import { PriceCell } from "@/features/events/components/PriceCell";
 import { SurfaceFeed } from "@/features/events/feed/SurfaceFeed";
 import type {
@@ -12,13 +11,13 @@ import type {
   SurfaceFeedLayoutVariant,
 } from "@/features/events/feed/types";
 import { getEventImage } from "@/features/events/api/parse";
-import { useFlash, useLivePrice } from "@/features/realtime/hooks";
 import { useProjectedSurfaceWindow } from "@/features/realtime/surfaces/hooks";
 import type { SurfaceProjectionPolicy } from "@/features/realtime/surfaces/types";
 import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types";
 import { cn } from "@/shared/lib/cn";
 import { formatPct, formatVolume } from "@/shared/lib/format";
 import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
+import { getVisibleTags } from "@/shared/lib/tags";
 import { getPrimaryMarket, selectSpotlightMarket } from "../selectors";
 import styles from "./HomeMarketGrid.module.css";
 
@@ -37,6 +36,13 @@ type HomeMarketCardProps = {
   layoutVariant: SurfaceFeedLayoutVariant;
 };
 
+type MarketRowModel = {
+  id: string;
+  label: string;
+  price: number;
+  tokenId?: string;
+};
+
 const HOME_OVERSCAN_COUNT = 6;
 const HOME_REORDER_COOLDOWN_MS = 10_000;
 const HOME_HIGHLIGHT_MS = 1_800;
@@ -49,7 +55,7 @@ const formatShortEndDate = (iso?: string): string => {
   if (Number.isNaN(date.getTime())) return "";
 
   return new Intl.DateTimeFormat("en-US", {
-    month: "long",
+    month: "short",
     day: "numeric",
   }).format(date);
 };
@@ -66,7 +72,7 @@ const normalizeOutcomeLabel = (value: string | undefined, fallback: string): str
   if (!value) return fallback;
   const trimmed = value.trim();
   if (trimmed.length === 0) return fallback;
-  return trimmed.length <= 10 ? trimmed : fallback;
+  return trimmed.length <= 14 ? trimmed : fallback;
 };
 
 const getOutcomeLabels = (market: PolymarketMarket): [string, string] => [
@@ -74,13 +80,17 @@ const getOutcomeLabels = (market: PolymarketMarket): [string, string] => [
   normalizeOutcomeLabel(market.outcomes[1], "No"),
 ];
 
-const getMarketRows = (event: PolymarketEvent): PolymarketMarket[] =>
-  [...event.markets]
-    .sort(
-      (left, right) =>
-        (right.volume24hr || right.volumeNum) - (left.volume24hr || left.volumeNum),
-    )
-    .slice(0, 2);
+const isMarketVisible = (market: PolymarketMarket): boolean => !market.closed;
+
+const getMarketRows = (event: PolymarketEvent): PolymarketMarket[] => {
+  const visibleMarkets = event.markets.filter(isMarketVisible);
+
+  if (visibleMarkets.length === 0) {
+    return event.markets.slice(0, 3);
+  }
+
+  return visibleMarkets.slice(0, 3);
+};
 
 const formatChangeLabel = (change: number): string =>
   `${change >= 0 ? "+" : "-"}${Math.round(Math.abs(change) * 100)}%`;
@@ -169,76 +179,37 @@ const getHomeLayoutVariant = (
 
 const getHomeFeedItemId = (item: SurfaceFeedItem<PolymarketEvent>): string => item.descriptor.id;
 
-function LiveGauge({
-  fallbackPrice,
-  label,
-  flashDirection,
-  value,
-}: {
-  fallbackPrice: number;
-  flashDirection?: "up" | "down" | null;
-  label: string;
-  value?: ReactNode;
-}) {
-  const gaugeStyle = {
-    "--fill": `${Math.round(fallbackPrice * 360)}deg`,
-  } as CSSProperties;
+const getEventMeta = (event: PolymarketEvent): { category: string; subcategory?: string } => {
+  const [primaryTag, secondaryTag] = getVisibleTags(event);
 
-  return (
-    <div
-      className={cn(
-        styles.gauge,
-        flashDirection === "up" && styles.flashUp,
-        flashDirection === "down" && styles.flashDown,
-      )}
-      style={gaugeStyle}
-    >
-      <div className={styles.gaugeInner}>
-        {value ?? <span className={styles.gaugeValue}>{formatPct(fallbackPrice)}</span>}
-        <span className={styles.gaugeLabel}>{label}</span>
-      </div>
-    </div>
-  );
-}
+  return {
+    category: primaryTag?.label || "Trending",
+    subcategory: secondaryTag?.label,
+  };
+};
 
-function StaticGauge({
-  fallbackPrice,
-  label,
-}: {
-  fallbackPrice: number;
-  label: string;
-}) {
-  return (
-    <LiveGauge
-      fallbackPrice={fallbackPrice}
-      label={label}
-      value={<span className={styles.gaugeValue}>{formatPct(fallbackPrice)}</span>}
-    />
-  );
-}
+const getBinaryRowModel = (
+  market: PolymarketMarket,
+  event: PolymarketEvent,
+): MarketRowModel => ({
+  id: market.id,
+  label: formatShortEndDate(market.endDate || event.endDate) || "Chance",
+  price: getDisplayPrice(market),
+  tokenId: market.clobTokenIds[0],
+});
 
-function TokenGauge({
-  tokenId,
-  fallbackPrice,
-  label,
-}: {
-  tokenId: string;
-  fallbackPrice: number;
-  label: string;
-}) {
-  const tick = useLivePrice(tokenId);
-  const flash = useFlash(tokenId);
-  const resolvedPrice = tick.ts > 0 ? clampPrice(tick.price) : fallbackPrice;
-
-  return (
-    <LiveGauge
-      fallbackPrice={resolvedPrice}
-      label={label}
-      flashDirection={flash.dir}
-      value={<PriceCell tokenId={tokenId} formatKind="pct" fallbackValue={fallbackPrice} />}
-    />
-  );
-}
+const getGroupedRowModel = (
+  market: PolymarketMarket,
+  event: PolymarketEvent,
+): MarketRowModel => ({
+  id: market.id,
+  label:
+    market.groupItemTitle ||
+    formatShortEndDate(market.endDate || event.endDate) ||
+    market.question,
+  price: getDisplayPrice(market),
+  tokenId: market.clobTokenIds[0],
+});
 
 function HomeMarketCard({
   event,
@@ -247,14 +218,22 @@ function HomeMarketCard({
 }: HomeMarketCardProps) {
   const imageSrc = getEventImage(event) ?? "/placeholder.svg";
   const href = `/event/${event.slug}`;
-  const rowMarkets = getMarketRows(event);
   const primaryMarket = getPrimaryLiveMarket(event);
-  const [primaryYesLabel, primaryNoLabel] = primaryMarket
-    ? getOutcomeLabels(primaryMarket)
-    : ["Yes", "No"];
-  const chance = primaryMarket ? getDisplayPrice(primaryMarket) : 0;
+  const rowMarkets = getMarketRows(event);
+  const rows = rowMarkets.map((market) =>
+    event.showAllOutcomes && event.markets.length > 1
+      ? getGroupedRowModel(market, event)
+      : getBinaryRowModel(market, event),
+  );
+  const [yesLabel, noLabel] = primaryMarket ? getOutcomeLabels(primaryMarket) : ["Yes", "No"];
+  const primaryPrice = primaryMarket ? getDisplayPrice(primaryMarket) : 0;
   const primaryTokenId = primaryMarket?.clobTokenIds[0];
-  const isBinary = !event.showAllOutcomes || event.markets.length <= 1;
+  const meta = getEventMeta(event);
+  const isGrouped = event.showAllOutcomes && event.markets.length > 1;
+  const volumeLabel = formatVolume(event.volume24hr || event.volume);
+  const endDateLabel = formatShortEndDate(primaryMarket?.endDate || event.endDate);
+  const changeLabel = primaryMarket ? formatChangeLabel(primaryMarket.oneDayPriceChange) : null;
+  const noPrice = clampPrice(1 - primaryPrice);
 
   return (
     <Link
@@ -274,119 +253,100 @@ function HomeMarketCard({
               src={imageSrc}
               alt=""
               fill
-              sizes="34px"
+              sizes="44px"
               unoptimized={shouldBypassNextImageOptimization(imageSrc)}
               className={styles.media}
             />
           </div>
 
           <div className={styles.titleStack}>
+            <div className={styles.metaRow}>
+              <span>{meta.category}</span>
+              {meta.subcategory ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>{meta.subcategory}</span>
+                </>
+              ) : null}
+              {emphasis?.isLiveLeader ? (
+                <span className={styles.liveBadge}>Live</span>
+              ) : null}
+            </div>
             <h3 className={styles.title}>{event.title}</h3>
-            {emphasis?.isLiveLeader ? (
-              <span className={styles.liveBadge}>Live</span>
-            ) : null}
           </div>
         </div>
 
-        {isBinary ? (
-          primaryTokenId
-            ? (
-                <TokenGauge
-                  tokenId={primaryTokenId}
-                  fallbackPrice={chance}
-                  label={primaryMarket?.outcomes[0] ?? "chance"}
-                />
-              )
-            : (
-                <StaticGauge
-                  fallbackPrice={chance}
-                  label={primaryMarket?.outcomes[0] ?? "chance"}
-                />
-              )
-        ) : (
-          <span className={styles.chanceBadge}>
+        <div className={styles.utilityIcons} aria-hidden="true">
+          <Link2 size={15} />
+          <Bookmark size={15} />
+        </div>
+      </div>
+
+      <div className={styles.priceRow}>
+        <div className={styles.priceStack}>
+          <span className={styles.priceValue}>
             {primaryTokenId ? (
               <PriceCell
                 tokenId={primaryTokenId}
                 formatKind="pct"
-                fallbackValue={chance}
+                fallbackValue={primaryPrice}
               />
             ) : (
-              formatPct(chance)
-            )}{" "}
-            chance
+              formatPct(primaryPrice)
+            )}
           </span>
-        )}
+          <span className={styles.priceLabel}>chance</span>
+          {changeLabel ? (
+            <span
+              className={cn(
+                styles.changeLabel,
+                (primaryMarket?.oneDayPriceChange ?? 0) >= 0
+                  ? styles.changeUp
+                  : styles.changeDown,
+              )}
+            >
+              {changeLabel}
+            </span>
+          ) : null}
+        </div>
+
+        <div className={styles.marketMeta}>
+          {endDateLabel ? <span>{endDateLabel}</span> : null}
+          <span>{volumeLabel} Vol.</span>
+        </div>
       </div>
 
-      {isBinary && primaryMarket ? (
-        <div className={styles.binaryRow}>
-          <div className={styles.binaryDeltaRow}>
-            <span
-              className={
-                primaryMarket.oneDayPriceChange >= 0 ? styles.deltaUp : styles.deltaDown
-              }
-            >
-              {formatChangeLabel(primaryMarket.oneDayPriceChange)}
-            </span>
-            <span>{primaryMarket.volume24hr ? formatVolume(primaryMarket.volume24hr) : ""}</span>
-          </div>
-
-          <div className={styles.binaryOutcomeRow}>
-            <span className={`${styles.binaryPill} ${styles.outcomeYes}`}>
-              {primaryYesLabel}
-            </span>
-            <span className={`${styles.binaryPill} ${styles.outcomeNo}`}>
-              {primaryNoLabel}
-            </span>
-          </div>
+      {isGrouped ? (
+        <div className={styles.rows}>
+          {rows.map((row) => (
+            <div key={row.id} className={styles.row}>
+              <span className={styles.rowLabel}>{row.label}</span>
+              <span className={styles.rowValue}>
+                {row.tokenId ? (
+                  <PriceCell
+                    tokenId={row.tokenId}
+                    formatKind="pct"
+                    fallbackValue={row.price}
+                  />
+                ) : (
+                  formatPct(row.price)
+                )}
+              </span>
+            </div>
+          ))}
         </div>
       ) : (
-        <div className={styles.rows}>
-          {rowMarkets.map((market) => {
-            const [yesLabel, noLabel] = getOutcomeLabels(market);
-            const rowTokenId = market.clobTokenIds[0];
-
-            return (
-              <div key={market.id} className={styles.row}>
-                <span className={styles.rowLabel}>
-                  {formatShortEndDate(market.endDate || event.endDate) ||
-                    market.groupItemTitle ||
-                    market.question}
-                </span>
-                <span className={styles.rowChance}>
-                  {rowTokenId ? (
-                    <PriceCell
-                      tokenId={rowTokenId}
-                      formatKind="pct"
-                      fallbackValue={getDisplayPrice(market)}
-                    />
-                  ) : (
-                    formatPct(getDisplayPrice(market))
-                  )}
-                </span>
-                <span className={styles.outcomePair}>
-                  <span className={`${styles.outcomePill} ${styles.outcomeYes}`}>
-                    {yesLabel}
-                  </span>
-                  <span className={`${styles.outcomePill} ${styles.outcomeNo}`}>
-                    {noLabel}
-                  </span>
-                </span>
-              </div>
-            );
-          })}
+        <div className={styles.binaryActions}>
+          <span className={cn(styles.actionPill, styles.actionYes)}>
+            <span>{yesLabel}</span>
+            <span>{formatPct(primaryPrice)}</span>
+          </span>
+          <span className={cn(styles.actionPill, styles.actionNo)}>
+            <span>{noLabel}</span>
+            <span>{formatPct(noPrice)}</span>
+          </span>
         </div>
       )}
-
-      <div className={styles.footer}>
-        <span>{formatVolume(event.volume24hr || event.volume)} Vol.</span>
-        <span className={styles.footerActions}>
-          <Gift size={14} />
-          <Repeat2 size={14} />
-          <Bookmark size={14} />
-        </span>
-      </div>
     </Link>
   );
 }

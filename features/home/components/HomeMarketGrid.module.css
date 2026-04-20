@@ -1,10 +1,10 @@
 .stack {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 
 .grid {
-  gap: 12px;
+  gap: 16px;
 }
 
 .actionRow {
@@ -14,59 +14,98 @@
 
 .card {
   display: grid;
-  gap: 10px;
-  padding: 13px;
-  border: 1px solid color-mix(in srgb, var(--border) 88%, var(--bg-soft));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
-  box-shadow: 0 8px 18px rgba(15, 23, 32, 0.04);
+  gap: 14px;
+  min-height: 100%;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg-surface) 96%, white 4%);
+  box-shadow: 0 10px 24px rgba(15, 23, 32, 0.05);
   transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 180ms ease;
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .card:hover {
-  border-color: color-mix(in srgb, var(--accent-brand) 26%, var(--border));
-  box-shadow: 0 10px 20px rgba(15, 23, 32, 0.06);
   transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-brand) 30%, var(--border));
+  box-shadow: 0 16px 34px rgba(15, 23, 32, 0.08);
 }
 
 .cardLeader {
-  border-color: color-mix(in srgb, var(--accent-yes) 30%, var(--border));
+  border-color: color-mix(in srgb, var(--accent-brand) 34%, var(--border));
   box-shadow:
-    0 16px 32px color-mix(in srgb, var(--accent-yes) 10%, transparent),
-    0 8px 18px rgba(15, 23, 32, 0.04);
+    0 0 0 1px color-mix(in srgb, var(--accent-brand) 12%, transparent),
+    0 16px 34px rgba(15, 23, 32, 0.08);
 }
 
 .cardPromoted {
-  animation: home-card-promote 1.4s ease-out;
+  animation: home-card-promote 1.2s ease-out;
 }
 
 .cardWide {
-  gap: 12px;
-  padding: 16px;
+  gap: 16px;
 }
 
 .cardCompact {
-  gap: 8px;
+  gap: 12px;
+  padding: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mediaWrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--bg-soft);
+}
+
+.media {
+  object-fit: cover;
 }
 
 .titleStack {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
+}
+
+.metaRow {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .liveBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: fit-content;
-  min-height: 22px;
+  min-height: 20px;
   padding: 0 8px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--accent-no) 12%, transparent);
+  background: color-mix(in srgb, var(--accent-no) 14%, transparent);
   color: var(--accent-no);
   font-size: 10px;
   font-weight: 800;
@@ -74,91 +113,111 @@
   text-transform: uppercase;
 }
 
-.header {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: start;
-}
-
-.mediaWrap {
-  position: relative;
-  width: 34px;
-  height: 34px;
-  overflow: hidden;
-  border-radius: 10px;
-  background: var(--bg-soft);
-  border: 1px solid var(--border-soft);
-}
-
-.media {
-  object-fit: cover;
-}
-
 .title {
   margin: 0;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
   display: -webkit-box;
   overflow: hidden;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 
-.chanceBadge {
+.cardCompact .title {
+  font-size: 18px;
+}
+
+.utilityIcons {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 54px;
-  min-height: 26px;
-  padding: 0 9px;
-  border-radius: 999px;
-  border: 1px solid var(--border-soft);
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 700;
+  gap: 10px;
+  color: var(--text-subtle);
+  flex: 0 0 auto;
 }
 
-.gauge {
-  --fill: 180deg;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at center, var(--bg-surface) 62%, transparent 63%),
-    conic-gradient(var(--accent-yes) 0deg var(--fill), var(--border-soft) var(--fill) 360deg);
-  display: grid;
-  place-items: center;
+.priceRow {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.priceStack {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.priceValue {
+  color: var(--accent-brand);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.priceLabel {
   color: var(--text-primary);
-  font-size: 11px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.changeLabel {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.changeUp {
+  color: var(--accent-yes);
+}
+
+.changeDown {
+  color: var(--accent-no);
+}
+
+.marketMeta {
+  display: grid;
+  gap: 3px;
+  justify-items: end;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.binaryActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.actionPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
-.gaugeInner {
-  display: grid;
-  place-items: center;
-  gap: 1px;
+.actionYes {
+  background: color-mix(in srgb, var(--accent-yes-soft) 84%, var(--bg-surface));
+  color: var(--accent-yes);
 }
 
-.gaugeValue {
-  font-size: 11px;
-  line-height: 1;
-}
-
-.flashUp {
-  animation: flash-up 600ms ease-out;
-}
-
-.flashDown {
-  animation: flash-down 600ms ease-out;
-}
-
-.gaugeLabel {
-  color: var(--text-muted);
-  font-size: 9px;
-  line-height: 1;
+.actionNo {
+  background: color-mix(in srgb, var(--accent-no-soft) 84%, var(--bg-surface));
+  color: var(--accent-no);
 }
 
 .rows {
@@ -168,119 +227,43 @@
 
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
+  min-height: 40px;
+  padding: 0 2px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+}
+
+.row:first-child {
+  border-top: 0;
 }
 
 .rowLabel {
   color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.rowChance {
-  color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.outcomePair {
-  display: inline-flex;
-  gap: 5px;
-}
-
-.outcomePill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px;
-  min-height: 23px;
-  padding: 0 7px;
-  border-radius: 7px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.outcomeYes {
-  background: var(--accent-yes-soft);
-  color: var(--accent-yes);
-}
-
-.outcomeNo {
-  background: var(--accent-no-soft);
-  color: var(--accent-no);
-}
-
-.binaryRow {
-  display: grid;
-  gap: 7px;
-}
-
-.binaryDeltaRow {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.deltaUp {
-  color: var(--accent-yes);
-}
-
-.deltaDown {
-  color: var(--accent-no);
-}
-
-.binaryOutcomeRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.binaryPill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  color: var(--text-muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1.35;
 }
 
-.footerActions {
-  display: inline-flex;
-  gap: 8px;
-  color: var(--text-subtle);
+.rowValue {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 @keyframes home-card-promote {
   0% {
     transform: translateY(0);
-    box-shadow:
-      0 0 0 0 color-mix(in srgb, var(--accent-brand) 18%, transparent),
-      0 8px 18px rgba(15, 23, 32, 0.04);
+    box-shadow: 0 10px 24px rgba(15, 23, 32, 0.05);
   }
 
-  30% {
+  35% {
     transform: translateY(-3px);
     box-shadow:
-      0 0 0 12px color-mix(in srgb, var(--accent-brand) 0%, transparent),
-      0 16px 26px color-mix(in srgb, var(--accent-brand) 14%, transparent),
-      0 8px 18px rgba(15, 23, 32, 0.04);
+      0 0 0 10px color-mix(in srgb, var(--accent-brand) 0%, transparent),
+      0 20px 40px color-mix(in srgb, var(--accent-brand) 10%, transparent);
   }
 
   100% {
@@ -288,36 +271,77 @@
   }
 }
 
-@keyframes flash-up {
-  0%,
-  100% {
-    color: inherit;
+@media (max-width: 1023px) {
+  .title {
+    font-size: 18px;
   }
 
-  50% {
-    color: var(--accent-yes);
+  .priceValue,
+  .priceLabel {
+    font-size: 17px;
   }
 }
 
-@keyframes flash-down {
-  0%,
-  100% {
-    color: inherit;
+@media (max-width: 599px) {
+  .stack {
+    gap: 16px;
   }
 
-  50% {
-    color: var(--accent-no);
+  .grid {
+    gap: 12px;
+  }
+
+  .card,
+  .cardCompact,
+  .cardWide {
+    gap: 12px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .mediaWrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .title {
+    font-size: 17px;
+    -webkit-line-clamp: 2;
+  }
+
+  .priceRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .marketMeta {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .actionPill {
+    min-height: 48px;
+    padding-inline: 12px;
+    font-size: 14px;
+  }
+
+  .row {
+    min-height: 36px;
+  }
+
+  .rowLabel,
+  .rowValue {
+    font-size: 13px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card,
   .card:hover,
-  .cardPromoted,
-  .flashUp,
-  .flashDown {
+  .cardPromoted {
     animation: none;
     transform: none;
-    transition: border-color 160ms ease, box-shadow 160ms ease;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
   }
 }
