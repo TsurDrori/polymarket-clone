@@ -59,11 +59,24 @@
 
 .marketChipRail {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 32px;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
   min-width: 0;
   max-width: 100%;
+}
+
+.marketChipRailLeftVisible {
+  grid-template-columns: 32px minmax(0, 1fr);
+  column-gap: 8px;
+}
+
+.marketChipRailRightVisible {
+  grid-template-columns: minmax(0, 1fr) 32px;
+  column-gap: 8px;
+}
+
+.marketChipRailLeftVisible.marketChipRailRightVisible {
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
 }
 
 .marketChipRow {
@@ -115,7 +128,6 @@
   min-height: 30px;
   cursor: pointer;
   font: inherit;
-  transition: opacity 160ms ease;
 }
 
 .marketChipArrowLeft {
@@ -124,16 +136,6 @@
 
 .marketChipArrowRight {
   justify-self: end;
-}
-
-.marketChipArrowVisible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.marketChipArrowHidden {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .marketFeedStatus {
