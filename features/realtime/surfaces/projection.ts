@@ -1,6 +1,7 @@
 import type {
   ProjectableSurfaceItem,
   ProjectedSurfaceWindow,
+  SurfaceProjectionCommit,
 } from "./types";
 
 const compareProjectableItems = (
@@ -72,6 +73,18 @@ export const collectInsertedIds = (
   return nextIds.filter((id) => !previous.has(id));
 };
 
+export const collectHighlightedIds = (
+  previousIds: ReadonlyArray<string>,
+  nextIds: ReadonlyArray<string>,
+): string[] => {
+  const previousIndexMap = new Map(previousIds.map((id, index) => [id, index]));
+
+  return nextIds.filter((id, index) => {
+    const previousIndex = previousIndexMap.get(id);
+    return previousIndex === undefined || previousIndex !== index;
+  });
+};
+
 export const limitVisiblePromotions = ({
   previousVisibleIds,
   projectedVisibleIds,
@@ -128,28 +141,158 @@ export const limitVisiblePromotions = ({
   return nextVisibleIds.slice(0, previousVisibleIds.length);
 };
 
+export const applyPinnedVisibleIds = ({
+  visibleIds,
+  orderedIds,
+  pinnedIds,
+}: {
+  visibleIds: ReadonlyArray<string>;
+  orderedIds: ReadonlyArray<string>;
+  pinnedIds: ReadonlyArray<string>;
+}): string[] => {
+  if (visibleIds.length === 0 || pinnedIds.length === 0) {
+    return [...visibleIds];
+  }
+
+  const pinnedIdSet = new Set(pinnedIds);
+  const orderedIdSet = new Set(orderedIds);
+  const nextVisibleIds = [...visibleIds];
+  const nextVisibleIdSet = new Set(nextVisibleIds);
+
+  for (const pinnedId of pinnedIds) {
+    if (!orderedIdSet.has(pinnedId) || nextVisibleIdSet.has(pinnedId)) {
+      continue;
+    }
+
+    const replacementIndex = [...nextVisibleIds]
+      .reverse()
+      .findIndex((id) => !pinnedIdSet.has(id));
+
+    if (replacementIndex === -1) {
+      continue;
+    }
+
+    const index = nextVisibleIds.length - replacementIndex - 1;
+    const replacedId = nextVisibleIds[index];
+
+    if (!replacedId) {
+      continue;
+    }
+
+    nextVisibleIdSet.delete(replacedId);
+    nextVisibleIds[index] = pinnedId;
+    nextVisibleIdSet.add(pinnedId);
+  }
+
+  return orderedIds.filter((id) => nextVisibleIdSet.has(id)).slice(0, visibleIds.length);
+};
+
+export const commitProjectedVisibleIds = ({
+  previousVisibleIds,
+  projectedVisibleIds,
+  orderedIds,
+  maxPromotionsPerCycle,
+  now,
+  lastReorderAt,
+  reorderCooldownMs,
+  pinnedIds = [],
+  disableHighlights = false,
+}: {
+  previousVisibleIds: ReadonlyArray<string>;
+  projectedVisibleIds: ReadonlyArray<string>;
+  orderedIds: ReadonlyArray<string>;
+  maxPromotionsPerCycle: number;
+  now: number;
+  lastReorderAt: number;
+  reorderCooldownMs: number;
+  pinnedIds?: ReadonlyArray<string>;
+  disableHighlights?: boolean;
+}): SurfaceProjectionCommit => {
+  if (projectedVisibleIds.length === 0) {
+    const didChange = previousVisibleIds.length > 0;
+
+    return {
+      visibleIds: [],
+      highlightedIds: [],
+      didChange,
+      lastReorderAt: didChange ? now : lastReorderAt,
+    };
+  }
+
+  const isWindowResize = previousVisibleIds.length !== projectedVisibleIds.length;
+
+  if (
+    !isWindowResize &&
+    lastReorderAt > 0 &&
+    now - lastReorderAt < reorderCooldownMs
+  ) {
+    return {
+      visibleIds: [...previousVisibleIds],
+      highlightedIds: [],
+      didChange: false,
+      lastReorderAt,
+    };
+  }
+
+  const baseNextVisibleIds =
+    previousVisibleIds.length === 0 || isWindowResize
+      ? [...projectedVisibleIds]
+      : limitVisiblePromotions({
+          previousVisibleIds,
+          projectedVisibleIds,
+          maxPromotionsPerCycle,
+        });
+  const nextVisibleIds = applyPinnedVisibleIds({
+    visibleIds: baseNextVisibleIds,
+    orderedIds,
+    pinnedIds,
+  });
+  const didChange = !areIdListsEqual(previousVisibleIds, nextVisibleIds);
+
+  return {
+    visibleIds: nextVisibleIds,
+    highlightedIds:
+      disableHighlights || !didChange
+        ? []
+        : collectHighlightedIds(previousVisibleIds, nextVisibleIds),
+    didChange,
+    lastReorderAt: didChange ? now : lastReorderAt,
+  };
+};
+
 export const buildProjectedSurfaceWindow = (
   items: ReadonlyArray<ProjectableSurfaceItem>,
   {
     visibleCount,
     overscanCount,
+    reducedMotion = false,
   }: {
     visibleCount: number;
     overscanCount: number;
+    reducedMotion?: boolean;
   },
 ): ProjectedSurfaceWindow => {
   const candidateCount = getCandidateCount(items.length, visibleCount, overscanCount);
-  const candidateItems = [...items.slice(0, candidateCount)].sort(compareProjectableItems);
-  const remainingIds = items
-    .slice(candidateCount)
-    .sort((left, right) => left.baseIndex - right.baseIndex)
-    .map((item) => item.id);
+  const orderedItems = reducedMotion
+    ? [...items].sort((left, right) => left.baseIndex - right.baseIndex)
+    : [...items.slice(0, candidateCount)].sort(compareProjectableItems);
+  const candidateItems = reducedMotion
+    ? orderedItems.slice(0, candidateCount)
+    : orderedItems;
+  const remainingIds = reducedMotion
+    ? []
+    : items
+        .slice(candidateCount)
+        .sort((left, right) => left.baseIndex - right.baseIndex)
+        .map((item) => item.id);
 
   return {
     candidateIds: candidateItems.map((item) => item.id),
     visibleIds: candidateItems
       .slice(0, clampVisibleCount(candidateItems.length, visibleCount))
       .map((item) => item.id),
-    orderedIds: [...candidateItems.map((item) => item.id), ...remainingIds],
+    orderedIds: reducedMotion
+      ? orderedItems.map((item) => item.id)
+      : [...candidateItems.map((item) => item.id), ...remainingIds],
   };
 };

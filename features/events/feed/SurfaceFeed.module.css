@@ -1,0 +1,71 @@
+.stack {
+  display: grid;
+  gap: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.slot {
+  min-width: 0;
+  grid-column: span var(--surface-feed-span-base, 12);
+}
+
+.variantFeature {}
+
+.variantWide {}
+
+.variantStandard {}
+
+.variantCompact {}
+
+.variantMicro {}
+
+.densityComfortable {}
+
+.densityCompact {}
+
+.actionRow {
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .slot {
+    grid-column: span var(
+      --surface-feed-span-sm,
+      var(--surface-feed-span-base, 12)
+    );
+  }
+}
+
+@media (min-width: 768px) {
+  .slot {
+    grid-column: span var(
+      --surface-feed-span-md,
+      var(--surface-feed-span-sm, var(--surface-feed-span-base, 12))
+    );
+  }
+}
+
+@media (min-width: 1024px) {
+  .slot {
+    grid-column: span var(
+      --surface-feed-span-lg,
+      var(--surface-feed-span-md, var(--surface-feed-span-sm, 12))
+    );
+  }
+}
+
+@media (min-width: 1200px) {
+  .slot {
+    grid-column: span var(
+      --surface-feed-span-xl,
+      var(--surface-feed-span-lg, var(--surface-feed-span-md, 12))
+    );
+  }
+}

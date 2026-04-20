@@ -18,16 +18,18 @@ const TEST_POLICY: SurfaceProjectionPolicy = {
 };
 
 const renderProjectedSurfaceWindow = (items: ReadonlyArray<TestItem>) =>
-  renderHook(({ currentItems }) =>
+  renderHook(({ currentItems, currentReducedMotion = false }) =>
     useProjectedSurfaceWindow({
       items: currentItems,
       getItemId: (item) => item.id,
       getItemTokenIds: () => [],
       getItemLiveScore: (item) => item.score,
       policy: TEST_POLICY,
+      reducedMotion: currentReducedMotion,
     }), {
     initialProps: {
       currentItems: items,
+      currentReducedMotion: false,
     },
   });
 
@@ -88,5 +90,32 @@ describe("useProjectedSurfaceWindow", () => {
     expect(result.current.visibleIds).toEqual(["d", "e"]);
     expect(result.current.highlightedIds).toEqual([]);
     expect(result.current.hasMore).toBe(true);
+  });
+
+  it("keeps the base order and suppresses highlight churn in reduced motion mode", async () => {
+    const { result, rerender } = renderProjectedSurfaceWindow([
+      { id: "a", score: 1 },
+      { id: "b", score: 2 },
+      { id: "c", score: 9 },
+    ]);
+
+    await waitFor(() => {
+      expect(result.current.visibleIds).toEqual(["c", "b"]);
+    });
+
+    rerender({
+      currentItems: [
+        { id: "a", score: 1 },
+        { id: "b", score: 2 },
+        { id: "c", score: 9 },
+      ],
+      currentReducedMotion: true,
+    });
+
+    await waitFor(() => {
+      expect(result.current.visibleIds).toEqual(["a", "b"]);
+    });
+
+    expect(result.current.highlightedIds).toEqual([]);
   });
 });

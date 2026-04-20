@@ -18,3 +18,10 @@ export type ProjectedSurfaceWindow = {
   candidateIds: ReadonlyArray<string>;
   visibleIds: ReadonlyArray<string>;
 };
+
+export type SurfaceProjectionCommit = {
+  visibleIds: ReadonlyArray<string>;
+  highlightedIds: ReadonlyArray<string>;
+  didChange: boolean;
+  lastReorderAt: number;
+};

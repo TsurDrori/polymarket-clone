@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import { SurfaceFeed } from "@/features/events/feed/SurfaceFeed";
+import type { SurfaceFeedItem } from "@/features/events/feed/types";
 import { useProjectedSurfaceWindow } from "@/features/realtime/surfaces/hooks";
 import type { SurfaceProjectionPolicy } from "@/features/realtime/surfaces/types";
-import { ContinuationButton } from "@/shared/ui/ContinuationButton";
 import { CryptoCard } from "./CryptoCard";
 import styles from "./CryptoCardGrid.module.css";
 import type { CryptoCardModel, CryptoCardSnippet } from "../parse";
@@ -19,9 +20,10 @@ const CRYPTO_OVERSCAN_COUNT = 8;
 const CRYPTO_REORDER_COOLDOWN_MS = 12_000;
 const CRYPTO_HIGHLIGHT_MS = 2_000;
 const CRYPTO_LEAD_CARD_COUNT = 3;
-const getCryptoCardId = (card: CryptoCardModel): string => card.id;
-const getCryptoCardTokenIds = (card: CryptoCardModel): string[] =>
-  card.snippets.flatMap((snippet) => (snippet.tokenId ? [snippet.tokenId] : []));
+const getCryptoFeedItemId = (item: SurfaceFeedItem<CryptoCardModel>): string =>
+  item.descriptor.id;
+const getCryptoCardTokenIds = (item: SurfaceFeedItem<CryptoCardModel>): string[] =>
+  item.model.snippets.flatMap((snippet) => (snippet.tokenId ? [snippet.tokenId] : []));
 
 const getSnippetLiveDelta = (
   snippet: CryptoCardSnippet,
@@ -35,9 +37,10 @@ const getSnippetLiveDelta = (
 };
 
 const getCryptoCardLiveScore = (
-  card: CryptoCardModel,
+  item: SurfaceFeedItem<CryptoCardModel>,
   readPrice: (tokenId: string) => number,
 ): number => {
+  const card = item.model;
   const primaryDelta = getSnippetLiveDelta(card.primarySnippet, readPrice);
   const secondaryDelta = Math.max(
     0,
@@ -52,10 +55,10 @@ const getCryptoCardLiveScore = (
 };
 
 const getCryptoCardProjectionScore = (
-  card: CryptoCardModel,
+  item: SurfaceFeedItem<CryptoCardModel>,
   readTick: (tokenId: string) => { price: number },
 ): number =>
-  getCryptoCardLiveScore(card, (tokenId) => readTick(tokenId).price);
+  getCryptoCardLiveScore(item, (tokenId) => readTick(tokenId).price);
 
 export function CryptoCardGrid({
   cards,
@@ -63,22 +66,43 @@ export function CryptoCardGrid({
   incrementCount,
   continuationLabel = "Show more markets",
 }: CryptoCardGridProps) {
+  const feedItems = useMemo<SurfaceFeedItem<CryptoCardModel>[]>(
+    () =>
+      cards.map((card) => ({
+        descriptor: {
+          id: card.id,
+          layoutVariant: "standard",
+          layout: {
+            base: 12,
+            sm: 6,
+            md: 6,
+            lg: 6,
+            xl: 4,
+          },
+          motionPolicy: "bounded-promote",
+          motionKey: card.primarySnippet.id,
+          renderVariant: `crypto-${card.variant}`,
+        },
+        model: card,
+      })),
+    [cards],
+  );
   const projectionPolicy = useMemo<SurfaceProjectionPolicy>(
     () => ({
       initialVisibleCount:
         typeof initialCount === "number" && initialCount > 0
           ? initialCount
-          : cards.length,
+          : feedItems.length,
       visibleIncrement:
         typeof incrementCount === "number" && incrementCount > 0
           ? incrementCount
-          : cards.length,
+          : feedItems.length,
       overscanCount: CRYPTO_OVERSCAN_COUNT,
       maxPromotionsPerCycle: 1,
       reorderCooldownMs: CRYPTO_REORDER_COOLDOWN_MS,
       highlightMs: CRYPTO_HIGHLIGHT_MS,
     }),
-    [cards.length, incrementCount, initialCount],
+    [feedItems.length, incrementCount, initialCount],
   );
   const {
     visibleItems,
@@ -87,48 +111,47 @@ export function CryptoCardGrid({
     hasMore,
     showMore,
   } = useProjectedSurfaceWindow({
-    items: cards,
-    getItemId: getCryptoCardId,
+    items: feedItems,
+    getItemId: getCryptoFeedItemId,
     getItemTokenIds: getCryptoCardTokenIds,
     getItemLiveScore: getCryptoCardProjectionScore,
     policy: projectionPolicy,
   });
-  const highlightedIdSet = useMemo(() => new Set(highlightedIds), [highlightedIds]);
   const liveLeaderIdSet = useMemo(
     () =>
       new Set(
         leaderIds
-          .map((id) => visibleItems.find((card) => card.id === id))
-          .filter((card): card is CryptoCardModel => card !== undefined)
-          .filter((card) => card.variant === "single")
+          .map((id) => visibleItems.find((item) => item.descriptor.id === id))
+          .filter((item): item is SurfaceFeedItem<CryptoCardModel> => item !== undefined)
+          .filter((item) => item.model.variant === "single")
           .slice(0, CRYPTO_LEAD_CARD_COUNT)
-          .map((card) => card.id),
+          .map((item) => item.descriptor.id),
       ),
     [leaderIds, visibleItems],
   );
 
   return (
-    <div className={styles.stack}>
-      <div className={styles.grid}>
-        {visibleItems.map((card) => (
-          <CryptoCard
-            key={card.id}
-            card={card}
-            emphasis={{
-              isLiveLeader: liveLeaderIdSet.has(card.id),
-              isPromoted: highlightedIdSet.has(card.id),
-            }}
-          />
-        ))}
-      </div>
-
-      {hasMore ? (
-        <div className={styles.actionRow}>
-          <ContinuationButton onClick={showMore}>
-            {continuationLabel}
-          </ContinuationButton>
-        </div>
-      ) : null}
-    </div>
+    <SurfaceFeed
+      items={visibleItems}
+      highlightedIds={highlightedIds}
+      leaderIds={[...liveLeaderIdSet]}
+      continuation={{
+        hasMore,
+        onContinue: showMore,
+        label: continuationLabel,
+      }}
+      className={styles.stack}
+      gridClassName={styles.grid}
+      actionRowClassName={styles.actionRow}
+      renderItem={(item, meta) => (
+        <CryptoCard
+          card={item.model}
+          emphasis={{
+            isLiveLeader: meta.isLiveLeader,
+            isPromoted: meta.isHighlighted,
+          }}
+        />
+      )}
+    />
   );
 }
