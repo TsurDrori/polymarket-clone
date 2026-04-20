@@ -37,7 +37,7 @@ html {
 
 html[data-theme="light"] {
   color-scheme: light;
-  --bg-page: #F4F7FA;
+  --bg-page: #FFFFFF;
   --bg-surface: #FFFFFF;
   --bg-surface-alt: #EEF3F7;
   --border: #D7E0E8;
@@ -64,7 +64,7 @@ html[data-theme="light"] {
 @media (prefers-color-scheme: light) {
   html:not([data-theme]) {
     color-scheme: light;
-    --bg-page: #F4F7FA;
+    --bg-page: #FFFFFF;
     --bg-surface: #FFFFFF;
     --bg-surface-alt: #EEF3F7;
     --border: #D7E0E8;
@@ -123,9 +123,20 @@ body {
 }
 
 body {
-  background:
+  background-color: var(--bg-page);
+  background-image:
     radial-gradient(circle at top, var(--page-glow), transparent 22%),
     linear-gradient(180deg, var(--bg-page), var(--bg-page));
+}
+
+html[data-theme="light"] body {
+  background-image: none;
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) body {
+    background-image: none;
+  }
 }
 
 @media (max-width: 767px) {
