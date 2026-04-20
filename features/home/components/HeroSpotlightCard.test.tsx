@@ -84,4 +84,35 @@ describe("HeroSpotlightCard", () => {
     expect(screen.queryByText(/^Yes$/)).toBeNull();
     expect(screen.queryByText(/^No$/)).toBeNull();
   });
+
+  it("renders themed binary outcome buttons when the spotlight has two outcomes", () => {
+    render(
+      <HeroSpotlightCard
+        spotlight={{
+          ...spotlight,
+          outcomeMode: "binary",
+          outcomeItems: [
+            {
+              marketId: "binary-yes",
+              label: "Yes",
+              chance: 0.49,
+              href: "/event/2026-championship?outcomeIndex=0",
+            },
+            {
+              marketId: "binary-no",
+              label: "No",
+              chance: 0.51,
+              href: "/event/2026-championship?outcomeIndex=1",
+            },
+          ],
+        }}
+      />,
+    );
+
+    const yesButton = screen.getByRole("link", { name: "Yes" });
+    const noButton = screen.getByRole("link", { name: "No" });
+
+    expect(yesButton.getAttribute("data-hero-outcome-button")).toBe("yes");
+    expect(noButton.getAttribute("data-hero-outcome-button")).toBe("no");
+  });
 });

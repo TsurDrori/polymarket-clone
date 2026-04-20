@@ -74,6 +74,14 @@ describe("Header", () => {
     });
   });
 
+  it("does not expose a separate mobile theme icon control in the menu", () => {
+    render(<Header />);
+
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+
+    expect(screen.queryByRole("button", { name: /toggle theme/i })).toBeNull();
+  });
+
   it("does not render a non-functional topic rail", () => {
     render(<Header />);
 

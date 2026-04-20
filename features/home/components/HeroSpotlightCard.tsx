@@ -120,16 +120,18 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
                 <Link
                   href={primaryOutcome.href}
                   className={`${styles.outcomePill} ${styles.outcomeYes}`}
+                  data-hero-outcome-button="yes"
                 >
-                  {primaryOutcome.label}
+                  <span className={styles.outcomePillLabel}>{primaryOutcome.label}</span>
                 </Link>
               ) : null}
               {secondaryOutcome ? (
                 <Link
                   href={secondaryOutcome.href}
                   className={`${styles.outcomePill} ${styles.outcomeNo}`}
+                  data-hero-outcome-button="no"
                 >
-                  {secondaryOutcome.label}
+                  <span className={styles.outcomePillLabel}>{secondaryOutcome.label}</span>
                 </Link>
               ) : null}
             </div>

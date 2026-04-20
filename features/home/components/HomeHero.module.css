@@ -154,7 +154,6 @@
 
 .outcomeRow {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -205,28 +204,63 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 56px;
-  min-width: 169px;
-  padding: 8px 16px;
-  border-radius: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  padding: 8px;
+  border-radius: 7.2px;
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
+  letter-spacing: -0.09px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.outcomePillLabel {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .outcomeYes {
-  background: var(--accent-yes-soft);
-  color: var(--accent-yes);
+  background: var(--hero-outcome-yes-bg);
+  color: var(--hero-outcome-yes-text);
 }
 
 .outcomeNo {
-  background: var(--accent-no-soft);
-  color: var(--accent-no);
+  background: var(--hero-outcome-no-bg);
+  color: var(--hero-outcome-no-text);
+}
+
+.outcomeYes:hover {
+  background: var(--hero-outcome-yes-text);
+  color: #fff;
+}
+
+.outcomeNo:hover {
+  background: var(--hero-outcome-no-text);
+  color: #fff;
+}
+
+.outcomePill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--hero-outcome-focus-ring);
+}
+
+.outcomePill:active {
+  transform: none;
 }
 
 .sourceSection {
   display: flex;
   min-height: 0;
+  overflow: hidden;
 }
 
 .railList {
@@ -241,8 +275,10 @@
 
 .sourceTicker {
   position: relative;
-  height: 208px;
-  min-height: 208px;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  max-height: 208px;
   overflow: hidden;
 }
 
@@ -694,6 +730,18 @@
   .chartFigure {
     min-height: 0;
   }
+
+  .outcomePill {
+    height: 56px;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+
+  .outcomePillLabel {
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: -0.18px;
+  }
 }
 
 @media (min-width: 1280px) {
@@ -719,5 +767,17 @@
   .chartPanel,
   .chartFigure {
     min-height: 0;
+  }
+
+  .outcomePill {
+    height: 56px;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+
+  .outcomePillLabel {
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: -0.18px;
   }
 }

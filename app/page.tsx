@@ -4,6 +4,7 @@ import { listEvents } from "@/features/events/api/gamma";
 import { HomePage } from "@/features/home/HomePage";
 import {
   buildHomePageModel,
+  HOME_HERO_SPOTLIGHT_LIMIT,
   selectSpotlightEvents,
   selectSpotlightMarket,
   type HeroChartModel,
@@ -65,7 +66,7 @@ export default async function Home() {
   }
 
   const spotlightChartsEntries = await Promise.all(
-    selectSpotlightEvents(visible, 5).map(async (event) => {
+    selectSpotlightEvents(visible, HOME_HERO_SPOTLIGHT_LIMIT).map(async (event) => {
       const market = selectSpotlightMarket(event);
       const tokenId = market?.clobTokenIds[0];
 

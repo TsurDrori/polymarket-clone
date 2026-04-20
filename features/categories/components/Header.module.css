@@ -257,6 +257,7 @@
 
 .desktopMenu {
   display: none;
+  padding: 6px 6px 0;
 }
 
 .mobileDrawer {
@@ -343,14 +344,9 @@
   color: var(--text-primary);
 }
 
-.mobileSocialButton svg,
-.mobileThemeIcon {
+.mobileSocialButton svg {
   width: 24px;
   height: 24px;
-}
-
-.mobileThemeIcon {
-  color: #161c24;
 }
 
 .mobileAuthStack {
@@ -433,9 +429,10 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 44px;
+  min-height: 40px;
   padding: 0 12px;
   border: 0;
+  border-radius: 10px;
   background: transparent;
   color: var(--text-primary);
   text-align: left;
@@ -452,7 +449,7 @@
 }
 
 .themeRowIcon {
-  color: #3c68ff;
+  color: #2f63dd;
 }
 
 .themeRowLabel {
@@ -464,34 +461,37 @@
 
 .themeSwitch {
   position: relative;
-  width: 50px;
-  height: 30px;
+  width: 35px;
+  min-width: 35px;
+  height: 20px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: #b5bdc8;
-  transition:
-    background-color 160ms ease,
-    box-shadow 160ms ease;
+  background: #e6e8ea;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  transition: all 160ms ease;
 }
 
 .themeSwitchThumb {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 26px;
-  height: 26px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 1px 3px rgba(15, 23, 32, 0.22);
-  transition: transform 160ms ease;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+  transition: all 160ms ease;
 }
 
 .themeRow[aria-checked="true"] .themeSwitch {
-  background: #1292ff;
+  background: #0093fd;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
 .themeRow[aria-checked="true"] .themeSwitchThumb {
-  transform: translateX(20px);
+  transform: translateX(17px);
 }
 
 @media (min-width: 600px) {
@@ -504,39 +504,7 @@
   }
 }
 
-@media (min-width: 1024px) {
-  .utilityRow {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 18px;
-  }
-
-  .searchShell {
-    display: flex;
-  }
-
-  .howItWorks {
-    display: inline-flex;
-  }
-
-  .searchShortcut {
-    display: inline;
-  }
-
-  .mobileSearchRow {
-    display: none;
-  }
-
-  .navShelf {
-    display: block;
-  }
-}
-
-@media (min-width: 1024px) {
-  .authLink {
-    display: inline-flex;
-  }
-
+@media (min-width: 768px) {
   .menuButton {
     display: inline-flex;
   }
@@ -556,10 +524,10 @@
   .menuPopover {
     flex: 0 0 auto;
     align-self: flex-start;
-    width: min(224px, calc(100vw - 32px));
+    width: min(240px, calc(100vw - 32px));
     min-height: 0;
     height: fit-content;
-    padding: 4px 0 8px;
+    padding: 0 0 8px;
     border-radius: 11px;
     box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
     overflow: hidden;
@@ -613,22 +581,44 @@
     background: #2b323d;
   }
 
-  .themeRowIcon {
-    color: #3f68ff;
-  }
-
-  .menuPopover[data-theme="dark"] .themeSwitch {
-    background: #818b97;
-  }
-
-  .themeRow[aria-checked="true"] .themeSwitch {
-    background: #1394ff;
-  }
-
   .menuButton:focus-visible,
   .themeRow:focus-visible,
   .menuLink:focus-visible,
   .backdrop:focus-visible {
     outline-color: #fff;
+  }
+}
+
+@media (min-width: 1024px) {
+  .utilityRow {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .searchShell {
+    display: flex;
+  }
+
+  .howItWorks {
+    display: inline-flex;
+  }
+
+  .searchShortcut {
+    display: inline;
+  }
+
+  .mobileSearchRow {
+    display: none;
+  }
+
+  .navShelf {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .authLink {
+    display: inline-flex;
   }
 }

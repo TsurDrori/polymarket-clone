@@ -483,14 +483,6 @@ export function Header() {
                       );
                     })}
 
-                    <button
-                      type="button"
-                      className={styles.mobileSocialButton}
-                      aria-label="Toggle theme"
-                      onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
-                    >
-                      <DarkModeIcon className={styles.mobileThemeIcon} aria-hidden="true" />
-                    </button>
                   </div>
 
                   <div className={styles.mobileAuthStack}>
