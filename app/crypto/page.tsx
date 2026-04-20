@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CryptoSurfaceRoute } from "@/features/crypto/components/CryptoSurfaceRoute";
+import { Hydrator } from "@/features/realtime/Hydrator";
 import { getCryptoPagePayload } from "@/features/crypto/server";
 import styles from "./page.module.css";
 
@@ -22,11 +23,11 @@ export default async function CryptoPage({ searchParams }: CryptoPageProps) {
 
   return (
     <main className={styles.main}>
+      <Hydrator seeds={payload.hydrationSeeds} />
       <CryptoSurfaceRoute
         totalCount={payload.totalCount}
         cards={payload.cards}
         facets={payload.facets}
-        hydrationSeeds={payload.hydrationSeeds}
         initialFilters={payload.initialFilters}
         initialVisibleCount={payload.initialVisibleCount}
         visibleIncrement={payload.visibleIncrement}

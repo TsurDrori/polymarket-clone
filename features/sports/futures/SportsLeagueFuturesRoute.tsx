@@ -1,7 +1,5 @@
 "use client";
 
-import { Hydrator } from "@/features/realtime/Hydrator";
-import type { PolymarketEvent } from "@/features/events/types";
 import type { SportsCardModel, SportsLeagueChip } from "./parse";
 import { useDeferredCollection } from "@/shared/lib/useDeferredCollection";
 import { SportsFuturesSurface } from "./SportsFuturesSurface";
@@ -11,7 +9,6 @@ type SportsLeagueFuturesRouteProps = {
   description: string;
   leagueChips: ReadonlyArray<SportsLeagueChip>;
   initialCards: ReadonlyArray<SportsCardModel>;
-  hydrationEvents: ReadonlyArray<PolymarketEvent>;
   activeLeagueSlug: string;
   emptyTitle: string;
   emptyCopy: string;
@@ -23,7 +20,6 @@ export function SportsLeagueFuturesRoute({
   description,
   leagueChips,
   initialCards,
-  hydrationEvents,
   activeLeagueSlug,
   emptyTitle,
   emptyCopy,
@@ -40,17 +36,14 @@ export function SportsLeagueFuturesRoute({
   });
 
   return (
-    <>
-      <Hydrator events={hydrationEvents} />
-      <SportsFuturesSurface
-        title={title}
-        description={description}
-        leagueChips={leagueChips}
-        cards={cards}
-        activeLeagueSlug={activeLeagueSlug}
-        emptyTitle={emptyTitle}
-        emptyCopy={emptyCopy}
-      />
-    </>
+    <SportsFuturesSurface
+      title={title}
+      description={description}
+      leagueChips={leagueChips}
+      cards={cards}
+      activeLeagueSlug={activeLeagueSlug}
+      emptyTitle={emptyTitle}
+      emptyCopy={emptyCopy}
+    />
   );
 }

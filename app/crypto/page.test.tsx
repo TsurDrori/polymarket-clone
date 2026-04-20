@@ -2,9 +2,10 @@ import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PolymarketEvent } from "@/features/events/types";
 
-const { listEventsKeyset, CryptoSurfaceRoute } = vi.hoisted(() => ({
+const { listEventsKeyset, CryptoSurfaceRoute, Hydrator } = vi.hoisted(() => ({
   listEventsKeyset: vi.fn(),
   CryptoSurfaceRoute: vi.fn(() => null),
+  Hydrator: vi.fn(() => null),
 }));
 
 vi.mock("@/features/events/api/gamma", () => ({
@@ -13,6 +14,10 @@ vi.mock("@/features/events/api/gamma", () => ({
 
 vi.mock("@/features/crypto/components/CryptoSurfaceRoute", () => ({
   CryptoSurfaceRoute,
+}));
+
+vi.mock("@/features/realtime/Hydrator", () => ({
+  Hydrator,
 }));
 
 import CryptoPage from "./page";
@@ -115,7 +120,12 @@ describe("CryptoPage", () => {
           expect.objectContaining({ id: "btc" }),
           expect.objectContaining({ id: "eth" }),
         ]),
-        hydrationSeeds: expect.arrayContaining([
+      }),
+      undefined,
+    );
+    expect(Hydrator).toHaveBeenCalledWith(
+      expect.objectContaining({
+        seeds: expect.arrayContaining([
           expect.objectContaining({ tokenId: "btc-yes" }),
           expect.objectContaining({ tokenId: "eth-yes" }),
         ]),

@@ -16,18 +16,17 @@ export default async function SportsLivePage() {
 
   return (
     <main className={styles.main}>
+      <SportsRowsHydrator seeds={payload.hydrationSeeds} />
       {payload.hasMoreSections ? (
         <SportsLiveRoute
           title="Sports Live"
           description="Public games markets grouped into sportsbook-style live sections."
           leagueChips={payload.leagueChips}
           initialSections={payload.initialSections}
-          hydrationSeeds={payload.hydrationSeeds}
           catalogEndpoint="/api/sports-sections"
         />
       ) : (
         <>
-          <SportsRowsHydrator seeds={payload.hydrationSeeds} />
           <SportsLiveSurface
             title="Sports Live"
             description="Public games markets grouped into sportsbook-style live sections."

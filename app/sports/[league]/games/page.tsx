@@ -48,13 +48,13 @@ export default async function SportsLeagueGamesPage({
 
   return (
     <main className={styles.main}>
+      <SportsRowsHydrator seeds={payload.hydrationSeeds} />
       {payload.hasMoreSections ? (
         <SportsLiveRoute
           title={payload.title}
           description="League-specific games feed with live sportsbook rows."
           leagueChips={payload.leagueChips}
           initialSections={payload.initialSections}
-          hydrationSeeds={payload.hydrationSeeds}
           activeLeagueSlug={payload.normalizedLeague}
           leagueTabs={{
             gamesHref: `/sports/${payload.normalizedLeague}/games`,
@@ -64,7 +64,6 @@ export default async function SportsLeagueGamesPage({
         />
       ) : (
         <>
-          <SportsRowsHydrator seeds={payload.hydrationSeeds} />
           <SportsLiveSurface
             title={payload.title}
             description="League-specific games feed with live sportsbook rows."

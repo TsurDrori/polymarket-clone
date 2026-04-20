@@ -34,13 +34,13 @@ export default async function SportsLeagueFuturesPage(
 
   return (
     <main className={styles.main}>
+      <Hydrator events={payload.hydrationEvents} />
       {payload.hasMoreCards ? (
         <SportsLeagueFuturesRoute
           title={payload.title}
           description="Season-long and non-game sports markets shown as stacked futures cards with bounded live previews."
           leagueChips={payload.leagueChips ?? []}
           initialCards={payload.initialCards}
-          hydrationEvents={payload.hydrationEvents}
           activeLeagueSlug={payload.normalizedLeague}
           emptyTitle="No results found"
           emptyCopy="This league does not currently expose any futures cards in the public sports feed."
@@ -48,7 +48,6 @@ export default async function SportsLeagueFuturesPage(
         />
       ) : (
         <>
-          <Hydrator events={payload.hydrationEvents} />
           <SportsFuturesSurface
             title={payload.title}
             description="Season-long and non-game sports markets shown as stacked futures cards with bounded live previews."

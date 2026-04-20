@@ -34,6 +34,7 @@ export default async function SportsLeaguePropsPage(
 
   return (
     <main className={styles.main}>
+      <Hydrator events={payload.hydrationEvents} />
       {payload.hasMoreCards ? (
         <SportsLeaguePropsRoute
           title={payload.title}
@@ -41,12 +42,10 @@ export default async function SportsLeaguePropsPage(
           gamesHref={payload.gamesHref}
           propsHref={payload.propsHref}
           initialCards={payload.initialCards}
-          hydrationEvents={payload.hydrationEvents}
           catalogEndpoint={`/api/sports-card-catalog?league=${encodeURIComponent(payload.normalizedLeague)}&surface=props`}
         />
       ) : (
         <>
-          <Hydrator events={payload.hydrationEvents} />
           <SportsPropsSurface
             title={payload.title}
             description="League props and futures-style cards sourced from the public sports feed, with Games linking back into the sportsbook-row route family."

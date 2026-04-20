@@ -1,7 +1,6 @@
 "use client";
 
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
-import { Hydrator, type PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import {
   DEFAULT_CRYPTO_FILTERS,
   getCryptoFilterHref,
@@ -18,7 +17,6 @@ type CryptoSurfaceRouteProps = {
   totalCount: number;
   cards: ReadonlyArray<CryptoCardModel>;
   facets: CryptoFacetState;
-  hydrationSeeds?: ReadonlyArray<PriceHydrationSeed>;
   initialFilters: CryptoFilterState;
   initialVisibleCount?: number;
   visibleIncrement?: number;
@@ -47,7 +45,6 @@ export function CryptoSurfaceRoute({
   cards,
   facets,
   totalCount,
-  hydrationSeeds,
   initialFilters,
   initialVisibleCount,
   visibleIncrement,
@@ -73,7 +70,6 @@ export function CryptoSurfaceRoute({
         filters: initialFilters,
         facets,
         cards,
-        hydrationSeeds: hydrationSeeds ?? [],
       };
     }
 
@@ -83,7 +79,6 @@ export function CryptoSurfaceRoute({
     facets,
     filters,
     hasLoadedDeferredItems,
-    hydrationSeeds,
     initialFilters,
     workingCards,
   ]);
@@ -170,17 +165,14 @@ export function CryptoSurfaceRoute({
   }, []);
 
   return (
-    <>
-      <CryptoSurface
-        totalCount={totalCount}
-        facets={resolved.facets}
-        filters={resolved.filters}
-        cards={resolved.cards}
-        initialVisibleCount={initialVisibleCount}
-        visibleIncrement={visibleIncrement}
-        onFiltersChange={applyFilterPatch}
-      />
-      <Hydrator seeds={hydrationSeeds} />
-    </>
+    <CryptoSurface
+      totalCount={totalCount}
+      facets={resolved.facets}
+      filters={resolved.filters}
+      cards={resolved.cards}
+      initialVisibleCount={initialVisibleCount}
+      visibleIncrement={visibleIncrement}
+      onFiltersChange={applyFilterPatch}
+    />
   );
 }
