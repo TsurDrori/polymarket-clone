@@ -9,6 +9,10 @@ import styles from "./CryptoCard.module.css";
 
 type CryptoCardProps = {
   card: CryptoCardModel;
+  emphasis?: {
+    isLiveLeader?: boolean;
+    isPromoted?: boolean;
+  };
 };
 
 const renderSnippetPrice = (tokenId: string | null, fallbackPrice: number) =>
@@ -18,7 +22,7 @@ const renderSnippetPrice = (tokenId: string | null, fallbackPrice: number) =>
     formatPct(fallbackPrice)
   );
 
-export function CryptoCard({ card }: CryptoCardProps) {
+export function CryptoCard({ card, emphasis }: CryptoCardProps) {
   const singleLabel =
     card.family === "up-down"
       ? card.primarySnippet.primaryOutcomeLabel
@@ -27,7 +31,15 @@ export function CryptoCard({ card }: CryptoCardProps) {
         : card.primarySnippet.primaryOutcomeLabel;
 
   return (
-    <article className={styles.card}>
+    <article
+      className={cn(
+        styles.card,
+        emphasis?.isLiveLeader && styles.cardLeader,
+        emphasis?.isPromoted && styles.cardPromoted,
+      )}
+      data-live-leader={emphasis?.isLiveLeader ? "true" : "false"}
+      data-promoted={emphasis?.isPromoted ? "true" : "false"}
+    >
       <Link href={`/event/${card.slug}`} className={styles.link}>
         <header className={styles.header}>
           <div className={styles.titleRow}>
