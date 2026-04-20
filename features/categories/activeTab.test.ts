@@ -4,7 +4,7 @@ import { isTabActive } from "./activeTab";
 describe("isTabActive", () => {
   it("treats Trending (/) as active only on exact root", () => {
     expect(isTabActive("/", "/")).toBe(true);
-    expect(isTabActive("/politics", "/")).toBe(false);
+    expect(isTabActive("/crypto", "/")).toBe(false);
     expect(isTabActive("/sports/live", "/")).toBe(false);
   });
 
@@ -20,6 +20,6 @@ describe("isTabActive", () => {
 
   it("does not match partial prefixes that are different segments", () => {
     expect(isTabActive("/sportsnews", "/sports")).toBe(false);
-    expect(isTabActive("/politicsfoo", "/politics")).toBe(false);
+    expect(isTabActive("/cryptonews", "/crypto")).toBe(false);
   });
 });

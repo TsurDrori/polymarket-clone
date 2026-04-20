@@ -22,10 +22,8 @@ describe("CategoryNav", () => {
     expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
       "page",
     );
-    expect(screen.getByRole("link", { name: "Politics" }).getAttribute("aria-current")).toBe(
-      null,
-    );
     expect(screen.getByRole("link", { name: "Sports" }).getAttribute("aria-current")).toBe(null);
+    expect(screen.getByRole("link", { name: "Crypto" }).getAttribute("aria-current")).toBe(null);
   });
 
   it("keeps Trending active when the root route carries a hash", () => {
@@ -36,9 +34,7 @@ describe("CategoryNav", () => {
     expect(screen.getByRole("link", { name: "Trending" }).getAttribute("aria-current")).toBe(
       "page",
     );
-    expect(screen.getByRole("link", { name: "Politics" }).getAttribute("aria-current")).toBe(
-      null,
-    );
+    expect(screen.getByRole("link", { name: "Crypto" }).getAttribute("aria-current")).toBe(null);
   });
 
   it("activates the matching category tab on non-home routes", () => {

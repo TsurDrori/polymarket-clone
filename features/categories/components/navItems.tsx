@@ -1,5 +1,5 @@
 import type { ComponentType, SVGProps } from "react";
-import { Bitcoin, House, Landmark, Search, Trophy } from "lucide-react";
+import { Bitcoin, House, Search, Trophy } from "lucide-react";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -37,14 +37,12 @@ export type ShellLinkItem = {
 
 export const CATEGORY_ITEMS: readonly CategoryNavItem[] = [
   { label: "Trending", href: "/", icon: TrendingMark },
-  { label: "Politics", href: "/politics", icon: Landmark },
   { label: "Sports", href: "/sports/live", icon: Trophy },
   { label: "Crypto", href: "/crypto", icon: Bitcoin },
 ] as const;
 
 export const HEADER_MARKET_ITEMS: readonly ShellLinkItem[] = [
   { label: "Trending", href: "/", activeMatch: "/" },
-  { label: "Politics", href: "/politics", activeMatch: "/politics" },
   { label: "Sports", href: "/sports/live", activeMatch: "/sports" },
   { label: "Crypto", href: "/crypto", activeMatch: "/crypto" },
 ] as const;
@@ -55,12 +53,6 @@ export const DRAWER_DESTINATION_ITEMS: readonly ShellLinkItem[] = [
     href: "/",
     description: "Top active markets across the whole exchange.",
     activeMatch: "/",
-  },
-  {
-    label: "Politics",
-    href: "/politics",
-    description: "Election, policy, and geopolitical contracts.",
-    activeMatch: "/politics",
   },
   {
     label: "Sports Live",

@@ -87,7 +87,7 @@ describe("Header", () => {
 
     expect(screen.queryByRole("navigation", { name: /popular topics/i })).toBeNull();
     expect(screen.queryByText("Finance")).toBeNull();
-    expect(screen.queryByText("Geopolitics")).toBeNull();
+    expect(screen.queryByText("Breaking News")).toBeNull();
   });
 
   it("keeps the mobile search row and breaking quick action in the shared shell", () => {

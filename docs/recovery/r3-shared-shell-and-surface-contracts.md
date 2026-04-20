@@ -76,7 +76,7 @@ Any shared-shell implementation pass should verify:
 - `pnpm build`
 - `pnpm test` or targeted Vitest coverage for touched modules
 - production-like runtime checks with `pnpm start`
-- route smoke coverage for `/`, `/politics`, `/crypto`, `/sports`, `/sports/live`, `/sports/futures`, `/sports/nba/games`, `/sports/nba/props`, `/sports/futures/nba`, and a non-basketball league route
+- route smoke coverage for `/`, `/crypto`, `/sports`, `/sports/live`, `/sports/futures`, `/sports/nba/games`, `/sports/nba/props`, `/sports/futures/nba`, and a non-basketball league route
 - browser-based parity screenshots across the agreed width matrix
 - browser video proof for touched dynamic shell interactions
 - HTTP-level redirect verification for `/sports`
