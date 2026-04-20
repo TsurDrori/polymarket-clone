@@ -162,16 +162,19 @@ export function HomePage({ model }: HomePageProps) {
         </div>
 
         <div className={styles.marketChipRail}>
-          {canScrollChipRailBackward ? (
-            <button
-              type="button"
-              aria-label="Scroll market topics backward"
-              className={`${styles.marketChipArrow} ${styles.marketChipArrowLeft}`}
-              onClick={() => scrollChipRail("backward")}
-            >
-              <ChevronLeft size={18} />
-            </button>
-          ) : null}
+          <button
+            type="button"
+            aria-label="Scroll market topics backward"
+            aria-hidden={!canScrollChipRailBackward}
+            tabIndex={canScrollChipRailBackward ? 0 : -1}
+            disabled={!canScrollChipRailBackward}
+            className={`${styles.marketChipArrow} ${styles.marketChipArrowLeft} ${
+              canScrollChipRailBackward ? styles.marketChipArrowVisible : styles.marketChipArrowHidden
+            }`.trim()}
+            onClick={() => scrollChipRail("backward")}
+          >
+            <ChevronLeft size={18} />
+          </button>
           <div
             ref={chipRailRef}
             className={styles.marketChipRow}
@@ -191,16 +194,19 @@ export function HomePage({ model }: HomePageProps) {
               </button>
             ))}
           </div>
-          {canScrollChipRailForward ? (
-            <button
-              type="button"
-              aria-label="Scroll market topics forward"
-              className={`${styles.marketChipArrow} ${styles.marketChipArrowRight}`}
-              onClick={() => scrollChipRail("forward")}
-            >
-              <ChevronRight size={18} />
-            </button>
-          ) : null}
+          <button
+            type="button"
+            aria-label="Scroll market topics forward"
+            aria-hidden={!canScrollChipRailForward}
+            tabIndex={canScrollChipRailForward ? 0 : -1}
+            disabled={!canScrollChipRailForward}
+            className={`${styles.marketChipArrow} ${styles.marketChipArrowRight} ${
+              canScrollChipRailForward ? styles.marketChipArrowVisible : styles.marketChipArrowHidden
+            }`.trim()}
+            onClick={() => scrollChipRail("forward")}
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
 
         {feedError ? (
