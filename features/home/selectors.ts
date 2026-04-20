@@ -112,7 +112,6 @@ const GENERIC_TOPIC_SLUGS = new Set([
 ]);
 
 const CATEGORY_ROUTES = new Map<string, string>([
-  ["politics", "/politics"],
   ["sports", "/sports/live"],
   ["crypto", "/crypto"],
 ]);
@@ -781,6 +780,60 @@ export const selectHeroContextChips = (
   return chips.slice(0, limit);
 };
 
+const buildHomeMarketChips = (
+  events: ReadonlyArray<PolymarketEvent>,
+  limit = 16,
+): HeroChip[] => {
+  const chips: HeroChip[] = [{ slug: "all", label: "All" }];
+  const topicMap = new Map<string, TopicSummary>();
+
+  for (const event of events) {
+    for (const tag of getVisibleTags(event)) {
+      if (!canSurfaceTopic(tag) || PRIMARY_CATEGORY_SLUGS.has(tag.slug)) {
+        continue;
+      }
+
+      const existing = topicMap.get(tag.slug);
+      if (existing) {
+        existing.totalVolume += event.volume24hr || event.volume;
+        existing.eventCount += 1;
+        continue;
+      }
+
+      topicMap.set(tag.slug, {
+        slug: tag.slug,
+        label: tag.label,
+        totalVolume: event.volume24hr || event.volume,
+        eventCount: 1,
+      });
+    }
+  }
+
+  const rankedTopics = [
+    ...[...topicMap.values()].sort(
+      (left, right) =>
+        compareNumbersDesc(left.totalVolume, right.totalVolume) ||
+        compareNumbersDesc(left.eventCount, right.eventCount) ||
+        left.label.localeCompare(right.label),
+    ),
+    ...collectTrendingTopics(events, Math.max(limit * 2, limit)),
+  ];
+  const seen = new Set<string>(["all"]);
+
+  for (const topic of rankedTopics) {
+    if (chips.length >= limit) break;
+    if (seen.has(topic.slug)) continue;
+    seen.add(topic.slug);
+    chips.push({
+      slug: topic.slug,
+      label: topic.label,
+      href: buildHeroChipHref(topic.slug),
+    });
+  }
+
+  return chips;
+};
+
 export const selectHomeFeedEvents = (
   events: ReadonlyArray<PolymarketEvent>,
   {
@@ -833,15 +886,9 @@ export const selectHomeFeedEvents = (
 };
 
 export const selectHomeMarketChips = (
-  spotlight: HeroSpotlightModel | null,
   events: ReadonlyArray<PolymarketEvent>,
-  limit = 12,
-): HeroChip[] =>
-  selectHeroContextChips(
-    spotlight,
-    selectHeroTopics(events, Math.max(6, limit - 2)),
-    limit,
-  );
+  limit = 16,
+): HeroChip[] => buildHomeMarketChips(events, limit);
 
 const buildHeroSpotlightModel = (
   event: PolymarketEvent,
@@ -926,7 +973,7 @@ export const buildHomePageModel = (
     spotlightChart = null,
     spotlightCharts = {},
     exploreLimit = 30,
-    marketChipLimit = 12,
+    marketChipLimit = 16,
   }: {
     spotlightChart?: HeroChartModel | null;
     spotlightCharts?: Record<string, HeroChartModel | null>;
@@ -935,13 +982,14 @@ export const buildHomePageModel = (
   } = {},
 ): HomePageModel => {
   const hero = buildHomeHeroModel(events, { spotlightChart, spotlightCharts });
+  const exploreEvents = selectHomeFeedEvents(events, {
+    spotlightEventId: hero.spotlight?.event.id,
+    limit: exploreLimit,
+  });
 
   return {
     hero,
-    marketChips: selectHomeMarketChips(hero.spotlight, events, marketChipLimit),
-    exploreEvents: selectHomeFeedEvents(events, {
-      spotlightEventId: hero.spotlight?.event.id,
-      limit: exploreLimit,
-    }),
+    marketChips: selectHomeMarketChips(events, marketChipLimit),
+    exploreEvents,
   };
 };

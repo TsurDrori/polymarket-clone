@@ -20,12 +20,28 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [topEvents, cryptoEvents, economyEvents, cultureEvents, worldEvents] =
+  const [
+    topEvents,
+    politicsEvents,
+    sportsEvents,
+    cryptoEvents,
+    economyEvents,
+    cultureEvents,
+    worldEvents,
+  ] =
     await Promise.all([
     listEvents({
       limit: 30,
       order: "volume_24hr",
       ascending: false,
+    }),
+    listEvents({
+      limit: 6,
+      tagSlug: "politics",
+    }),
+    listEvents({
+      limit: 6,
+      tagSlug: "sports",
     }),
     listEvents({
       limit: 6,
@@ -47,6 +63,8 @@ export default async function Home() {
 
   const visible = [
     ...topEvents,
+    ...politicsEvents,
+    ...sportsEvents,
     ...cryptoEvents,
     ...economyEvents,
     ...cultureEvents,

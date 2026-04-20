@@ -337,4 +337,51 @@ describe("buildHomePageModel", () => {
     expect(model.hero.topics.length).toBeLessThanOrEqual(5);
     expect(model.exploreEvents).toHaveLength(30);
   });
+
+  it("derives the market rail from the visible feed topics instead of hero context", () => {
+    const events = [
+      buildEvent(
+        "Iran headline",
+        [
+          { id: "politics", slug: "politics", label: "Politics" },
+          { id: "iran", slug: "iran", label: "Iran" },
+        ],
+        {
+          id: "iran-event",
+          featured: true,
+          volume24hr: 2_000,
+          description: "A lead politics market with clear supporting copy.",
+        },
+      ),
+      buildEvent(
+        "Oil headline",
+        [
+          { id: "economy", slug: "economy", label: "Economy" },
+          { id: "oil", slug: "oil", label: "Oil" },
+        ],
+        { id: "oil-event", volume24hr: 1_500 },
+      ),
+      buildEvent(
+        "NBA headline",
+        [
+          { id: "sports", slug: "sports", label: "Sports" },
+          { id: "nba", slug: "nba", label: "NBA" },
+        ],
+        {
+          id: "nba-event",
+          volume24hr: 1_200,
+          eventMetadata: { league: "NBA" },
+        },
+      ),
+    ];
+
+    const model = buildHomePageModel(events, { exploreLimit: 3, marketChipLimit: 4 });
+
+    expect(model.marketChips.map((chip) => chip.label)).toEqual([
+      "All",
+      "Iran",
+      "Oil",
+      "NBA",
+    ]);
+  });
 });

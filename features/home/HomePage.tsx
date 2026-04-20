@@ -3,6 +3,7 @@
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import type { HomePageModel } from "./selectors";
+import type { PolymarketEvent } from "@/features/events/types";
 import { fetchHomeChipFeed } from "./api";
 import { CompactHeroDiscovery } from "./components/CompactHeroDiscovery";
 import { HomeHero } from "./components/HomeHero";
@@ -13,12 +14,14 @@ type HomePageProps = {
   model: HomePageModel;
 };
 
+type EventsByChip = Record<string, PolymarketEvent[]>;
+
 export function HomePage({ model }: HomePageProps) {
   const chipRailRef = useRef<HTMLDivElement | null>(null);
   const [activeChipSlug, setActiveChipSlug] = useState(
     model.marketChips[0]?.slug ?? "all",
   );
-  const [eventsByChip, setEventsByChip] = useState(() => ({
+  const [eventsByChip, setEventsByChip] = useState<EventsByChip>(() => ({
     all: model.exploreEvents,
   }));
   const [loadingChipSlug, setLoadingChipSlug] = useState<string | null>(null);
@@ -116,20 +119,22 @@ export function HomePage({ model }: HomePageProps) {
           </div>
         </div>
 
-        <div ref={chipRailRef} className={styles.marketChipRow}>
-          {model.marketChips.map((chip) => (
-            <button
-              key={chip.slug}
-              type="button"
-              aria-pressed={chip.slug === activeChipSlug}
-              onClick={() => selectChip(chip.slug)}
-              className={`${styles.marketChip} ${
-                chip.slug === activeChipSlug ? styles.marketChipActive : ""
-              }`.trim()}
-            >
-              {chip.label}
-            </button>
-          ))}
+        <div className={styles.marketChipRail}>
+          <div ref={chipRailRef} className={styles.marketChipRow}>
+            {model.marketChips.map((chip) => (
+              <button
+                key={chip.slug}
+                type="button"
+                aria-pressed={chip.slug === activeChipSlug}
+                onClick={() => selectChip(chip.slug)}
+                className={`${styles.marketChip} ${
+                  chip.slug === activeChipSlug ? styles.marketChipActive : ""
+                }`.trim()}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             aria-label="Scroll market topics"
