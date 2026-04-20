@@ -1,34 +1,34 @@
-"use client";
-
 import { memo } from "react";
-import { useRouter } from "next/navigation";
 import type { PolymarketEvent } from "@/features/events/types";
 import { BinaryBody } from "./BinaryBody";
 import { CardShell } from "./CardShell";
 import { MultiOutcomeBody } from "./MultiOutcomeBody";
+import { buildEventCardModel } from "./eventCardModel";
 
 type EventCardProps = {
   event: PolymarketEvent;
 };
 
 function EventCardInner({ event }: EventCardProps) {
-  const router = useRouter();
-  const href = `/event/${event.slug}`;
-
-  const handleNavigate = () => {
-    router.push(href);
-  };
-
-  const primaryMarket = event.markets[0];
+  const model = buildEventCardModel(event);
   const body =
-    event.showAllOutcomes && event.markets.length > 1 ? (
-      <MultiOutcomeBody markets={event.markets} onNavigate={handleNavigate} />
-    ) : primaryMarket ? (
-      <BinaryBody market={primaryMarket} onNavigate={handleNavigate} />
-    ) : null;
+    model.body.kind === "grouped" ? (
+      <MultiOutcomeBody model={model.body} />
+    ) : (
+      <BinaryBody model={model.body} />
+    );
 
   return (
-    <CardShell event={event} href={href}>
+    <CardShell
+      family={model.family}
+      title={model.title}
+      imageSrc={model.imageSrc}
+      metaLabels={model.metaLabels}
+      footerLeading={model.footerLeading}
+      footerTrailing={model.footerTrailing}
+      footerTrailingTone={model.footerTrailingTone}
+      href={model.href}
+    >
       {body}
     </CardShell>
   );

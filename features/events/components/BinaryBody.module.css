@@ -3,7 +3,7 @@
   min-width: 0;
   display: grid;
   grid-template-rows: 1fr auto;
-  gap: 12px;
+  gap: 10px;
 }
 
 .headline {
@@ -14,8 +14,8 @@
 
 .headlinePrice {
   color: var(--text-primary);
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 34px;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
 }
@@ -24,12 +24,4 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-}
-
-.actionButton {
-  width: 100%;
-  justify-content: space-between;
-  min-width: 0;
-  white-space: nowrap;
-  pointer-events: auto;
 }

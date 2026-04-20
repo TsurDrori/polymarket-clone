@@ -1,50 +1,40 @@
-import type { PolymarketMarket } from "@/features/events/types";
-import { formatCents, formatPct } from "@/shared/lib/format";
-import { Button } from "@/shared/ui/Button";
+import type { EventCardBinaryModel } from "./eventCardModel";
 import { PriceCell } from "./PriceCell";
+import { OutcomePill } from "./OutcomePill";
 import styles from "./BinaryBody.module.css";
 
 type BinaryBodyProps = {
-  market: PolymarketMarket;
-  onNavigate?: () => void;
+  model: EventCardBinaryModel;
 };
 
-export function BinaryBody({ market, onNavigate }: BinaryBodyProps) {
-  const yesTokenId = market.clobTokenIds[0];
-  const noTokenId = market.clobTokenIds[1];
-
+export function BinaryBody({ model }: BinaryBodyProps) {
   return (
     <div className={styles.root}>
       <div className={styles.headline}>
-        {yesTokenId ? (
+        {model.probabilityTokenId ? (
           <PriceCell
-            tokenId={yesTokenId}
-            format={formatPct}
+            tokenId={model.probabilityTokenId}
+            formatKind="pct"
+            fallbackValue={model.probabilityFallback}
             className={styles.headlinePrice}
           />
         ) : (
-          <span className={styles.headlinePrice}>0%</span>
+          <span className={styles.headlinePrice}>
+            {Math.round(model.probabilityFallback * 100)}%
+          </span>
         )}
       </div>
 
       <div className={styles.actions}>
-        <Button
-          variant="yes"
-          className={styles.actionButton}
-          onClick={onNavigate}
-        >
-          <span>Buy Yes</span>
-          {yesTokenId ? <PriceCell tokenId={yesTokenId} format={formatCents} /> : null}
-        </Button>
-
-        <Button
-          variant="no"
-          className={styles.actionButton}
-          onClick={onNavigate}
-        >
-          <span>Buy No</span>
-          {noTokenId ? <PriceCell tokenId={noTokenId} format={formatCents} /> : null}
-        </Button>
+        {model.actions.map((action) => (
+          <OutcomePill
+            key={action.tone}
+            tone={action.tone}
+            label={action.label}
+            tokenId={action.tokenId}
+            fallbackPrice={action.fallbackPrice}
+          />
+        ))}
       </div>
     </div>
   );

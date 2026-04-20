@@ -9,39 +9,41 @@
 .row {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 88px) minmax(0, 88px);
-  gap: 6px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 176px);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.labelWrap {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 4px;
 }
 
 .label {
   min-width: 0;
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 700;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .price {
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-.actionButton {
-  width: 100%;
+.actions {
   min-width: 0;
-  justify-content: space-between;
-  overflow: hidden;
-  pointer-events: auto;
-}
-
-.actionLabel {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  align-content: center;
 }

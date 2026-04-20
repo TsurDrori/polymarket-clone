@@ -8,21 +8,16 @@ import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types"
 import { Hydrator } from "@/features/realtime/Hydrator";
 import { EventCard } from "./EventCard";
 
-const { push } = vi.hoisted(() => ({
-  push: vi.fn(),
-}));
-
 vi.mock("next/image", () => ({
-  default: (props: ImgHTMLAttributes<HTMLImageElement>) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img alt="" {...props} />
-  ),
-}));
+  default: (props: ImgHTMLAttributes<HTMLImageElement> & { unoptimized?: boolean }) => {
+    const nextImageProps = { ...props };
+    delete nextImageProps.unoptimized;
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push,
-  }),
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img alt="" {...nextImageProps} />
+    );
+  },
 }));
 
 vi.mock("@/features/realtime/subscriptions", () => ({
@@ -32,6 +27,12 @@ vi.mock("@/features/realtime/subscriptions", () => ({
 
 const baseEvent = parseEvent(fixture.events[0]);
 const baseMarket = baseEvent.markets[0];
+
+const binaryEvent: PolymarketEvent = {
+  ...baseEvent,
+  showAllOutcomes: false,
+  markets: [baseMarket],
+};
 
 const makeMarket = (
   overrides: Partial<PolymarketMarket> & Pick<PolymarketMarket, "id">,
@@ -50,10 +51,11 @@ const renderEventCard = (event: PolymarketEvent) =>
 
 describe("EventCard", () => {
   it("dispatches single-market events to BinaryBody", () => {
-    renderEventCard(baseEvent);
+    renderEventCard(binaryEvent);
 
-    expect(screen.getByRole("button", { name: /Buy Yes/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Buy No/i })).toBeTruthy();
+    expect(screen.getByText("Yes")).toBeTruthy();
+    expect(screen.getByText("No")).toBeTruthy();
+    expect(screen.getByText(/\$\d+[MBK]? Vol\./i)).toBeTruthy();
   });
 
   it("dispatches showAllOutcomes multi-market events to MultiOutcomeBody", () => {
@@ -90,10 +92,12 @@ describe("EventCard", () => {
 
     expect(screen.getByText("Spread -4.5")).toBeTruthy();
     expect(screen.getByText("O/U 208.5")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Buy Yes/i })).toBeNull();
+    expect(screen.queryByText(/^Yes$/i)).toBeNull();
+    expect(screen.getByText("Rockets")).toBeTruthy();
+    expect(screen.getByText("Lakers")).toBeTruthy();
   });
 
-  it("renders multi-outcome rows from outcomes[0] and outcomes[1] instead of hardcoded Yes/No", () => {
+  it("renders multi-outcome rows from outcomes[0] and outcomes[1] instead of hardcoded Buy Yes/Buy No", () => {
     const event: PolymarketEvent = {
       ...baseEvent,
       title: "Rockets vs. Lakers",
@@ -125,10 +129,10 @@ describe("EventCard", () => {
 
     renderEventCard(event);
 
-    expect(screen.getByRole("button", { name: /Rockets/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Lakers/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Over/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Under/i })).toBeTruthy();
+    expect(screen.getByText("Rockets")).toBeTruthy();
+    expect(screen.getByText("Lakers")).toBeTruthy();
+    expect(screen.getByText("Over")).toBeTruthy();
+    expect(screen.getByText("Under")).toBeTruthy();
   });
 
   it("falls back to question when groupItemTitle is nullish", () => {
@@ -165,5 +169,15 @@ describe("EventCard", () => {
 
     const card = screen.getByRole("article");
     expect(within(card).getByText("Moneyline: Hawks vs. Knicks")).toBeTruthy();
+  });
+
+  it("renders a footer live label for live events", () => {
+    renderEventCard({
+      ...baseEvent,
+      live: true,
+      endDate: undefined,
+    });
+
+    expect(screen.getByText("Live")).toBeTruthy();
   });
 });
