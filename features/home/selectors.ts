@@ -832,19 +832,6 @@ export const selectHomeFeedEvents = (
   return selected;
 };
 
-export const filterHomeFeedEventsByChip = (
-  events: ReadonlyArray<PolymarketEvent>,
-  chipSlug: string,
-): PolymarketEvent[] => {
-  if (chipSlug === "all") {
-    return [...events];
-  }
-
-  return events.filter((event) =>
-    getVisibleTags(event).some((tag) => tag.slug === chipSlug),
-  );
-};
-
 export const selectHomeMarketChips = (
   spotlight: HeroSpotlightModel | null,
   events: ReadonlyArray<PolymarketEvent>,

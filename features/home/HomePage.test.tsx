@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ImgHTMLAttributes } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   PolymarketEvent,
   PolymarketMarket,
@@ -31,6 +31,10 @@ vi.mock("./components/HomeHero", () => ({
 vi.mock("./components/CompactHeroDiscovery", () => ({
   CompactHeroDiscovery: () => null,
 }));
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const buildMarket = (
   overrides: Partial<PolymarketMarket> = {},
@@ -97,7 +101,7 @@ const buildEvent = (
 });
 
 describe("HomePage", () => {
-  it("filters the homepage market grid in place when a chip is selected", () => {
+  it("filters the homepage market grid in place when a chip is selected", async () => {
     const politicsEvent = buildEvent(
       "Politics market",
       [{ id: "politics", slug: "politics", label: "Politics" }],
@@ -125,6 +129,14 @@ describe("HomePage", () => {
       exploreEvents: [politicsEvent, cryptoEvent],
     };
 
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ events: [politicsEvent] }),
+      })),
+    );
+
     render(<HomePage model={model} />);
 
     expect(screen.getByRole("heading", { name: "Politics market" })).toBeTruthy();
@@ -135,7 +147,7 @@ describe("HomePage", () => {
     expect(screen.getByRole("button", { name: "Politics" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
-    expect(screen.getByRole("heading", { name: "Politics market" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Politics market" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Crypto market" })).toBeNull();
   });
 });

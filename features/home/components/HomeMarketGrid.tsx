@@ -167,9 +167,7 @@ export function HomeMarketGrid({
   initialCount = 12,
   incrementCount = 12,
 }: HomeMarketGridProps) {
-  const [visibleCount, setVisibleCount] = useState(
-    Math.min(initialCount, events.length),
-  );
+  const [visibleCount, setVisibleCount] = useState(initialCount);
 
   const visibleEvents = events.slice(0, visibleCount);
   const hasMore = visibleCount < events.length;

@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import type { HomePageModel } from "./selectors";
-import { filterHomeFeedEventsByChip } from "./selectors";
+import { fetchHomeChipFeed } from "./api";
 import { CompactHeroDiscovery } from "./components/CompactHeroDiscovery";
 import { HomeHero } from "./components/HomeHero";
 import { HomeMarketGrid } from "./components/HomeMarketGrid";
@@ -17,10 +17,64 @@ export function HomePage({ model }: HomePageProps) {
   const [activeChipSlug, setActiveChipSlug] = useState(
     model.marketChips[0]?.slug ?? "all",
   );
-  const filteredEvents = useMemo(
-    () => filterHomeFeedEventsByChip(model.exploreEvents, activeChipSlug),
-    [activeChipSlug, model.exploreEvents],
+  const [eventsByChip, setEventsByChip] = useState(() => ({
+    all: model.exploreEvents,
+  }));
+  const [loadingChipSlug, setLoadingChipSlug] = useState<string | null>(null);
+  const [feedError, setFeedError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const activeEvents = useMemo(
+    () => eventsByChip[activeChipSlug] ?? [],
+    [activeChipSlug, eventsByChip],
   );
+
+  useEffect(
+    () => () => {
+      abortRef.current?.abort();
+    },
+    [],
+  );
+
+  const selectChip = (chipSlug: string) => {
+    startTransition(() => {
+      setActiveChipSlug(chipSlug);
+    });
+
+    setFeedError(null);
+
+    if (chipSlug === "all" || eventsByChip[chipSlug]) {
+      setLoadingChipSlug(null);
+      return;
+    }
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setLoadingChipSlug(chipSlug);
+
+    void fetchHomeChipFeed(chipSlug, controller.signal)
+      .then((events) => {
+        if (controller.signal.aborted) return;
+
+        startTransition(() => {
+          setEventsByChip((current) => ({
+            ...current,
+            [chipSlug]: events,
+          }));
+        });
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+
+        setFeedError(
+          error instanceof Error ? error.message : "Unable to load this market feed.",
+        );
+      })
+      .finally(() => {
+        if (controller.signal.aborted) return;
+        setLoadingChipSlug((current) => (current === chipSlug ? null : current));
+      });
+  };
 
   return (
     <div className={styles.root}>
@@ -57,7 +111,7 @@ export function HomePage({ model }: HomePageProps) {
               key={chip.slug}
               type="button"
               aria-pressed={chip.slug === activeChipSlug}
-              onClick={() => setActiveChipSlug(chip.slug)}
+              onClick={() => selectChip(chip.slug)}
               className={`${styles.marketChip} ${
                 chip.slug === activeChipSlug ? styles.marketChipActive : ""
               }`.trim()}
@@ -70,9 +124,21 @@ export function HomePage({ model }: HomePageProps) {
           </span>
         </div>
 
+        {feedError ? (
+          <p className={styles.marketFeedStatus} role="status">
+            {feedError}
+          </p>
+        ) : null}
+
+        {loadingChipSlug === activeChipSlug && activeEvents.length === 0 ? (
+          <p className={styles.marketFeedStatus} role="status">
+            Loading markets…
+          </p>
+        ) : null}
+
         <HomeMarketGrid
           key={activeChipSlug}
-          events={filteredEvents}
+          events={activeEvents}
           initialCount={16}
           incrementCount={8}
         />
