@@ -1,6 +1,9 @@
-import Link from "next/link";
+"use client";
+
+import { useMemo, useState } from "react";
 import { Bookmark, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import type { HomePageModel } from "./selectors";
+import { filterHomeFeedEventsByChip } from "./selectors";
 import { CompactHeroDiscovery } from "./components/CompactHeroDiscovery";
 import { HomeHero } from "./components/HomeHero";
 import { HomeMarketGrid } from "./components/HomeMarketGrid";
@@ -11,6 +14,14 @@ type HomePageProps = {
 };
 
 export function HomePage({ model }: HomePageProps) {
+  const [activeChipSlug, setActiveChipSlug] = useState(
+    model.marketChips[0]?.slug ?? "all",
+  );
+  const filteredEvents = useMemo(
+    () => filterHomeFeedEventsByChip(model.exploreEvents, activeChipSlug),
+    [activeChipSlug, model.exploreEvents],
+  );
+
   return (
     <div className={styles.root}>
       <HomeHero hero={model.hero} />
@@ -41,34 +52,30 @@ export function HomePage({ model }: HomePageProps) {
         </div>
 
         <div className={styles.marketChipRow}>
-          {model.marketChips.map((chip, index) =>
-            chip.href ? (
-              <Link
-                key={chip.slug}
-                href={chip.href}
-                className={`${styles.marketChip} ${
-                  index === 0 ? styles.marketChipActive : ""
-                }`.trim()}
-              >
-                {chip.label}
-              </Link>
-            ) : (
-              <span
-                key={chip.slug}
-                className={`${styles.marketChip} ${
-                  index === 0 ? styles.marketChipActive : ""
-                }`.trim()}
-              >
-                {chip.label}
-              </span>
-            ),
-          )}
+          {model.marketChips.map((chip) => (
+            <button
+              key={chip.slug}
+              type="button"
+              aria-pressed={chip.slug === activeChipSlug}
+              onClick={() => setActiveChipSlug(chip.slug)}
+              className={`${styles.marketChip} ${
+                chip.slug === activeChipSlug ? styles.marketChipActive : ""
+              }`.trim()}
+            >
+              {chip.label}
+            </button>
+          ))}
           <span className={styles.marketChipArrow}>
             <ChevronRight size={18} />
           </span>
         </div>
 
-        <HomeMarketGrid events={model.exploreEvents} initialCount={16} incrementCount={8} />
+        <HomeMarketGrid
+          key={activeChipSlug}
+          events={filteredEvents}
+          initialCount={16}
+          incrementCount={8}
+        />
       </section>
     </div>
   );

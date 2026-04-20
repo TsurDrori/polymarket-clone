@@ -8,6 +8,7 @@ import {
   buildHomeHeroModel,
   buildHomePageModel,
   collectTrendingTopics,
+  filterHomeFeedEventsByChip,
   getPrimaryMarket,
   selectHeroPulse,
   selectSpotlightEvent,
@@ -336,5 +337,31 @@ describe("buildHomePageModel", () => {
     expect(model.hero.pulse).toHaveLength(3);
     expect(model.hero.topics.length).toBeLessThanOrEqual(5);
     expect(model.exploreEvents).toHaveLength(30);
+  });
+});
+
+describe("filterHomeFeedEventsByChip", () => {
+  it("keeps homepage filtering on the existing feed without changing routes", () => {
+    const politicsEvent = buildEvent(
+      "Politics market",
+      [{ id: "politics", slug: "politics", label: "Politics" }],
+      { id: "politics-event" },
+    );
+    const cryptoEvent = buildEvent(
+      "Crypto market",
+      [{ id: "crypto", slug: "crypto", label: "Crypto" }],
+      { id: "crypto-event" },
+    );
+
+    expect(
+      filterHomeFeedEventsByChip([politicsEvent, cryptoEvent], "politics").map(
+        (event) => event.id,
+      ),
+    ).toEqual(["politics-event"]);
+    expect(
+      filterHomeFeedEventsByChip([politicsEvent, cryptoEvent], "all").map(
+        (event) => event.id,
+      ),
+    ).toEqual(["politics-event", "crypto-event"]);
   });
 });

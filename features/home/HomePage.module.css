@@ -82,6 +82,13 @@
   white-space: nowrap;
 }
 
+.marketChip {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
 .marketChipActive {
   background: color-mix(in srgb, var(--accent-brand-soft) 85%, var(--bg-surface));
   color: var(--accent-brand);
