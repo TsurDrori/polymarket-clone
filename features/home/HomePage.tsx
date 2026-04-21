@@ -9,36 +9,40 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import type { HomePageModel } from "./selectors";
-import type { PolymarketEvent } from "@/features/events/types";
 import { fetchHomeChipFeed } from "./api";
 import { CompactHeroDiscovery } from "./components/CompactHeroDiscovery";
 import { HomeHero } from "./components/HomeHero";
 import { HomeMarketGrid } from "./components/HomeMarketGrid";
+import {
+  buildHomeEventCardEntries,
+  type HomeCardEntry,
+} from "./components/homeCardModel";
 import styles from "./HomePage.module.css";
 
 type HomePageProps = {
   model: HomePageModel;
+  initialExploreCards: ReadonlyArray<HomeCardEntry>;
 };
 
-type EventsByChip = Record<string, PolymarketEvent[]>;
+type CardsByChip = Record<string, HomeCardEntry[]>;
 const CHIP_RAIL_SCROLL_STEP = 240;
 
-export function HomePage({ model }: HomePageProps) {
+export function HomePage({ model, initialExploreCards }: HomePageProps) {
   const chipRailRef = useRef<HTMLDivElement | null>(null);
   const [activeChipSlug, setActiveChipSlug] = useState(
     model.marketChips[0]?.slug ?? "all",
   );
-  const [eventsByChip, setEventsByChip] = useState<EventsByChip>(() => ({
-    all: model.exploreEvents,
+  const [cardsByChip, setCardsByChip] = useState<CardsByChip>(() => ({
+    all: [...initialExploreCards],
   }));
   const [loadingChipSlug, setLoadingChipSlug] = useState<string | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);
   const [canScrollChipRailBackward, setCanScrollChipRailBackward] = useState(false);
   const [canScrollChipRailForward, setCanScrollChipRailForward] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const activeEvents = useMemo(
-    () => eventsByChip[activeChipSlug] ?? [],
-    [activeChipSlug, eventsByChip],
+  const activeCards = useMemo(
+    () => cardsByChip[activeChipSlug] ?? [],
+    [activeChipSlug, cardsByChip],
   );
 
   useEffect(
@@ -98,7 +102,7 @@ export function HomePage({ model }: HomePageProps) {
 
     setFeedError(null);
 
-    if (chipSlug === "all" || eventsByChip[chipSlug]) {
+    if (chipSlug === "all" || cardsByChip[chipSlug]) {
       setLoadingChipSlug(null);
       return;
     }
@@ -113,9 +117,9 @@ export function HomePage({ model }: HomePageProps) {
         if (controller.signal.aborted) return;
 
         startTransition(() => {
-          setEventsByChip((current) => ({
+          setCardsByChip((current) => ({
             ...current,
-            [chipSlug]: events,
+            [chipSlug]: buildHomeEventCardEntries(events),
           }));
         });
       })
@@ -213,7 +217,7 @@ export function HomePage({ model }: HomePageProps) {
           </p>
         ) : null}
 
-        {loadingChipSlug === activeChipSlug && activeEvents.length === 0 ? (
+        {loadingChipSlug === activeChipSlug && activeCards.length === 0 ? (
           <p className={styles.marketFeedStatus} role="status">
             Loading markets…
           </p>
@@ -221,7 +225,7 @@ export function HomePage({ model }: HomePageProps) {
 
         <HomeMarketGrid
           key={activeChipSlug}
-          events={activeEvents}
+          items={activeCards}
           initialCount={16}
           incrementCount={8}
         />

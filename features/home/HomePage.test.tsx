@@ -8,6 +8,7 @@ import type {
 } from "@/features/events/types";
 import { HomePage } from "./HomePage";
 import type { HomePageModel } from "./selectors";
+import { buildHomeEventCardEntries } from "./components/homeCardModel";
 
 vi.mock("next/image", () => ({
   default: (
@@ -157,7 +158,7 @@ describe("HomePage", () => {
       })),
     );
 
-    render(<HomePage model={model} />);
+    render(<HomePage model={model} initialExploreCards={buildHomeEventCardEntries(model.exploreEvents)} />);
 
     expect(screen.getByRole("heading", { name: "Sports market" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Crypto market" })).toBeTruthy();
@@ -202,7 +203,7 @@ describe("HomePage", () => {
       value: scrollBy,
     });
 
-    render(<HomePage model={model} />);
+    render(<HomePage model={model} initialExploreCards={buildHomeEventCardEntries(model.exploreEvents)} />);
 
     const rail = screen.getByTestId("market-chip-row");
     Object.defineProperty(rail, "clientWidth", {

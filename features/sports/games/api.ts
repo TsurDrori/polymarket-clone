@@ -219,10 +219,20 @@ const parseSportsGameEvents = (payload: unknown): SportsGameEvent[] => {
 };
 
 const buildKeysetUrl = (afterCursor?: string): string => {
+  return buildPreviewKeysetUrl({ afterCursor, limit: PAGE_LIMIT });
+};
+
+const buildPreviewKeysetUrl = ({
+  afterCursor,
+  limit,
+}: {
+  afterCursor?: string;
+  limit: number;
+}): string => {
   const params = new URLSearchParams();
   params.set("active", "true");
   params.set("closed", "false");
-  params.set("limit", String(PAGE_LIMIT));
+  params.set("limit", String(limit));
   params.set("order", "volume24hr");
   params.set("ascending", "false");
   params.set("tag_slug", "games");
@@ -232,6 +242,24 @@ const buildKeysetUrl = (afterCursor?: string): string => {
 
   return `${GAMMA_BASE}/events/keyset?${params.toString()}`;
 };
+
+export async function getHomeSportsGamePreviewEvents(
+  limit = 40,
+): Promise<SportsGameEvent[]> {
+  const res = await fetch(buildPreviewKeysetUrl({ limit }), {
+    next: { revalidate: 30 },
+  });
+
+  if (!res.ok) {
+    throw new GammaError(
+      `getHomeSportsGamePreviewEvents failed: ${res.status} ${res.statusText}`,
+      res.status,
+    );
+  }
+
+  const payload = (await res.json()) as SportsGameKeysetPayload;
+  return parseSportsGameEvents(payload.events);
+}
 
 const fetchSportsGamePage = async (
   afterCursor?: string,

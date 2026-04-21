@@ -8,6 +8,7 @@ import type {
 } from "@/features/events/types";
 import { formatPct } from "@/shared/lib/format";
 import { HomeMarketGrid } from "./HomeMarketGrid";
+import { buildHomeEventCardEntries } from "./homeCardModel";
 
 vi.mock("next/image", () => ({
   default: (
@@ -129,7 +130,7 @@ describe("HomeMarketGrid", () => {
       },
     );
 
-    render(<HomeMarketGrid events={[event]} />);
+    render(<HomeMarketGrid items={buildHomeEventCardEntries([event])} />);
 
     expect(
       screen.getByRole("heading", { name: "Will OpenAI launch a consumer hardware product by...?" }),
@@ -142,7 +143,7 @@ describe("HomeMarketGrid", () => {
     expect(screen.getByText("66%")).toBeTruthy();
   });
 
-  it("keeps grouped rows in source order instead of re-sorting them by volume", () => {
+  it("keeps grouped preview rows in source order instead of re-sorting them by volume", () => {
     const event = buildEvent(
       "What will happen before GTA VI?",
       [{ id: "1", slug: "culture", label: "Culture" }],
@@ -174,9 +175,9 @@ describe("HomeMarketGrid", () => {
       },
     );
 
-    render(<HomeMarketGrid events={[event]} />);
+    render(<HomeMarketGrid items={buildHomeEventCardEntries([event])} />);
 
-    const rowLabels = screen.getAllByText(/July 31|June 30|April 30/).map((node) => node.textContent);
-    expect(rowLabels).toEqual(["July 31", "June 30", "April 30"]);
+    const rowLabels = screen.getAllByText(/July 31|June 30/).map((node) => node.textContent);
+    expect(rowLabels).toEqual(["July 31", "June 30"]);
   });
 });
