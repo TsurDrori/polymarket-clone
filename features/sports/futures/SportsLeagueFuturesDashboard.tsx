@@ -14,6 +14,7 @@ import styles from "./SportsLeagueFuturesDashboard.module.css";
 
 type SportsLeagueFuturesDashboardProps = {
   payload: SportsFuturesLeagueDashboardPayload;
+  rootHref?: string;
 };
 
 type OutcomePriceProps = {
@@ -148,7 +149,11 @@ function CompactListCard({ card }: { card: SportsFuturesDashboardCard }) {
 
 export function SportsLeagueFuturesDashboard({
   payload,
+  rootHref,
 }: SportsLeagueFuturesDashboardProps) {
+  const resolveLeagueHref = (href: string, active?: boolean) =>
+    rootHref && active ? rootHref : href;
+
   return (
     <section className={styles.surface}>
       <div className={styles.layout}>
@@ -158,13 +163,25 @@ export function SportsLeagueFuturesDashboard({
           <p className={styles.sidebarLabel}>All Sports</p>
           <nav className={styles.sidebarFeatured} aria-label="Featured futures leagues">
             {payload.sidebarFeatured.map((item) => (
-              <SidebarItem key={item.slug} item={item} />
+              <SidebarItem
+                key={item.slug}
+                item={{ ...item, href: resolveLeagueHref(item.href, item.active) }}
+              />
             ))}
           </nav>
 
           <div className={styles.sidebarGroups}>
             {payload.sidebarSections.map((section) => (
-              <SidebarSection key={section.title} section={section} />
+              <SidebarSection
+                key={section.title}
+                section={{
+                  ...section,
+                  items: section.items.map((item) => ({
+                    ...item,
+                    href: resolveLeagueHref(item.href, item.active),
+                  })),
+                }}
+              />
             ))}
           </div>
         </aside>
@@ -177,7 +194,7 @@ export function SportsLeagueFuturesDashboard({
                 {payload.pills.map((pill) => (
                   <Link
                     key={pill.slug}
-                    href={pill.href}
+                    href={resolveLeagueHref(pill.href, pill.active)}
                     className={styles.pill}
                     data-active={pill.active || undefined}
                   >

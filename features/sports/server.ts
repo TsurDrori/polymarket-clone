@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import { getSportsCardWorkingSet } from "./futures/api";
 import { getSportsLeagueDashboardPayload, type SportsFuturesLeagueDashboardPayload } from "./futures/dashboardModels";
-import { getSportsFuturesAggregateRail, type SportsFuturesAggregateRailItem } from "./futures/liveContract";
+import {
+  getSportsGamesWorkingSet,
+  getSportsLiveInitialPageEvents,
+} from "./games/api";
 import {
   buildHydrationEvents,
   buildSportsCards,
@@ -11,10 +14,6 @@ import {
   type SportsCardModel,
   type SportsLeagueChip as SportsCardLeagueChip,
 } from "./futures/parse";
-import {
-  getSportsGamesWorkingSet,
-  getSportsLiveInitialPageEvents,
-} from "./games/api";
 import {
   buildLeagueRouteSections,
   buildLiveRouteSections,
@@ -64,8 +63,7 @@ export type SportsLeagueCardsPayload = {
 };
 
 export type SportsFuturesIndexPagePayload = {
-  allCountLabel: string;
-  railItems: ReadonlyArray<SportsFuturesAggregateRailItem>;
+  dashboard: SportsFuturesLeagueDashboardPayload;
 };
 
 type SportsGamesCatalog = {
@@ -140,11 +138,8 @@ async function getSportsLeagueCardsCatalog({
 }
 
 export async function getSportsFuturesIndexPagePayload(): Promise<SportsFuturesIndexPagePayload> {
-  const { allCountLabel, items } = await getSportsFuturesAggregateRail();
-
   return {
-    allCountLabel,
-    railItems: items,
+    dashboard: await getSportsLeagueFuturesDashboardPayload("nba"),
   };
 }
 

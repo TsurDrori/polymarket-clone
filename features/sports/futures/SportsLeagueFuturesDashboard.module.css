@@ -1,142 +1,137 @@
 .surface {
   display: grid;
+  width: 100%;
 }
 
 .layout {
   display: grid;
-  gap: 20px;
+  gap: 24px;
 }
 
 .sidebar {
   display: grid;
-  gap: 12px;
+  gap: 18px;
   min-width: 0;
+  align-content: start;
 }
 
 .modeSwitch {
-  width: fit-content;
+  width: 100%;
 }
 
 .sidebarLabel {
   margin: 0;
   color: var(--text-subtle);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .sidebarFeatured {
-  display: flex;
+  display: grid;
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-
-.sidebarFeatured::-webkit-scrollbar {
-  display: none;
 }
 
 .sidebarGroups {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .sidebarSection {
   display: grid;
-  gap: 6px;
+  gap: 10px;
 }
 
 .sidebarSectionHeader {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 10px;
   color: var(--text-muted);
 }
 
 .sidebarSectionTitle {
   margin: 0;
   color: inherit;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .sidebarSectionItems {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-
-.sidebarSectionItems::-webkit-scrollbar {
-  display: none;
+  display: grid;
+  gap: 6px;
 }
 
 .sidebarItem {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 34px;
-  padding: 0 10px;
-  border-radius: 10px;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  white-space: nowrap;
   transition:
     background-color 140ms ease,
-    color 140ms ease;
+    color 140ms ease,
+    border-color 140ms ease;
+  border: 1px solid transparent;
 }
 
 .sidebarItem:hover,
 .sidebarItem:focus-visible {
   background: var(--bg-soft);
   color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
 }
 
 .sidebarItem[data-active="true"] {
   background: var(--bg-soft);
   color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
 }
 
 .sidebarCount {
   color: var(--text-subtle);
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .board {
   display: grid;
-  gap: 16px;
+  gap: 18px;
+  min-width: 0;
 }
 
 .header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
 }
 
 .headerText {
   display: grid;
-  gap: 12px;
+  gap: 18px;
 }
 
 .title {
   margin: 0;
   color: var(--text-primary);
-  font-size: 30px;
+  font-size: clamp(42px, 5vw, 60px);
   font-weight: 800;
-  letter-spacing: -0.045em;
+  line-height: 0.94;
+  letter-spacing: -0.055em;
 }
 
 .pills {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
   scrollbar-width: none;
 }
 
@@ -147,12 +142,12 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
-  padding: 0 12px;
+  min-height: 48px;
+  padding: 0 20px;
   border-radius: 999px;
   background: var(--bg-soft);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 22px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -166,7 +161,7 @@
   margin: 8px 0 0;
   display: none;
   color: color-mix(in srgb, var(--text-muted) 65%, transparent);
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.04em;
 }
@@ -182,20 +177,20 @@
 .cardHero,
 .cardCompactBar {
   display: grid;
-  gap: 14px;
-  padding: 14px 16px 12px;
+  gap: 18px;
+  padding: 20px 22px 18px;
 }
 
 .cardList {
   display: grid;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 20px 22px;
 }
 
 .cardTitle {
   margin: 0;
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
@@ -209,33 +204,33 @@
 
 .barOutcomeList {
   display: grid;
-  gap: 6px;
+  gap: 10px;
 }
 
 .barOutcome {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 4px;
+  gap: 6px;
 }
 
 .outcomeMeta {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .outcomeBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 18px;
-  border-radius: 4px;
+  width: 42px;
+  height: 28px;
+  border-radius: 7px;
   color: #fff;
-  font-size: 10px;
+  font-size: 17px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.03em;
 }
 
 .outcomeLabel {
@@ -244,7 +239,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 17px;
   font-weight: 600;
 }
 
@@ -252,12 +247,12 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .outcomeValue {
   color: var(--text-primary);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -265,7 +260,7 @@
 .outcomeBarCompact {
   position: relative;
   display: block;
-  height: 14px;
+  height: 18px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--bar-accent) 14%, transparent);
   overflow: hidden;
@@ -282,28 +277,28 @@
 }
 
 .outcomeBarCompact {
-  height: 12px;
+  height: 16px;
 }
 
 .showMore {
   width: fit-content;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
 }
 
 .compactGrid,
 .barGrid {
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .listOutcomeList {
   display: grid;
-  gap: 6px;
+  gap: 12px;
 }
 
 .listOutcomeRow {
@@ -319,13 +314,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
 }
 
 .listOutcomeValue {
   color: var(--text-primary);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -341,33 +336,18 @@
 
 @media (min-width: 980px) {
   .layout {
-    grid-template-columns: 128px minmax(0, 1fr);
-    gap: 14px;
+    grid-template-columns: 252px minmax(0, 1fr);
+    gap: 28px;
     align-items: start;
   }
 
-  .sidebarFeatured {
-    display: grid;
-    gap: 3px;
-    overflow: visible;
-    padding-bottom: 0;
-  }
-
   .sidebarGroups {
-    gap: 8px;
-  }
-
-  .sidebarSectionItems {
-    display: grid;
-    gap: 3px;
-    overflow: visible;
-    padding-bottom: 0;
+    gap: 14px;
   }
 
   .sidebarItem {
-    min-height: 22px;
-    padding: 2px 8px;
-    border-radius: 8px;
+    min-height: 48px;
+    padding: 0 16px;
   }
 
   .watermark {
@@ -376,17 +356,17 @@
 
   .cardHero,
   .cardCompactBar {
-    padding: 16px 18px 14px;
+    padding: 24px 28px 22px;
   }
 
   .cardList {
-    padding: 16px 18px;
+    padding: 24px 28px;
   }
 
   .barOutcome {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
     align-items: center;
-    gap: 14px;
+    gap: 16px;
   }
 
   .outcomeValueWrap {
