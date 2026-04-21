@@ -128,6 +128,19 @@ const PRIMARY_CATEGORY_SLUGS = new Set([
   "business",
 ]);
 
+const MARKET_CHIP_EXCLUDED_SLUGS = new Set([
+  "featured",
+  "games",
+  "world-elections",
+  "global-elections",
+  "recurring",
+  "crypto-prices",
+  "hide-from-new",
+  "multi-strikes",
+  "today",
+  "daily-close",
+]);
+
 const normalizeText = (value: string): string =>
   value.replace(/\s+/g, " ").trim();
 
@@ -411,6 +424,20 @@ const canSurfaceTopic = (tag: PolymarketTag): boolean =>
   tag.label.length > 0 &&
   !GENERIC_TOPIC_SLUGS.has(tag.slug) &&
   !tag.forceHide;
+
+const canSurfaceMarketChipTopic = (tag: PolymarketTag): boolean =>
+  tag.slug.length > 0 &&
+  tag.label.length > 0 &&
+  !MARKET_CHIP_EXCLUDED_SLUGS.has(tag.slug) &&
+  !tag.forceHide;
+
+const compareTopicSummaries = (
+  left: TopicSummary,
+  right: TopicSummary,
+): number =>
+  compareNumbersDesc(left.totalVolume, right.totalVolume) ||
+  compareNumbersDesc(left.eventCount, right.eventCount) ||
+  left.label.localeCompare(right.label);
 
 const buildSpotlightLabels = (
   event: PolymarketEvent,
@@ -789,7 +816,7 @@ const buildHomeMarketChips = (
 
   for (const event of events) {
     for (const tag of getVisibleTags(event)) {
-      if (!canSurfaceTopic(tag) || PRIMARY_CATEGORY_SLUGS.has(tag.slug)) {
+      if (!canSurfaceMarketChipTopic(tag)) {
         continue;
       }
 
@@ -810,13 +837,12 @@ const buildHomeMarketChips = (
   }
 
   const rankedTopics = [
-    ...[...topicMap.values()].sort(
-      (left, right) =>
-        compareNumbersDesc(left.totalVolume, right.totalVolume) ||
-        compareNumbersDesc(left.eventCount, right.eventCount) ||
-        left.label.localeCompare(right.label),
-    ),
-    ...collectTrendingTopics(events, Math.max(limit * 2, limit)),
+    ...[...topicMap.values()]
+      .filter((topic) => PRIMARY_CATEGORY_SLUGS.has(topic.slug))
+      .sort(compareTopicSummaries),
+    ...[...topicMap.values()]
+      .filter((topic) => !PRIMARY_CATEGORY_SLUGS.has(topic.slug))
+      .sort(compareTopicSummaries),
   ];
   const seen = new Set<string>(["all"]);
 

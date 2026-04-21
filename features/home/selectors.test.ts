@@ -338,7 +338,7 @@ describe("buildHomePageModel", () => {
     expect(model.exploreEvents).toHaveLength(30);
   });
 
-  it("derives the market rail from the visible feed topics instead of hero context", () => {
+  it("prioritizes hot primary categories before narrower market topics", () => {
     const events = [
       buildEvent(
         "Iran headline",
@@ -379,9 +379,9 @@ describe("buildHomePageModel", () => {
 
     expect(model.marketChips.map((chip) => chip.label)).toEqual([
       "All",
-      "Iran",
-      "Oil",
-      "NBA",
+      "Politics",
+      "Economy",
+      "Sports",
     ]);
   });
 });
