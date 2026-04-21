@@ -65,6 +65,42 @@ features/realtime/     WebSocket client, dispatcher, raf batching, Jotai atoms, 
 shared/                Formatting, theme, UI primitives, tag utilities
 ```
 
+### Data Flow
+
+```mermaid
+flowchart LR
+  A["Polymarket Gamma API"] --> B["Next.js server routes<br/>app/ + features/*/api"]
+  G["Polymarket CLOB API"] --> B
+  B --> C["Server-rendered route payloads"]
+  C --> D["Hydration seeds"]
+  D --> E["Client surfaces"]
+  H["CLOB WebSocket"] --> I["features/realtime/ws.ts"]
+  I --> J["dispatcher + raf batcher"]
+  J --> K["Jotai atom families"]
+  K --> E
+  E --> L["Cards, market rows, odds cells"]
+```
+
+### Project Structure
+
+```mermaid
+flowchart TD
+  A["app/"] --> A1["Routes"]
+  A["app/"] --> A2["loading.tsx / error.tsx"]
+  A["app/"] --> A3["API route handlers"]
+
+  B["features/"] --> B1["home"]
+  B["features/"] --> B2["crypto"]
+  B["features/"] --> B3["sports"]
+  B["features/"] --> B4["events"]
+  B["features/"] --> B5["detail"]
+  B["features/"] --> B6["realtime"]
+
+  C["shared/"] --> C1["theme"]
+  C["shared/"] --> C2["lib"]
+  C["shared/"] --> C3["ui"]
+```
+
 A few architecture choices worth calling out:
 
 - `Next.js App Router` is used in a server-first way for initial data fetches and route composition.
