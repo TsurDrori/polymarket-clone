@@ -79,11 +79,6 @@ describe("sports league dashboard payload", () => {
   it("builds the curated NBA contract with sorted outcomes and rail counts", async () => {
     getSportsFuturesPopularCounts.mockResolvedValueOnce({
       nba: 22,
-      ucl: 8,
-      nhl: 24,
-      ufc: 37,
-      epl: 83,
-      nfl: 1,
     });
 
     getEventBySlug.mockImplementation(async (slug: string) => {
@@ -127,12 +122,7 @@ describe("sports league dashboard payload", () => {
     const payload = await getSportsLeagueDashboardPayload("nba");
 
     expect(payload).not.toBeNull();
-    expect(payload?.sidebarFeatured.map((item) => item.label)).toEqual([
-      "NBA",
-      "UCL",
-      "NHL",
-      "UFC",
-    ]);
+    expect(payload?.sidebarFeatured.map((item) => item.label)).toEqual(["NBA"]);
     expect(payload?.heroCard.title).toBe("NBA Champion");
     expect(payload?.heroCard.outcomes.map((outcome) => outcome.label)).toEqual([
       "Oklahoma City Thunder",

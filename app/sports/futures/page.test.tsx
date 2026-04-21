@@ -37,7 +37,6 @@ describe("SportsFuturesPage", () => {
         sidebarSections: [],
         pills: [
           { slug: "nba", label: "NBA", href: "/sports/futures/nba", active: true },
-          { slug: "epl", label: "EPL", href: "/sports/futures/epl" },
         ],
         heroCard: {
           id: "hero",
@@ -91,5 +90,6 @@ describe("SportsFuturesPage", () => {
     expect(screen.getByText("Oklahoma City Thunder")).toBeTruthy();
     expect(screen.getByRole("link", { name: /^NBA22$/i })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Popular NBA markets" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "EPL" })).toBeNull();
   });
 });

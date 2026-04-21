@@ -18,18 +18,7 @@ export const NBA_LEAGUE_DISCOVERY_CONTENT: SportsFuturesLeagueDiscoveryContent =
     title: "Related topics",
     links: [
       { label: "Games", href: "/sports/live", sublabel: "Predictions & odds" },
-      { label: "Soccer", href: "/sports/futures/soccer", sublabel: "Predictions & odds" },
       { label: "Basketball", href: "/sports/futures/nba", sublabel: "Predictions & odds" },
-      { label: "Tennis", href: "/sports/futures/tennis", sublabel: "Predictions & odds" },
-      { label: "Baseball", href: "/sports/futures/mlb", sublabel: "Predictions & odds" },
-      { label: "Hockey", href: "/sports/futures/nhl", sublabel: "Predictions & odds" },
-      { label: "NFL", href: "/sports/futures/nfl", sublabel: "Predictions & odds" },
-      {
-        label: "UEFA Champions League",
-        href: "/sports/futures/ucl",
-        sublabel: "Predictions & odds",
-      },
-      { label: "Cricket", href: "/sports/futures/cricket", sublabel: "Predictions & odds" },
     ],
   },
   popularMarkets: {

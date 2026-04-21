@@ -69,23 +69,7 @@ export type SportsFuturesLeagueDashboardPayload = {
   hydrationEvents: ReadonlyArray<PolymarketEvent>;
 };
 
-const FUTURES_CARD_RAIL_COUNT_KEYS = new Set([
-  "nba",
-  "ucl",
-  "nhl",
-  "ufc",
-  "nfl",
-  "nfl-draft",
-  "cfb",
-  "epl",
-  "atp",
-  "wta",
-  "mlb",
-  "golf",
-  "f1",
-  "boxing",
-  "pickleball",
-]);
+const FUTURES_CARD_RAIL_COUNT_KEYS = new Set(["nba"]);
 
 const normalizeSlug = (value: string): string =>
   value.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replaceAll(/^-|-$/g, "");

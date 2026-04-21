@@ -43,7 +43,6 @@ describe("SportsLeagueFuturesPage", () => {
       sidebarSections: [],
       pills: [
         { slug: "nba", label: "NBA", href: "/sports/futures/nba", active: true },
-        { slug: "epl", label: "EPL", href: "/sports/futures/epl" },
       ],
       heroCard: {
         id: "hero",

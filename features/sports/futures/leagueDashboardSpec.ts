@@ -22,52 +22,10 @@ export type SportsFuturesLeagueIdentity = {
   accentColor: string;
 };
 
-export const SPORTS_FUTURES_GROUP_SECTIONS = [
-  {
-    title: "Football",
-    items: [
-      { slug: "nfl", label: "NFL", countKey: "nfl" },
-      { slug: "nfl-draft", label: "NFL Draft", countKey: "nfl-draft" },
-      { slug: "cfb", label: "CFB", countKey: "cfb" },
-    ],
-  },
-  {
-    title: "Soccer",
-    items: [
-      { slug: "epl", label: "EPL", countKey: "epl" },
-      { slug: "ucl", label: "UCL", countKey: "ucl" },
-    ],
-  },
-  {
-    title: "Tennis",
-    items: [
-      { slug: "atp", label: "ATP", countKey: "atp" },
-      { slug: "wta", label: "WTA", countKey: "wta" },
-    ],
-  },
-  {
-    title: "Cricket",
-    items: [],
-  },
-  {
-    title: "Basketball",
-    items: [],
-  },
-  {
-    title: "Baseball",
-    items: [{ slug: "mlb", label: "MLB", countKey: "mlb" }],
-  },
-  {
-    title: "Hockey",
-    items: [],
-  },
-] as const;
+export const SPORTS_FUTURES_GROUP_SECTIONS = [] as const;
 
 export const SPORTS_FUTURES_FEATURED_LEAGUES = [
   { slug: "nba", label: "NBA", countKey: "nba" },
-  { slug: "ucl", label: "UCL", countKey: "ucl" },
-  { slug: "nhl", label: "NHL", countKey: "nhl" },
-  { slug: "ufc", label: "UFC", countKey: "ufc" },
 ] as const;
 
 export const SPORTS_FUTURES_LEAGUE_SPECS: Record<
@@ -78,11 +36,7 @@ export const SPORTS_FUTURES_LEAGUE_SPECS: Record<
     league: "nba",
     title: "NBA",
     routeTitle: "Sports Futures",
-    pills: [
-      { slug: "nba", label: "NBA" },
-      { slug: "epl", label: "EPL" },
-      { slug: "nfl", label: "NFL" },
-    ],
+    pills: [{ slug: "nba", label: "NBA" }],
     cards: [
       {
         slug: "2026-nba-champion",
