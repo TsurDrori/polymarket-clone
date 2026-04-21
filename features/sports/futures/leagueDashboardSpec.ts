@@ -22,7 +22,16 @@ export type SportsFuturesLeagueIdentity = {
   accentColor: string;
 };
 
-export const SPORTS_FUTURES_GROUP_SECTIONS = [] as const;
+export type SportsFuturesGroupSectionSpec = {
+  title: string;
+  items: ReadonlyArray<{
+    slug: string;
+    label: string;
+    countKey: string;
+  }>;
+};
+
+export const SPORTS_FUTURES_GROUP_SECTIONS: ReadonlyArray<SportsFuturesGroupSectionSpec> = [];
 
 export const SPORTS_FUTURES_FEATURED_LEAGUES = [
   { slug: "nba", label: "NBA", countKey: "nba" },
