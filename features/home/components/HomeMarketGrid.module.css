@@ -60,6 +60,14 @@
   padding: 12px 12px 10px;
 }
 
+.cardSports {
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  align-content: start;
+  gap: 6px;
+  padding: 12px 12px 8px;
+}
+
 .header {
   display: flex;
   align-items: flex-start;
@@ -78,7 +86,10 @@
 
 .headerAside {
   flex: 0 0 auto;
-  min-width: 72px;
+  min-width: 58px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
 }
 
 .mediaWrap {
@@ -150,18 +161,25 @@
 }
 
 .cryptoWidget {
-  position: relative;
   width: 58px;
   min-width: 58px;
-  height: 78px;
-  display: grid;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: 8px;
+  margin-right: 4px;
+}
+
+.cryptoWidgetChart {
+  display: flex;
 }
 
 .cryptoWidgetSvg {
   width: 58px;
-  height: 38px;
+  max-width: 58px;
+  height: 34.0358px;
   overflow: visible;
 }
 
@@ -180,36 +198,37 @@
 }
 
 .cryptoWidgetCopy {
-  position: absolute;
-  inset: 8px 0 0;
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  max-width: 100%;
-  padding-inline: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  transform: translateY(-28px);
 }
 
 .cryptoWidgetValueText {
+  margin: 0;
   color: var(--text-secondary);
-  max-width: 100%;
   font-size: 16px;
-  font-weight: 600;
-  line-height: 19px;
-  letter-spacing: -0.24px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.18px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  text-align: center;
 }
 
 .cryptoWidgetLabel {
+  margin: 0;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 12px;
+  line-height: 16px;
+  letter-spacing: -0.1px;
   text-align: center;
-  max-width: 100%;
-  white-space: nowrap;
+  width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .cryptoSpacer {
@@ -432,10 +451,22 @@
   min-height: 16px;
 }
 
+.sportsHeader {
+  min-height: 20px;
+}
+
+.sportsFinalHeader {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.09px;
+}
+
 .sportsRows {
   display: grid;
-  gap: 10px;
-  flex: 1 1 auto;
+  gap: 8px;
+  flex: none;
   align-content: start;
 }
 
@@ -444,15 +475,57 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
+  min-height: 36px;
+}
+
+.sportsRowFinal {
+  min-height: 46px;
+}
+
+.sportsLeftRail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sportsBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 42px;
+  padding-inline: 10px;
+  border-radius: 14px;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: -0.14px;
+}
+
+.sportsRow:first-child .sportsBadge {
+  background: #3f8ed1;
+}
+
+.sportsRow:last-child .sportsBadge {
+  background: #e8b622;
 }
 
 .sportsScore {
   color: var(--text-secondary);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 20px;
-  letter-spacing: -0.3px;
-  min-width: 30px;
+  letter-spacing: -0.18px;
+  min-width: 24px;
+  text-align: right;
+}
+
+.sportsScoreFinal {
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -0.36px;
+  min-width: 40px;
 }
 
 .sportsTeam {
@@ -463,7 +536,61 @@
 
 .sportsTeamName {
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sportsTeamNameFinal {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.sportsTeamMeta {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.sportsPrice {
+  color: var(--text-secondary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.18px;
+  white-space: nowrap;
+}
+
+.sportsPriceFinal {
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -0.36px;
+}
+
+.sportsActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sportsActionsFinal {
+  margin-top: 2px;
+}
+
+.sportsActionPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 0;
+  padding-inline: 8px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 20px;
   white-space: nowrap;
@@ -471,19 +598,90 @@
   text-overflow: ellipsis;
 }
 
-.sportsTeamMeta {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 590;
-  line-height: 14px;
+.sportsActionPrimary {
+  background: color-mix(in srgb, #1f4e73 74%, transparent);
+  color: #49b9ff;
 }
 
-.sportsPrice {
-  color: var(--text-secondary);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 22.5px;
+.sportsActionSecondary {
+  background: color-mix(in srgb, #5e592d 72%, transparent);
+  color: #ffed1f;
+}
+
+.sportsActionSuccess {
+  background: color-mix(in srgb, #28533c 76%, transparent);
+  color: #42c66f;
+}
+
+.sportsActionDanger {
+  background: color-mix(in srgb, #5c3136 74%, transparent);
+  color: #ef4444;
+}
+
+.sportsFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.sportsFooterFinal {
+  align-items: flex-end;
+}
+
+.sportsFooterMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
   white-space: nowrap;
+  overflow: hidden;
+}
+
+.sportsFooterMetaFinal {
+  padding-bottom: 2px;
+}
+
+.sportsFooterLiveDot {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 999px;
+  background: #ef4444;
+}
+
+.sportsFooterStatus,
+.sportsFooterText {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.sportsFooterStatusLive {
+  color: var(--text-secondary);
+}
+
+.sportsFooterStatus::after,
+.sportsFooterText:not(:last-child)::after {
+  content: "·";
+  margin-left: 6px;
+  color: var(--text-muted);
+}
+
+.sportsFooterActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  flex: 0 0 auto;
+}
+
+.sportsFooterIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes home-card-promote {

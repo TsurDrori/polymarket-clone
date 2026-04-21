@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark } from "lucide-react";
+import { Bookmark, Gift } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { PriceCell } from "@/features/events/components/PriceCell";
@@ -47,10 +47,10 @@ const describeArc = (value: number): string => {
   const clamped = Math.max(0, Math.min(1, value));
   const startAngle = Math.PI;
   const endAngle = Math.PI * (1 - clamped);
-  const startX = 29 + radius * Math.cos(startAngle);
-  const startY = 29 + radius * Math.sin(startAngle);
-  const endX = 29 + radius * Math.cos(endAngle);
-  const endY = 29 + radius * Math.sin(endAngle);
+  const startX = radius * Math.cos(startAngle);
+  const startY = radius * Math.sin(startAngle);
+  const endX = radius * Math.cos(endAngle);
+  const endY = radius * Math.sin(endAngle);
   const largeArcFlag = clamped > 0.5 ? 1 : 0;
 
   return `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
@@ -186,21 +186,28 @@ function CryptoProbabilityWidget({
 
   return (
     <div className={styles.cryptoWidget} aria-hidden="true">
-      <svg viewBox="0 0 58 38" className={styles.cryptoWidgetSvg}>
-        <path
-          d="M 5 29 A 24 24 0 0 1 53 29"
-          className={styles.cryptoWidgetTrack}
-        />
-        <path
-          d={describeArc(clamped)}
-          className={styles.cryptoWidgetValue}
-          pathLength={100}
-          strokeDasharray={`${clamped * 100} 100`}
-        />
-      </svg>
+      <div className={styles.cryptoWidgetChart}>
+        <svg
+          width="58"
+          height="34.03579715234098"
+          viewBox="-29 -29 58 34.03579715234098"
+          className={styles.cryptoWidgetSvg}
+        >
+          <path
+            d="M -24 0 A 24 24 0 0 1 24 0"
+            className={styles.cryptoWidgetTrack}
+          />
+          <path
+            d={describeArc(clamped)}
+            className={styles.cryptoWidgetValue}
+            pathLength={100}
+            strokeDasharray={`${clamped * 100} 100`}
+          />
+        </svg>
+      </div>
       <div className={styles.cryptoWidgetCopy}>
-        <span className={styles.cryptoWidgetValueText}>{renderPct(tokenId, clamped)}</span>
-        <span className={styles.cryptoWidgetLabel}>{label}</span>
+        <p className={styles.cryptoWidgetValueText}>{renderPct(tokenId, clamped)}</p>
+        <p className={styles.cryptoWidgetLabel}>{label}</p>
       </div>
     </div>
   );
@@ -257,6 +264,28 @@ function LargeAction({
   return (
     <span
       className={cn(styles.binaryActionPill, positive ? styles.actionYesLarge : styles.actionNoLarge)}
+    >
+      {label}
+    </span>
+  );
+}
+
+function SportsAction({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: "primary" | "secondary" | "success" | "danger";
+}) {
+  return (
+    <span
+      className={cn(
+        styles.sportsActionPill,
+        tone === "primary" && styles.sportsActionPrimary,
+        tone === "secondary" && styles.sportsActionSecondary,
+        tone === "success" && styles.sportsActionSuccess,
+        tone === "danger" && styles.sportsActionDanger,
+      )}
     >
       {label}
     </span>
@@ -381,45 +410,78 @@ function HomeCryptoCardBody({
 }
 
 function HomeSportsLiveCardBody({ model }: { model: HomeSportsLiveCardModel }) {
+  const isFinal = model.statusLabel === "Final";
+  const statusSummary = [model.statusLabel, model.statusDetail].filter(Boolean).join(" ");
+  const footerLead = isFinal ? null : (model.statusDetail ?? model.statusLabel);
+  const leagueLabel = model.metaLabels[0] ?? "";
+  const actionTones = isFinal
+    ? (["success", "danger"] as const)
+    : (["primary", "secondary"] as const);
+
   return (
     <>
-      <div className={styles.sportsStatusRow}>
-        <span className={styles.sportsStatus}>{model.statusLabel}</span>
-        {model.statusDetail ? <span className={styles.sportsDetail}>{model.statusDetail}</span> : null}
+      <div className={styles.sportsHeader}>
+        {isFinal ? <span className={styles.sportsFinalHeader}>{statusSummary}</span> : null}
       </div>
 
       <div className={styles.sportsRows}>
         {model.competitors.map((competitor) => (
-          <div key={competitor.key} className={styles.sportsRow}>
-            <span className={styles.sportsScore}>{competitor.score ?? "--"}</span>
+          <div
+            key={competitor.key}
+            className={cn(styles.sportsRow, isFinal && styles.sportsRowFinal)}
+          >
+            <div className={styles.sportsLeftRail}>
+              {!isFinal ? <span className={styles.sportsBadge}>{competitor.shortName}</span> : null}
+              <span className={cn(styles.sportsScore, isFinal && styles.sportsScoreFinal)}>
+                {competitor.score ?? "--"}
+              </span>
+            </div>
             <div className={styles.sportsTeam}>
-              <span className={styles.sportsTeamName}>{competitor.name}</span>
+              <span className={cn(styles.sportsTeamName, isFinal && styles.sportsTeamNameFinal)}>
+                {competitor.name}
+              </span>
               {competitor.subtitle ? (
                 <span className={styles.sportsTeamMeta}>{competitor.subtitle}</span>
               ) : null}
             </div>
-            <span className={styles.sportsPrice}>
+            <span className={cn(styles.sportsPrice, isFinal && styles.sportsPriceFinal)}>
               {renderPct(competitor.tokenId, competitor.price)}
             </span>
           </div>
         ))}
       </div>
 
-      <div className={styles.binaryActions}>
+      <div className={cn(styles.sportsActions, isFinal && styles.sportsActionsFinal)}>
         {model.competitors.slice(0, 2).map((competitor, index) => (
-          <LargeAction
+          <SportsAction
             key={`${competitor.key}:action`}
             label={competitor.name}
-            positive={index === 0}
+            tone={actionTones[index]}
           />
         ))}
       </div>
 
-      <div className={styles.footerMeta}>
-        <span className={styles.volumeMeta}>
-          {model.volumeLabel}
-          {model.metaLabels[0] ? ` · ${model.metaLabels[0]}` : ""}
-        </span>
+      <div className={cn(styles.sportsFooter, isFinal && styles.sportsFooterFinal)}>
+        <div className={cn(styles.sportsFooterMeta, isFinal && styles.sportsFooterMetaFinal)}>
+          {!isFinal ? <span className={styles.sportsFooterLiveDot} aria-hidden="true" /> : null}
+          {footerLead ? (
+            <span className={cn(styles.sportsFooterStatus, !isFinal && styles.sportsFooterStatusLive)}>
+              {footerLead}
+            </span>
+          ) : null}
+          <span className={styles.sportsFooterText}>{model.volumeLabel}</span>
+          {leagueLabel ? <span className={styles.sportsFooterText}>{leagueLabel}</span> : null}
+        </div>
+        <div className={styles.sportsFooterActions}>
+          {!isFinal ? (
+            <span className={styles.sportsFooterIcon} aria-hidden="true">
+              <Gift size={18} strokeWidth={2.1} />
+            </span>
+          ) : null}
+          <span className={styles.sportsFooterIcon} aria-hidden="true">
+            <Bookmark size={18} strokeWidth={2.1} />
+          </span>
+        </div>
       </div>
     </>
   );
