@@ -1,0 +1,395 @@
+.surface {
+  display: grid;
+}
+
+.layout {
+  display: grid;
+  gap: 20px;
+}
+
+.sidebar {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.modeSwitch {
+  width: fit-content;
+}
+
+.sidebarLabel {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sidebarFeatured {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.sidebarFeatured::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebarGroups {
+  display: grid;
+  gap: 10px;
+}
+
+.sidebarSection {
+  display: grid;
+  gap: 6px;
+}
+
+.sidebarSectionHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.sidebarSectionTitle {
+  margin: 0;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sidebarSectionItems {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.sidebarSectionItems::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebarItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.sidebarItem:hover,
+.sidebarItem:focus-visible {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.sidebarItem[data-active="true"] {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.sidebarCount {
+  color: var(--text-subtle);
+  font-size: 11px;
+}
+
+.board {
+  display: grid;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headerText {
+  display: grid;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+.pills {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.pills::-webkit-scrollbar {
+  display: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill[data-active="true"] {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent-brand) 14%, var(--bg-soft));
+}
+
+.watermark {
+  margin: 8px 0 0;
+  display: none;
+  color: color-mix(in srgb, var(--text-muted) 65%, transparent);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.cardHero,
+.cardList,
+.cardCompactBar {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-surface);
+}
+
+.cardHero,
+.cardCompactBar {
+  display: grid;
+  gap: 14px;
+  padding: 14px 16px 12px;
+}
+
+.cardList {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.barOutcomeList,
+.listOutcomeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.barOutcomeList {
+  display: grid;
+  gap: 6px;
+}
+
+.barOutcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+
+.outcomeMeta {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.outcomeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 18px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.outcomeLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.outcomeValueWrap {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.outcomeValue {
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.outcomeBar,
+.outcomeBarCompact {
+  position: relative;
+  display: block;
+  height: 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bar-accent) 14%, transparent);
+  overflow: hidden;
+}
+
+.outcomeBar::before,
+.outcomeBarCompact::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: var(--bar-width);
+  border-radius: inherit;
+  background: var(--bar-accent);
+}
+
+.outcomeBarCompact {
+  height: 12px;
+}
+
+.showMore {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.compactGrid,
+.barGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.listOutcomeList {
+  display: grid;
+  gap: 6px;
+}
+
+.listOutcomeRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.listOutcomeLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.listOutcomeValue {
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+@media (min-width: 700px) {
+  .compactGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .barGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 980px) {
+  .layout {
+    grid-template-columns: 128px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .sidebarFeatured {
+    display: grid;
+    gap: 3px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .sidebarGroups {
+    gap: 8px;
+  }
+
+  .sidebarSectionItems {
+    display: grid;
+    gap: 3px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .sidebarItem {
+    min-height: 22px;
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+
+  .watermark {
+    display: block;
+  }
+
+  .cardHero,
+  .cardCompactBar {
+    padding: 16px 18px 14px;
+  }
+
+  .cardList {
+    padding: 16px 18px;
+  }
+
+  .barOutcome {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+    align-items: center;
+    gap: 14px;
+  }
+
+  .outcomeValueWrap {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}

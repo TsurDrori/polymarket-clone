@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import { getSportsCardWorkingSet } from "./futures/api";
+import { getSportsLeagueDashboardPayload, type SportsFuturesLeagueDashboardPayload } from "./futures/dashboardModels";
+import { getSportsFuturesAggregateRail, type SportsFuturesAggregateRailItem } from "./futures/liveContract";
 import {
   buildHydrationEvents,
   buildSportsCards,
@@ -56,6 +58,11 @@ export type SportsLeagueCardsPayload = {
   gamesHref: string;
   propsHref: string;
   leagueChips?: ReadonlyArray<SportsCardLeagueChip>;
+};
+
+export type SportsFuturesIndexPagePayload = {
+  allCountLabel: string;
+  railItems: ReadonlyArray<SportsFuturesAggregateRailItem>;
 };
 
 type SportsGamesCatalog = {
@@ -127,6 +134,27 @@ async function getSportsLeagueCardsCatalog({
     leagueCards,
     normalizedLeague: leagueCards[0]!.league.slug,
   };
+}
+
+export async function getSportsFuturesIndexPagePayload(): Promise<SportsFuturesIndexPagePayload> {
+  const { allCountLabel, items } = await getSportsFuturesAggregateRail();
+
+  return {
+    allCountLabel,
+    railItems: items,
+  };
+}
+
+export async function getSportsLeagueFuturesDashboardPayload(
+  league: string,
+): Promise<SportsFuturesLeagueDashboardPayload> {
+  const payload = await getSportsLeagueDashboardPayload(league);
+
+  if (!payload) {
+    notFound();
+  }
+
+  return payload;
 }
 
 export async function getSportsLiveSectionsPayload(): Promise<SportsSectionsPayload> {

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { formatSportsLeagueLabel } from "@/features/sports/leagueLabel";
 import { Hydrator } from "@/features/realtime/Hydrator";
-import { SportsLeagueFuturesRoute } from "@/features/sports/futures/SportsLeagueFuturesRoute";
-import { SportsFuturesSurface } from "@/features/sports/futures/SportsFuturesSurface";
-import { getSportsLeagueCardCatalogPayload } from "@/features/sports/server";
+import { NBA_LEAGUE_DISCOVERY_CONTENT } from "@/features/sports/futures/leagueDiscoveryContent";
+import { SportsFuturesDiscovery } from "@/features/sports/futures/SportsFuturesDiscovery";
+import { SportsLeagueFuturesDashboard } from "@/features/sports/futures/SportsLeagueFuturesDashboard";
+import { getSportsLeagueFuturesDashboardPayload } from "@/features/sports/server";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 
@@ -23,10 +24,7 @@ export default async function SportsLeagueFuturesPage(
   props: PageProps<"/sports/futures/[league]">,
 ) {
   const { league } = await props.params;
-  const payload = await getSportsLeagueCardCatalogPayload({
-    league,
-    surface: "futures",
-  }).catch(() => null);
+  const payload = await getSportsLeagueFuturesDashboardPayload(league).catch(() => null);
 
   if (!payload) {
     notFound();
@@ -35,30 +33,13 @@ export default async function SportsLeagueFuturesPage(
   return (
     <main className={styles.main}>
       <Hydrator events={payload.hydrationEvents} />
-      {payload.hasMoreCards ? (
-        <SportsLeagueFuturesRoute
-          title={payload.title}
-          description="Season-long and non-game sports markets shown as stacked futures cards with bounded live previews."
-          leagueChips={payload.leagueChips ?? []}
-          initialCards={payload.initialCards}
-          activeLeagueSlug={payload.normalizedLeague}
-          emptyTitle="No results found"
-          emptyCopy="This league does not currently expose any futures cards in the public sports feed."
-          catalogEndpoint={`/api/sports-card-catalog?league=${encodeURIComponent(payload.normalizedLeague)}&surface=futures`}
-        />
-      ) : (
-        <>
-          <SportsFuturesSurface
-            title={payload.title}
-            description="Season-long and non-game sports markets shown as stacked futures cards with bounded live previews."
-            leagueChips={payload.leagueChips ?? []}
-            cards={payload.initialCards}
-            activeLeagueSlug={payload.normalizedLeague}
-            emptyTitle="No results found"
-            emptyCopy="This league does not currently expose any futures cards in the public sports feed."
-          />
-        </>
-      )}
+      <SportsLeagueFuturesDashboard payload={payload} />
+      <SportsFuturesDiscovery
+        brandLabel="Polymarket"
+        brandTitle="The World's Largest Prediction Market™"
+        brandCopy="Live Polymarket follows the futures dashboard with related sports discovery columns, so the clone keeps the same lower-page rhythm after the curated card grid."
+        content={NBA_LEAGUE_DISCOVERY_CONTENT}
+      />
     </main>
   );
 }

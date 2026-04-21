@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { buildSportsLeagueChips } from "@/features/sports/futures/parse";
-import { SportsFuturesSurface } from "@/features/sports/futures/SportsFuturesSurface";
+import { SportsFuturesDiscovery } from "@/features/sports/futures/SportsFuturesDiscovery";
+import { SportsFuturesAggregateRoute } from "@/features/sports/futures/SportsFuturesAggregateRoute";
+import { getSportsFuturesIndexPagePayload } from "@/features/sports/server";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -9,21 +10,13 @@ export const metadata: Metadata = {
     "Season-long sports futures cards with league rails and the same empty aggregate-state contract the live site exposes.",
 };
 
-export default function SportsFuturesPage() {
-  const leagueChips = buildSportsLeagueChips([], {
-    hrefBase: "/sports/futures",
-  });
+export default async function SportsFuturesPage() {
+  const { allCountLabel, railItems } = await getSportsFuturesIndexPagePayload();
 
   return (
     <main className={styles.main}>
-      <SportsFuturesSurface
-        title="Futures"
-        description="Public sports futures mode with league navigation, sort chrome, and the same empty-result behavior Polymarket currently shows on the base route."
-        leagueChips={leagueChips}
-        cards={[]}
-        emptyTitle="No results found"
-        emptyCopy="Polymarket’s public /sports/futures index currently resolves to an empty state, so this route mirrors that live behavior instead of inventing a custom aggregate feed."
-      />
+      <SportsFuturesAggregateRoute allCountLabel={allCountLabel} railItems={railItems} />
+      <SportsFuturesDiscovery />
     </main>
   );
 }

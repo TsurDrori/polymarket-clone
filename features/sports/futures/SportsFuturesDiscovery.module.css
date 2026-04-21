@@ -1,0 +1,154 @@
+.wrap {
+  display: grid;
+  gap: 32px;
+  margin-top: 18px;
+}
+
+.faqSection,
+.linkShell {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--bg-surface);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.faqSection {
+  padding: 24px 20px 10px;
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.faqList {
+  display: grid;
+}
+
+.faqItem {
+  border-top: 1px solid var(--border-soft);
+}
+
+.faqItem:first-child {
+  border-top: 0;
+}
+
+.faqToggle {
+  list-style: none;
+  cursor: pointer;
+  padding: 18px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.faqToggle::-webkit-details-marker {
+  display: none;
+}
+
+.faqAnswer {
+  margin: 0 0 18px;
+  max-width: 72ch;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.linkShell {
+  display: grid;
+  gap: 24px;
+  padding: 24px 20px;
+}
+
+.brand {
+  display: grid;
+  gap: 4px;
+}
+
+.brandLabel {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.brandTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.brandCopy {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.columns {
+  display: grid;
+  gap: 24px;
+}
+
+.column {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.columnTitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.linkList {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+.link {
+  display: inline-grid;
+  gap: 2px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  transition: color 140ms ease;
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--accent-brand);
+}
+
+.sublabel {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .faqSection,
+  .linkShell {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+  }
+}
