@@ -84,22 +84,12 @@
   flex: 0 0 auto;
 }
 
-.searchInput {
+.searchText {
   width: 100%;
   min-width: 0;
   padding: 0;
-  border: 0;
-  background: transparent;
   color: var(--text-primary);
   font-size: 14px;
-}
-
-.searchInput::placeholder {
-  color: var(--text-muted);
-}
-
-.searchInput:focus {
-  outline: none;
 }
 
 .searchShortcut {
@@ -213,7 +203,6 @@
 .iconButton:focus-visible,
 .themeRow:focus-visible,
 .menuLink:focus-visible,
-.searchInput:focus-visible,
 .authLink:focus-visible,
 .signupButton:focus-visible,
 .howItWorks:focus-visible,

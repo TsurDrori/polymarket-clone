@@ -8,14 +8,10 @@ import { MOBILE_BOTTOM_ITEMS } from "./navItems";
 import styles from "./MobileBottomNav.module.css";
 
 type MobileBottomNavProps = {
-  onSearch: () => void;
   onMore: () => void;
 };
 
-export function MobileBottomNav({
-  onSearch,
-  onMore,
-}: MobileBottomNavProps) {
+export function MobileBottomNav({ onMore }: MobileBottomNavProps) {
   const pathname = usePathname() ?? "/";
 
   return (
@@ -28,15 +24,14 @@ export function MobileBottomNav({
 
         if (!href) {
           return (
-            <button
+            <div
               key={item.label}
-              type="button"
               className={styles.item}
-              onClick={onSearch}
+              aria-hidden="true"
             >
               <Icon className={styles.icon} aria-hidden="true" />
               <span>{item.label}</span>
-            </button>
+            </div>
           );
         }
 

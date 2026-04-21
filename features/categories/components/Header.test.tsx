@@ -102,4 +102,12 @@ describe("Header", () => {
 
     expect(within(mobileQuickActions).getByRole("link", { name: /breaking/i })).toBeTruthy();
   });
+
+  it("keeps decorative search chrome out of the interactive accessibility tree", () => {
+    render(<Header />);
+
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    expect(screen.queryByRole("button", { name: /^search$/i })).toBeNull();
+    expect(screen.getByText("Search polymarkets...")).toBeTruthy();
+  });
 });

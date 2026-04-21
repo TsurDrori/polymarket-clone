@@ -178,8 +178,6 @@ export function Header() {
   const [theme, setTheme] = useState<Theme>(() => readResolvedTheme());
   const panelRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const desktopSearchRef = useRef<HTMLInputElement>(null);
-  const mobileSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return subscribeToThemeChanges(() => {
@@ -225,14 +223,6 @@ export function Header() {
     };
   }, [isMenuOpen]);
 
-  const focusSearch = () => {
-    const searchInput =
-      window.innerWidth >= 1024 ? desktopSearchRef.current : mobileSearchRef.current;
-
-    searchInput?.focus();
-    searchInput?.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
-
   return (
     <>
       <header className={styles.header}>
@@ -271,19 +261,13 @@ export function Header() {
               <span className={styles.logoText}>Polymarket</span>
             </Link>
 
-            <label className={styles.searchShell}>
+            <div className={styles.searchShell} aria-hidden="true">
               <Search className={styles.searchIcon} aria-hidden="true" />
-              <input
-                ref={desktopSearchRef}
-                type="search"
-                className={styles.searchInput}
-                placeholder="Search polymarkets..."
-                aria-label="Search polymarkets"
-              />
+              <span className={styles.searchText}>Search polymarkets...</span>
               <span className={styles.searchShortcut} aria-hidden="true">
                 /
               </span>
-            </label>
+            </div>
 
             <div className={styles.actions}>
               <button
@@ -326,16 +310,10 @@ export function Header() {
           </div>
 
           <div className={styles.mobileSearchRow}>
-            <label className={styles.mobileSearchShell}>
+            <div className={styles.mobileSearchShell} aria-hidden="true">
               <Search className={styles.searchIcon} aria-hidden="true" />
-              <input
-                ref={mobileSearchRef}
-                type="search"
-                className={styles.searchInput}
-                placeholder="Search"
-                aria-label="Search"
-              />
-            </label>
+              <span className={styles.searchText}>Search</span>
+            </div>
             <button type="button" className={styles.iconButton} aria-label="Open filters">
               <SlidersHorizontal size={18} strokeWidth={2.2} />
             </button>
@@ -514,10 +492,7 @@ export function Header() {
         ) : null}
       </header>
 
-      <MobileBottomNav
-        onSearch={focusSearch}
-        onMore={() => setIsMenuOpen(true)}
-      />
+      <MobileBottomNav onMore={() => setIsMenuOpen(true)} />
     </>
   );
 }
