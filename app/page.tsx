@@ -23,6 +23,12 @@ import { getHomeSportsGamePreviewEvents } from "@/features/sports/games/api";
 import { isEventVisible } from "@/shared/lib/tags";
 import styles from "./page.module.css";
 
+const HOME_TOP_EVENT_SEED_LIMIT = 8;
+const HOME_INITIAL_EXPLORE_LIMIT = 24;
+const HOME_POLITICS_SEED_TAG = "united-states";
+const HOME_WORLD_SEED_TAG = "world";
+const HOME_SECTOR_SEED_LIMIT = 6;
+
 export const metadata: Metadata = {
   title: "Polymarket | The World's Largest Prediction Market™",
   description:
@@ -30,12 +36,25 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [topEvents, cryptoEvents, sportsEvents, cryptoCatalog, sportsGameEvents] =
+  const [topFeed, politicsEvents, worldEvents, cryptoEvents, sportsEvents, cryptoCatalog, sportsGameEvents] =
     await Promise.all([
-    listEvents({
-      limit: 32,
+    listEventsKeyset({
+      limit: HOME_TOP_EVENT_SEED_LIMIT,
       order: "volume_24hr",
       ascending: false,
+      revalidate: 30,
+    }),
+    listEvents({
+      limit: HOME_SECTOR_SEED_LIMIT,
+      order: "volume_24hr",
+      ascending: false,
+      tagSlug: HOME_POLITICS_SEED_TAG,
+    }),
+    listEvents({
+      limit: HOME_SECTOR_SEED_LIMIT,
+      order: "volume_24hr",
+      ascending: false,
+      tagSlug: HOME_WORLD_SEED_TAG,
     }),
     listEvents({
       limit: 12,
@@ -59,7 +78,13 @@ export default async function Home() {
     getHomeSportsGamePreviewEvents(6),
   ]);
 
-  const visible = [...topEvents, ...cryptoEvents, ...sportsEvents].filter(
+  const visible = [
+    ...topFeed.events,
+    ...politicsEvents,
+    ...worldEvents,
+    ...cryptoEvents,
+    ...sportsEvents,
+  ].filter(
     (event, index, allEvents) =>
       isEventVisible(event) &&
       allEvents.findIndex((candidate) => candidate.id === event.id) === index,
@@ -111,12 +136,15 @@ export default async function Home() {
     ),
   );
 
-  const model = buildHomePageModel(visible, { spotlightCharts });
+  const model = buildHomePageModel(visible, {
+    spotlightCharts,
+    exploreLimit: HOME_INITIAL_EXPLORE_LIMIT,
+  });
   const initialExploreCards = buildHomeExploreCardEntries({
     events: model.exploreEvents,
     cryptoEvents: cryptoCatalog.events,
     sportsEvents: sportsGameEvents.filter((event) => event.teams.length >= 2),
-    limit: 24,
+    limit: HOME_INITIAL_EXPLORE_LIMIT,
   });
   const hydratedEvents = [
     ...(model.hero.spotlights.map((spotlight) => spotlight.event) ?? []),
@@ -133,7 +161,11 @@ export default async function Home() {
   return (
     <main className={styles.main}>
       <Hydrator seeds={hydrationSeeds} />
-      <HomePage model={model} initialExploreCards={initialExploreCards} />
+      <HomePage
+        model={model}
+        initialExploreCards={initialExploreCards}
+        initialExploreCursor={topFeed.nextCursor}
+      />
     </main>
   );
 }

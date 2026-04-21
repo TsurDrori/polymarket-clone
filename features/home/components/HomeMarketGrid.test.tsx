@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ImgHTMLAttributes } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type {
@@ -136,11 +136,9 @@ describe("HomeMarketGrid", () => {
       screen.getByRole("heading", { name: "Will OpenAI launch a consumer hardware product by...?" }),
     ).toBeTruthy();
     expect(screen.getAllByText("34%").length).toBeGreaterThan(0);
-    expect(screen.getByText("Tech")).toBeTruthy();
-    expect(screen.getByText("AI")).toBeTruthy();
     expect(screen.getAllByText("Yes").length).toBeGreaterThan(0);
     expect(screen.getAllByText("No").length).toBeGreaterThan(0);
-    expect(screen.getByText("66%")).toBeTruthy();
+    expect(screen.getByText("$500K Vol.")).toBeTruthy();
   });
 
   it("keeps grouped preview rows in source order instead of re-sorting them by volume", () => {
@@ -179,5 +177,27 @@ describe("HomeMarketGrid", () => {
 
     const rowLabels = screen.getAllByText(/July 31|June 30/).map((node) => node.textContent);
     expect(rowLabels).toEqual(["July 31", "June 30"]);
+  });
+
+  it("falls through to remote continuation once the local projection is exhausted", () => {
+    const event = buildEvent(
+      "Will the Fed cut rates by September?",
+      [{ id: "1", slug: "politics", label: "Politics" }],
+    );
+    const onContinue = vi.fn();
+
+    render(
+      <HomeMarketGrid
+        items={buildHomeEventCardEntries([event])}
+        continuation={{
+          hasMore: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Show more markets" }));
+
+    expect(onContinue).toHaveBeenCalledTimes(1);
   });
 });

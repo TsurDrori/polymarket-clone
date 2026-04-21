@@ -22,28 +22,72 @@ import styles from "./HomePage.module.css";
 type HomePageProps = {
   model: HomePageModel;
   initialExploreCards: ReadonlyArray<HomeCardEntry>;
+  initialExploreCursor: string | null;
 };
 
-type CardsByChip = Record<string, HomeCardEntry[]>;
+type HomeChipFeedState = {
+  cards: HomeCardEntry[];
+  nextCursor: string | null;
+  initialized: boolean;
+};
+
+type FeedStateByChip = Record<string, HomeChipFeedState>;
+type LoadingState = {
+  chipSlug: string;
+  mode: "initial" | "append";
+};
 const CHIP_RAIL_SCROLL_STEP = 240;
 
-export function HomePage({ model, initialExploreCards }: HomePageProps) {
+const appendUniqueEntries = (
+  current: ReadonlyArray<HomeCardEntry>,
+  incoming: ReadonlyArray<HomeCardEntry>,
+): HomeCardEntry[] => {
+  const merged = [...current];
+  const seen = new Set(current.map((entry) => entry.id));
+
+  for (const entry of incoming) {
+    if (seen.has(entry.id)) {
+      continue;
+    }
+
+    seen.add(entry.id);
+    merged.push(entry);
+  }
+
+  return merged;
+};
+
+export function HomePage({
+  model,
+  initialExploreCards,
+  initialExploreCursor,
+}: HomePageProps) {
   const chipRailRef = useRef<HTMLDivElement | null>(null);
   const [activeChipSlug, setActiveChipSlug] = useState(
     model.marketChips[0]?.slug ?? "all",
   );
-  const [cardsByChip, setCardsByChip] = useState<CardsByChip>(() => ({
-    all: [...initialExploreCards],
+  const [feedStateByChip, setFeedStateByChip] = useState<FeedStateByChip>(() => ({
+    all: {
+      cards: [...initialExploreCards],
+      nextCursor: initialExploreCursor,
+      initialized: true,
+    },
   }));
-  const [loadingChipSlug, setLoadingChipSlug] = useState<string | null>(null);
+  const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);
   const [canScrollChipRailBackward, setCanScrollChipRailBackward] = useState(false);
   const [canScrollChipRailForward, setCanScrollChipRailForward] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const activeCards = useMemo(
-    () => cardsByChip[activeChipSlug] ?? [],
-    [activeChipSlug, cardsByChip],
+  const activeFeedState = useMemo<HomeChipFeedState>(
+    () =>
+      feedStateByChip[activeChipSlug] ?? {
+        cards: [],
+        nextCursor: null,
+        initialized: false,
+      },
+    [activeChipSlug, feedStateByChip],
   );
+  const activeCards = activeFeedState.cards;
 
   useEffect(
     () => () => {
@@ -95,32 +139,42 @@ export function HomePage({ model, initialExploreCards }: HomePageProps) {
     });
   };
 
-  const selectChip = (chipSlug: string) => {
-    startTransition(() => {
-      setActiveChipSlug(chipSlug);
-    });
-
-    setFeedError(null);
-
-    if (chipSlug === "all" || cardsByChip[chipSlug]) {
-      setLoadingChipSlug(null);
-      return;
-    }
-
+  const requestChipFeedPage = (
+    chipSlug: string,
+    mode: LoadingState["mode"],
+    cursor?: string | null,
+  ) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    setLoadingChipSlug(chipSlug);
+    setLoadingState({ chipSlug, mode });
 
-    void fetchHomeChipFeed(chipSlug, controller.signal)
-      .then((events) => {
+    void fetchHomeChipFeed(chipSlug, cursor, controller.signal)
+      .then(({ events, nextCursor }) => {
         if (controller.signal.aborted) return;
 
+        const nextEntries = buildHomeEventCardEntries(events);
+
         startTransition(() => {
-          setCardsByChip((current) => ({
-            ...current,
-            [chipSlug]: buildHomeEventCardEntries(events),
-          }));
+          setFeedStateByChip((current) => {
+            const existing = current[chipSlug] ?? {
+              cards: [],
+              nextCursor: null,
+              initialized: false,
+            };
+
+            return {
+              ...current,
+              [chipSlug]: {
+                cards:
+                  mode === "append"
+                    ? appendUniqueEntries(existing.cards, nextEntries)
+                    : nextEntries,
+                nextCursor,
+                initialized: true,
+              },
+            };
+          });
         });
       })
       .catch((error: unknown) => {
@@ -132,8 +186,37 @@ export function HomePage({ model, initialExploreCards }: HomePageProps) {
       })
       .finally(() => {
         if (controller.signal.aborted) return;
-        setLoadingChipSlug((current) => (current === chipSlug ? null : current));
+        setLoadingState((current) =>
+          current?.chipSlug === chipSlug && current.mode === mode ? null : current,
+        );
       });
+  };
+
+  const selectChip = (chipSlug: string) => {
+    startTransition(() => {
+      setActiveChipSlug(chipSlug);
+    });
+
+    setFeedError(null);
+
+    if (feedStateByChip[chipSlug]?.initialized) {
+      return;
+    }
+
+    requestChipFeedPage(chipSlug, "initial");
+  };
+
+  const loadMoreMarkets = () => {
+    if (!activeFeedState.nextCursor) {
+      return;
+    }
+
+    if (loadingState?.chipSlug === activeChipSlug) {
+      return;
+    }
+
+    setFeedError(null);
+    requestChipFeedPage(activeChipSlug, "append", activeFeedState.nextCursor);
   };
 
   return (
@@ -217,7 +300,9 @@ export function HomePage({ model, initialExploreCards }: HomePageProps) {
           </p>
         ) : null}
 
-        {loadingChipSlug === activeChipSlug && activeCards.length === 0 ? (
+        {loadingState?.chipSlug === activeChipSlug &&
+        loadingState.mode === "initial" &&
+        activeCards.length === 0 ? (
           <p className={styles.marketFeedStatus} role="status">
             Loading markets…
           </p>
@@ -227,7 +312,19 @@ export function HomePage({ model, initialExploreCards }: HomePageProps) {
           key={activeChipSlug}
           items={activeCards}
           initialCount={16}
-          incrementCount={8}
+          incrementCount={16}
+          continuation={{
+            hasMore: activeFeedState.nextCursor !== null,
+            disabled:
+              loadingState?.chipSlug === activeChipSlug &&
+              loadingState.mode === "append",
+            label:
+              loadingState?.chipSlug === activeChipSlug &&
+              loadingState.mode === "append"
+                ? "Loading markets…"
+                : "Show more markets",
+            onContinue: loadMoreMarkets,
+          }}
         />
       </section>
     </div>

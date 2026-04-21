@@ -154,11 +154,17 @@ describe("HomePage", () => {
       "fetch",
       vi.fn(async () => ({
         ok: true,
-        json: async () => ({ events: [sportsEvent] }),
+        json: async () => ({ events: [sportsEvent], nextCursor: null }),
       })),
     );
 
-    render(<HomePage model={model} initialExploreCards={buildHomeEventCardEntries(model.exploreEvents)} />);
+    render(
+      <HomePage
+        model={model}
+        initialExploreCards={buildHomeEventCardEntries(model.exploreEvents)}
+        initialExploreCursor={null}
+      />,
+    );
 
     expect(screen.getByRole("heading", { name: "Sports market" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Crypto market" })).toBeTruthy();
@@ -203,7 +209,13 @@ describe("HomePage", () => {
       value: scrollBy,
     });
 
-    render(<HomePage model={model} initialExploreCards={buildHomeEventCardEntries(model.exploreEvents)} />);
+    render(
+      <HomePage
+        model={model}
+        initialExploreCards={buildHomeEventCardEntries(model.exploreEvents)}
+        initialExploreCursor={null}
+      />,
+    );
 
     const rail = screen.getByTestId("market-chip-row");
     Object.defineProperty(rail, "clientWidth", {

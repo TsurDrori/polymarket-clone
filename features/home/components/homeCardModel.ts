@@ -9,7 +9,11 @@ import { buildSportsGameRows, type SportsGameEvent } from "@/features/sports/gam
 import { deriveCryptoAsset, deriveCryptoFamily } from "@/features/crypto/parse";
 import { formatVolume } from "@/shared/lib/format";
 import { getVisibleTags } from "@/shared/lib/tags";
-import { getPrimaryMarket, selectSpotlightMarket } from "../selectors";
+import {
+  getPrimaryMarket,
+  selectHomeFeedEvents,
+  selectSpotlightMarket,
+} from "../selectors";
 
 export type HomeCardFamily =
   | "binary"
@@ -84,6 +88,8 @@ export type HomeSportsLiveCardModel = {
   competitors: {
     key: string;
     name: string;
+    shortName: string;
+    score?: string;
     subtitle?: string;
     tokenId?: string;
     price: number;
@@ -291,6 +297,10 @@ const buildCryptoUpDownModel = (event: PolymarketEvent): HomeCryptoUpDownCardMod
 };
 
 const buildSportsLiveModel = (event: PolymarketEvent): HomeSportsLiveCardModel => {
+  const scoreParts =
+    typeof event.score === "string"
+      ? event.score.split(/[-:]/).map((value) => value.trim()).filter(Boolean)
+      : [];
   const sportsEvent: SportsGameEvent = {
     id: event.id,
     slug: event.slug,
@@ -328,14 +338,18 @@ const buildSportsLiveModel = (event: PolymarketEvent): HomeSportsLiveCardModel =
     competitors:
       row?.competitors.slice(0, 2).map((competitor, index) => ({
         key: competitor.key,
-        name: competitor.abbreviation || competitor.name,
+        name: competitor.name,
+        shortName: competitor.abbreviation || competitor.name,
+        score: scoreParts[index],
         subtitle: competitor.record,
         tokenId: row.moneyline[index]?.tokenId,
         price: row.moneyline[index]?.price ?? 0,
       })) ??
       (event.teams ?? []).slice(0, 2).map((team, index) => ({
         key: `${event.id}:${team.name}`,
-        name: team.abbreviation || team.name,
+        name: team.name,
+        shortName: team.abbreviation || team.name,
+        score: scoreParts[index],
         subtitle: team.record,
         tokenId: event.markets[index]?.clobTokenIds[0],
         price: getDisplayPrice(event.markets[index] ?? event.markets[0]),
@@ -455,6 +469,8 @@ export const buildHomeExploreCardEntries = ({
   const baseEntries = buildHomeEventCardEntries(events);
   const groupedEntries = baseEntries.filter((entry) => entry.model.kind === "grouped");
   const binaryEntries = baseEntries.filter((entry) => entry.model.kind === "binary");
+  const leadEvents = selectHomeFeedEvents(events, { limit: 4 });
+  const leadEntries = leadEvents.map(buildHomeCardEntry);
   const cryptoEntry = cryptoEvents
     .map(buildHomeCardEntry)
     .find((entry) => entry.model.kind === "crypto-up-down");
@@ -466,6 +482,10 @@ export const buildHomeExploreCardEntries = ({
   const seen = new Set<string>();
 
   [
+    leadEntries[0],
+    leadEntries[1],
+    cryptoEntry ?? leadEntries[2],
+    sportsEntry ?? leadEntries[3],
     groupedEntries[0],
     cryptoEntry,
     groupedEntries[1] ?? binaryEntries[0],

@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Bookmark, Link2 } from "lucide-react";
 import { PriceCell } from "@/features/events/components/PriceCell";
-import { CryptoSingleGauge } from "@/features/crypto/components/CryptoSingleGauge";
 import { cn } from "@/shared/lib/cn";
 import { formatPct } from "@/shared/lib/format";
 import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
@@ -26,16 +24,6 @@ type HomeMarketCardProps = {
   layoutVariant: SurfaceFeedLayoutVariant;
 };
 
-type HomeCardFrameProps = {
-  href: string;
-  imageSrc: string;
-  metaLabels: string[];
-  title: string;
-  emphasis?: HomeMarketCardProps["emphasis"];
-  layoutVariant: SurfaceFeedLayoutVariant;
-  children: React.ReactNode;
-};
-
 const renderPct = (tokenId: string | undefined, fallbackPrice: number) =>
   tokenId ? (
     <PriceCell tokenId={tokenId} formatKind="pct" fallbackValue={fallbackPrice} />
@@ -43,102 +31,175 @@ const renderPct = (tokenId: string | undefined, fallbackPrice: number) =>
     formatPct(fallbackPrice)
   );
 
-function HomeCardFrame({
+const describeArc = (value: number): string => {
+  const radius = 29;
+  const clamped = Math.max(0, Math.min(1, value));
+  const startAngle = Math.PI;
+  const endAngle = Math.PI * (1 - clamped);
+  const startX = 29 + radius * Math.cos(startAngle);
+  const startY = 29 + radius * Math.sin(startAngle);
+  const endX = 29 + radius * Math.cos(endAngle);
+  const endY = 29 + radius * Math.sin(endAngle);
+  const largeArcFlag = clamped > 0.5 ? 1 : 0;
+
+  return `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
+};
+
+function MarketArcGauge({
+  price,
+  label,
+  positive,
+}: {
+  price: number;
+  label: string;
+  positive: boolean;
+}) {
+  const clamped = Math.max(0, Math.min(1, price));
+
+  return (
+    <div className={styles.arcGauge} aria-hidden="true">
+      <svg viewBox="0 0 58 34" className={styles.arcSvg}>
+        <path
+          d="M 0 29 A 29 29 0 0 1 58 29"
+          className={styles.arcTrack}
+          pathLength={100}
+        />
+        <path
+          d={describeArc(clamped)}
+          className={positive ? styles.arcValueUp : styles.arcValueDown}
+          pathLength={100}
+          strokeDasharray={`${clamped * 100} 100`}
+        />
+      </svg>
+      <div className={styles.arcGaugeCopy}>
+        <span className={styles.arcGaugeValue}>{formatPct(clamped)}</span>
+        <span className={styles.arcGaugeLabel}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
+function CardLink({
   href,
-  imageSrc,
-  metaLabels,
-  title,
+  kind,
   emphasis,
   layoutVariant,
   children,
-}: HomeCardFrameProps) {
+}: {
+  href: string;
+  kind: HomeCardModel["kind"];
+  emphasis?: HomeMarketCardProps["emphasis"];
+  layoutVariant: SurfaceFeedLayoutVariant;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
       className={cn(
         styles.card,
+        kind === "grouped" && styles.cardGrouped,
+        kind === "binary" && styles.cardBinary,
+        kind === "crypto-up-down" && styles.cardCrypto,
+        kind === "sports-live" && styles.cardSports,
         emphasis?.isLiveLeader && styles.cardLeader,
         emphasis?.isPromoted && styles.cardPromoted,
         layoutVariant === "wide" && styles.cardWide,
         layoutVariant === "compact" && styles.cardCompact,
       )}
     >
-      <div className={styles.header}>
-        <div className={styles.titleRow}>
-          <div className={styles.mediaWrap}>
-            <Image
-              src={imageSrc}
-              alt=""
-              fill
-              sizes="18px"
-              unoptimized={shouldBypassNextImageOptimization(imageSrc)}
-              className={styles.media}
-            />
-          </div>
-
-          <div className={styles.titleStack}>
-            <div className={styles.metaRow}>
-              {metaLabels.map((label, index) => (
-                <span key={`${label}:${index}`}>{label}</span>
-              ))}
-              {emphasis?.isLiveLeader ? (
-                <span className={styles.liveBadge}>Live</span>
-              ) : null}
-            </div>
-            <h3 className={styles.title}>{title}</h3>
-          </div>
-        </div>
-
-        <div className={styles.utilityIcons} aria-hidden="true">
-          <Link2 size={12} strokeWidth={1.9} />
-          <Bookmark size={12} strokeWidth={1.9} />
-        </div>
-      </div>
-
       {children}
     </Link>
+  );
+}
+
+function CardThumb({ imageSrc, title }: { imageSrc: string; title: string }) {
+  return (
+    <div className={styles.mediaWrap}>
+      <Image
+        src={imageSrc}
+        alt=""
+        fill
+        sizes="38px"
+        unoptimized={shouldBypassNextImageOptimization(imageSrc)}
+        className={styles.media}
+      />
+      <span className="sr-only">{title}</span>
+    </div>
+  );
+}
+
+function CardTitleHeader({
+  imageSrc,
+  title,
+  aside,
+}: {
+  imageSrc: string;
+  title: string;
+  aside?: React.ReactNode;
+}) {
+  return (
+    <div className={styles.header}>
+      <div className={styles.titleRow}>
+        <CardThumb imageSrc={imageSrc} title={title} />
+        <div className={styles.titleStack}>
+          <h3 className={styles.title}>{title}</h3>
+        </div>
+      </div>
+      {aside ? <div className={styles.headerAside}>{aside}</div> : null}
+    </div>
+  );
+}
+
+function SmallAction({
+  label,
+  positive,
+}: {
+  label: string;
+  positive: boolean;
+}) {
+  return (
+    <span className={cn(styles.actionPill, positive ? styles.actionYes : styles.actionNo)}>
+      {label}
+    </span>
+  );
+}
+
+function LargeAction({
+  label,
+  positive,
+}: {
+  label: string;
+  positive: boolean;
+}) {
+  return (
+    <span
+      className={cn(styles.binaryActionPill, positive ? styles.actionYesLarge : styles.actionNoLarge)}
+    >
+      {label}
+    </span>
   );
 }
 
 function HomeBinaryCardBody({ model }: { model: HomeBinaryCardModel }) {
   return (
     <>
-      <div className={styles.binarySummary}>
-        <div className={styles.priceStack}>
-          <span className={styles.priceValue}>
-            {renderPct(model.primaryTokenId, model.primaryPrice)}
-          </span>
-          <span className={styles.priceLabel}>chance</span>
-          <span
-            className={cn(
-              styles.changeLabel,
-              model.primaryChange >= 0 ? styles.changeUp : styles.changeDown,
-            )}
-          >
-            {`${model.primaryChange >= 0 ? "+" : "-"}${Math.round(
-              Math.abs(model.primaryChange) * 100,
-            )}%`}
-          </span>
-        </div>
+      <CardTitleHeader
+        imageSrc={model.imageSrc}
+        title={model.title}
+        aside={<MarketArcGauge price={model.primaryPrice} label="chance" positive={false} />}
+      />
 
-        <div className={styles.footerMeta}>
-          {model.primaryDateLabel ? <span>{model.primaryDateLabel}</span> : null}
-          <span>{model.volumeLabel}</span>
-        </div>
+      <div className={styles.binarySummary}>
+        <span className={styles.volumeMeta}>{model.volumeLabel}</span>
       </div>
 
       <div className={styles.binaryActions}>
         {model.actions.map((action, index) => (
-          <span
+          <LargeAction
             key={`${action.label}:${index}`}
-            className={cn(
-              styles.binaryActionPill,
-              index === 0 ? styles.actionYes : styles.actionNo,
-            )}
-          >
-            <span>{action.label}</span>
-            <span className={styles.binaryActionValue}>{formatPct(action.price)}</span>
-          </span>
+            label={action.label}
+            positive={index === 0}
+          />
         ))}
       </div>
     </>
@@ -148,6 +209,8 @@ function HomeBinaryCardBody({ model }: { model: HomeBinaryCardModel }) {
 function HomeGroupedCardBody({ model }: { model: HomeGroupedCardModel }) {
   return (
     <>
+      <CardTitleHeader imageSrc={model.imageSrc} title={model.title} />
+
       <div className={styles.rows}>
         {model.rows.map((row) => (
           <div key={row.id} className={styles.row}>
@@ -156,15 +219,11 @@ function HomeGroupedCardBody({ model }: { model: HomeGroupedCardModel }) {
               <span className={styles.rowValue}>{renderPct(row.tokenId, row.price)}</span>
               <div className={styles.rowActions}>
                 {row.actions.map((action, index) => (
-                  <span
+                  <SmallAction
                     key={`${row.id}:${action.label}`}
-                    className={cn(
-                      styles.actionPill,
-                      index === 0 ? styles.actionYes : styles.actionNo,
-                    )}
-                  >
-                    <span>{action.label}</span>
-                  </span>
+                    label={action.label}
+                    positive={index === 0}
+                  />
                 ))}
               </div>
             </div>
@@ -173,8 +232,7 @@ function HomeGroupedCardBody({ model }: { model: HomeGroupedCardModel }) {
       </div>
 
       <div className={styles.footerMeta}>
-        {model.primaryDateLabel ? <span>{model.primaryDateLabel}</span> : null}
-        <span>{model.volumeLabel}</span>
+        <span className={styles.volumeMeta}>{model.volumeLabel}</span>
       </div>
     </>
   );
@@ -185,32 +243,28 @@ function HomeCryptoCardBody({
 }: {
   model: Extract<HomeCardModel, { kind: "crypto-up-down" }>;
 }) {
+  const meta = [model.liveLabel, model.assetLabel].filter(Boolean).join(" · ");
+
   return (
     <>
-      <div className={styles.cryptoGaugeRow}>
-        <CryptoSingleGauge
-          label="Up"
-          fallbackPrice={model.price}
-          tokenId={model.tokenId ?? null}
-        />
-        <div className={styles.cryptoMeta}>
-          <span className={styles.cryptoLabel}>{model.liveLabel}</span>
-          <span>{model.volumeLabel}</span>
-        </div>
+      <CardTitleHeader
+        imageSrc={model.imageSrc}
+        title={model.title}
+        aside={<MarketArcGauge price={model.price} label="Up" positive />}
+      />
+
+      <div className={styles.cryptoMeta}>
+        <span className={styles.volumeMeta}>{model.volumeLabel}</span>
+        {meta ? <span className={styles.cryptoLabel}>{meta}</span> : null}
       </div>
 
       <div className={styles.binaryActions}>
         {model.actions.map((action, index) => (
-          <span
+          <LargeAction
             key={`${action.label}:${index}`}
-            className={cn(
-              styles.binaryActionPill,
-              index === 0 ? styles.actionYes : styles.actionNo,
-            )}
-          >
-            <span>{action.label}</span>
-            <span className={styles.binaryActionValue}>{formatPct(action.price)}</span>
-          </span>
+            label={action.label}
+            positive={index === 0}
+          />
         ))}
       </div>
     </>
@@ -220,9 +274,15 @@ function HomeCryptoCardBody({
 function HomeSportsLiveCardBody({ model }: { model: HomeSportsLiveCardModel }) {
   return (
     <>
+      <div className={styles.sportsStatusRow}>
+        <span className={styles.sportsStatus}>{model.statusLabel}</span>
+        {model.statusDetail ? <span className={styles.sportsDetail}>{model.statusDetail}</span> : null}
+      </div>
+
       <div className={styles.sportsRows}>
         {model.competitors.map((competitor) => (
           <div key={competitor.key} className={styles.sportsRow}>
+            <span className={styles.sportsScore}>{competitor.score ?? "--"}</span>
             <div className={styles.sportsTeam}>
               <span className={styles.sportsTeamName}>{competitor.name}</span>
               {competitor.subtitle ? (
@@ -238,22 +298,19 @@ function HomeSportsLiveCardBody({ model }: { model: HomeSportsLiveCardModel }) {
 
       <div className={styles.binaryActions}>
         {model.competitors.slice(0, 2).map((competitor, index) => (
-          <span
+          <LargeAction
             key={`${competitor.key}:action`}
-            className={cn(
-              styles.binaryActionPill,
-              index === 0 ? styles.actionYes : styles.actionNo,
-            )}
-          >
-            <span>{competitor.name}</span>
-          </span>
+            label={competitor.name}
+            positive={index === 0}
+          />
         ))}
       </div>
 
       <div className={styles.footerMeta}>
-        <span>{model.statusLabel}</span>
-        {model.statusDetail ? <span>{model.statusDetail}</span> : null}
-        <span>{model.volumeLabel}</span>
+        <span className={styles.volumeMeta}>
+          {model.volumeLabel}
+          {model.metaLabels[0] ? ` · ${model.metaLabels[0]}` : ""}
+        </span>
       </div>
     </>
   );
@@ -264,11 +321,7 @@ export function HomeMarketCard({
   emphasis,
   layoutVariant,
 }: HomeMarketCardProps) {
-  const sharedProps = {
-    href: model.href,
-    imageSrc: model.imageSrc,
-    metaLabels: model.metaLabels,
-    title: model.title,
+  const sharedFrameProps = {
     emphasis,
     layoutVariant,
   };
@@ -276,27 +329,27 @@ export function HomeMarketCard({
   switch (model.kind) {
     case "binary":
       return (
-        <HomeCardFrame {...sharedProps}>
+        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
           <HomeBinaryCardBody model={model} />
-        </HomeCardFrame>
+        </CardLink>
       );
     case "grouped":
       return (
-        <HomeCardFrame {...sharedProps}>
+        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
           <HomeGroupedCardBody model={model} />
-        </HomeCardFrame>
+        </CardLink>
       );
     case "crypto-up-down":
       return (
-        <HomeCardFrame {...sharedProps}>
+        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
           <HomeCryptoCardBody model={model} />
-        </HomeCardFrame>
+        </CardLink>
       );
     case "sports-live":
       return (
-        <HomeCardFrame {...sharedProps}>
+        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
           <HomeSportsLiveCardBody model={model} />
-        </HomeCardFrame>
+        </CardLink>
       );
   }
 }

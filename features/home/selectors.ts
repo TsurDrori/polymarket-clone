@@ -94,6 +94,7 @@ export type HomePageModel = {
 };
 
 export const HOME_HERO_SPOTLIGHT_LIMIT = 6;
+export const HOME_EXPLORE_EVENT_LIMIT = 40;
 
 const GENERIC_TOPIC_SLUGS = new Set([
   "featured",
@@ -126,6 +127,23 @@ const PRIMARY_CATEGORY_SLUGS = new Set([
   "tech",
   "culture",
   "business",
+]);
+
+const WORLD_CATEGORY_SLUGS = new Set([
+  "world",
+  "geopolitics",
+  "middle-east",
+  "foreign-policy",
+]);
+
+const POLITICS_CATEGORY_SLUGS = new Set([
+  "politics",
+  "us-government",
+  "congress",
+  "house",
+  "senate",
+  "government",
+  "elections",
 ]);
 
 const MARKET_CHIP_EXCLUDED_SLUGS = new Set([
@@ -254,11 +272,41 @@ const getQuestionCompactnessScore = (market: PolymarketMarket): number => {
 const getEventCategoryKey = (event: PolymarketEvent): string => {
   if (isSportsEvent(event)) return "sports";
   if (hasTagSlug(event, "crypto")) return "crypto";
+  if (event.tags.some((tag) => WORLD_CATEGORY_SLUGS.has(tag.slug))) return "world";
   if (hasTagSlug(event, "finance") || hasTagSlug(event, "economy")) return "economy";
   if (hasTagSlug(event, "culture") || hasTagSlug(event, "pop-culture")) return "culture";
   if (hasTagSlug(event, "tech")) return "tech";
   return "politics";
 };
+
+const isWorldEvent = (event: PolymarketEvent): boolean =>
+  getVisibleTags(event).some((tag) => WORLD_CATEGORY_SLUGS.has(tag.slug));
+
+const getPrimaryLeadTagSlug = (event: PolymarketEvent): string | undefined =>
+  getVisibleTags(event)[0]?.slug;
+
+const isDirectWorldLeadEvent = (event: PolymarketEvent): boolean => {
+  const primarySlug = getPrimaryLeadTagSlug(event);
+  return Boolean(primarySlug && WORLD_CATEGORY_SLUGS.has(primarySlug));
+};
+
+const isPoliticsLeadEvent = (event: PolymarketEvent): boolean =>
+  getVisibleTags(event).some((tag) => POLITICS_CATEGORY_SLUGS.has(tag.slug)) &&
+  !isWorldEvent(event) &&
+  !isSportsEvent(event) &&
+  !hasTagSlug(event, "crypto");
+
+const isDirectPoliticsLeadEvent = (event: PolymarketEvent): boolean =>
+  Boolean(
+    getPrimaryLeadTagSlug(event) &&
+    POLITICS_CATEGORY_SLUGS.has(getPrimaryLeadTagSlug(event) ?? ""),
+  );
+
+const isDirectCryptoLeadEvent = (event: PolymarketEvent): boolean =>
+  getPrimaryLeadTagSlug(event) === "crypto";
+
+const isDirectSportsLeadEvent = (event: PolymarketEvent): boolean =>
+  getPrimaryLeadTagSlug(event) === "sports" || Boolean(event.eventMetadata?.league);
 
 const getRankedEvents = (
   events: ReadonlyArray<PolymarketEvent>,
@@ -864,7 +912,7 @@ export const selectHomeFeedEvents = (
   events: ReadonlyArray<PolymarketEvent>,
   {
     spotlightEventId,
-    limit = 30,
+    limit = HOME_EXPLORE_EVENT_LIMIT,
   }: {
     spotlightEventId?: string;
     limit?: number;
@@ -885,9 +933,58 @@ export const selectHomeFeedEvents = (
     buckets.set(bucket, [event]);
   }
 
-  const preferredOrder = ["politics", "crypto", "economy", "culture", "sports", "tech"];
+  const sectorLeadOrder = ["politics", "world", "crypto", "sports"];
+  const preferredOrder = [
+    ...sectorLeadOrder,
+    "economy",
+    "culture",
+    "tech",
+  ];
   const selected: PolymarketEvent[] = [];
   const seen = new Set<string>();
+
+  const sectorLeadMatchers: Record<
+    (typeof sectorLeadOrder)[number],
+    (event: PolymarketEvent) => boolean
+  > = {
+    politics: isPoliticsLeadEvent,
+    world: isWorldEvent,
+    crypto: (event) => hasTagSlug(event, "crypto"),
+    sports: isSportsEvent,
+  };
+  const directSectorLeadMatchers: Record<
+    (typeof sectorLeadOrder)[number],
+    (event: PolymarketEvent) => boolean
+  > = {
+    politics: isDirectPoliticsLeadEvent,
+    world: isDirectWorldLeadEvent,
+    crypto: isDirectCryptoLeadEvent,
+    sports: isDirectSportsLeadEvent,
+  };
+
+  for (const key of sectorLeadOrder) {
+    const next =
+      ranked.find(
+        (event) => !seen.has(event.id) && directSectorLeadMatchers[key](event),
+      ) ??
+      ranked.find(
+        (event) => !seen.has(event.id) && sectorLeadMatchers[key](event),
+      );
+
+    if (!next || seen.has(next.id) || selected.length >= limit) {
+      continue;
+    }
+
+    seen.add(next.id);
+    selected.push(next);
+  }
+
+  for (const [key, bucket] of buckets.entries()) {
+    buckets.set(
+      key,
+      bucket.filter((event) => !seen.has(event.id)),
+    );
+  }
 
   while (selected.length < limit) {
     let madeProgress = false;
@@ -998,7 +1095,7 @@ export const buildHomePageModel = (
   {
     spotlightChart = null,
     spotlightCharts = {},
-    exploreLimit = 30,
+    exploreLimit = HOME_EXPLORE_EVENT_LIMIT,
     marketChipLimit = 30,
   }: {
     spotlightChart?: HeroChartModel | null;

@@ -108,7 +108,10 @@ export function SurfaceFeed<T>({
 
       {continuation?.hasMore ? (
         <div className={cn(styles.actionRow, actionRowClassName)}>
-          <ContinuationButton onClick={continuation.onContinue}>
+          <ContinuationButton
+            onClick={continuation.onContinue}
+            disabled={continuation.disabled}
+          >
             {continuation.label ?? "Show more markets"}
           </ContinuationButton>
         </div>

@@ -9,7 +9,9 @@ import {
   buildHomePageModel,
   collectTrendingTopics,
   getPrimaryMarket,
+  HOME_EXPLORE_EVENT_LIMIT,
   selectHeroPulse,
+  selectHomeFeedEvents,
   selectSpotlightEvent,
   selectSpotlightEvents,
 } from "./selectors";
@@ -335,7 +337,7 @@ describe("buildHomePageModel", () => {
     expect(model.hero.spotlights).toHaveLength(6);
     expect(model.hero.pulse).toHaveLength(3);
     expect(model.hero.topics.length).toBeLessThanOrEqual(5);
-    expect(model.exploreEvents).toHaveLength(30);
+    expect(model.exploreEvents).toHaveLength(HOME_EXPLORE_EVENT_LIMIT);
   });
 
   it("prioritizes hot primary categories before narrower market topics", () => {
@@ -382,6 +384,68 @@ describe("buildHomePageModel", () => {
       "Politics",
       "Economy",
       "Sports",
+    ]);
+  });
+});
+
+describe("selectHomeFeedEvents", () => {
+  it("leads the all-markets feed with politics, world, crypto, and sports cards", () => {
+    const events = [
+      buildEvent(
+        "Politics lead",
+        [{ id: "politics", slug: "politics", label: "Politics" }],
+        {
+          id: "politics-lead",
+          featured: true,
+          volume24hr: 10_000,
+          description: "The top domestic politics card.",
+        },
+      ),
+      buildEvent(
+        "World lead",
+        [
+          { id: "world", slug: "world", label: "World" },
+          { id: "geopolitics", slug: "geopolitics", label: "Geopolitics" },
+        ],
+        {
+          id: "world-lead",
+          featured: true,
+          volume24hr: 9_000,
+          description: "The top geopolitics card.",
+        },
+      ),
+      buildEvent(
+        "Crypto lead",
+        [{ id: "crypto", slug: "crypto", label: "Crypto" }],
+        {
+          id: "crypto-lead",
+          featured: true,
+          volume24hr: 8_000,
+        },
+      ),
+      buildEvent(
+        "Sports lead",
+        [{ id: "sports", slug: "sports", label: "Sports" }],
+        {
+          id: "sports-lead",
+          featured: true,
+          volume24hr: 7_000,
+          eventMetadata: { league: "NBA" },
+        },
+      ),
+      buildEvent(
+        "Extra politics",
+        [{ id: "politics-2", slug: "politics", label: "Politics" }],
+        { id: "extra-politics", volume24hr: 6_000 },
+      ),
+    ];
+
+    expect(selectHomeFeedEvents(events, { limit: 5 }).map((event) => event.id)).toEqual([
+      "politics-lead",
+      "world-lead",
+      "crypto-lead",
+      "sports-lead",
+      "extra-politics",
     ]);
   });
 });

@@ -40,6 +40,7 @@ export type SurfaceFeedVisibleSlice = {
 
 export type SurfaceFeedContinuation = {
   hasMore: boolean;
+  disabled?: boolean;
   label?: string;
   onContinue: () => void;
 };

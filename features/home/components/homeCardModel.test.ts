@@ -5,7 +5,11 @@ import type {
   PolymarketTag,
   PolymarketTeam,
 } from "@/features/events/types";
-import { buildHomeCardModel, resolveHomeCardFamily } from "./homeCardModel";
+import {
+  buildHomeCardModel,
+  buildHomeExploreCardEntries,
+  resolveHomeCardFamily,
+} from "./homeCardModel";
 
 const buildMarket = (
   overrides: Partial<PolymarketMarket> = {},
@@ -162,8 +166,92 @@ describe("homeCardModel", () => {
     expect(resolveHomeCardFamily(event)).toBe("sports-live");
     expect(model.kind).toBe("sports-live");
     expect(model.kind === "sports-live" ? model.competitors.map((team) => team.name) : []).toEqual([
-      "HAWKS",
-      "KNICKS",
+      "Hawks",
+      "Knicks",
+    ]);
+  });
+
+  it("curates the first four explore cards around politics, world, crypto, and sports", () => {
+    const politics = buildEvent(
+      "Politics card",
+      [{ id: "politics", slug: "politics", label: "Politics" }],
+      { id: "politics-card", featured: true, volume24hr: 10_000 },
+    );
+    const world = buildEvent(
+      "World card",
+      [
+        { id: "world", slug: "world", label: "World" },
+        { id: "geopolitics", slug: "geopolitics", label: "Geopolitics" },
+      ],
+      { id: "world-card", featured: true, volume24hr: 9_000 },
+    );
+    const crypto = buildEvent(
+      "BTC 5 Minute Up or Down",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up or Down" },
+      ],
+      {
+        id: "crypto-card",
+        featured: true,
+        volume24hr: 8_000,
+      },
+    );
+    const sports = buildEvent(
+      "Knicks vs Hawks",
+      [{ id: "sports", slug: "sports", label: "Sports" }],
+      {
+        id: "sports-card",
+        featured: true,
+        volume24hr: 7_000,
+        eventMetadata: { league: "NBA" },
+        teams: [
+          { name: "Knicks", abbreviation: "Knicks" },
+          { name: "Hawks", abbreviation: "Hawks" },
+        ],
+        markets: [
+          buildMarket({
+            id: "sports-market",
+            sportsMarketType: "moneyline",
+            outcomes: ["Knicks", "Hawks"],
+          }),
+        ],
+      },
+    );
+
+    const entries = buildHomeExploreCardEntries({
+      events: [politics, world, crypto, sports],
+      cryptoEvents: [crypto],
+      sportsEvents: [
+        {
+          id: sports.id,
+          slug: sports.slug,
+          title: sports.title,
+          startTime: sports.startDate,
+          endDate: sports.endDate,
+          volume: sports.volume,
+          volume24hr: sports.volume24hr,
+          live: false,
+          ended: false,
+          image: sports.image,
+          icon: sports.icon,
+          tags: sports.tags,
+          teams: sports.teams ?? [],
+          eventMetadata: sports.eventMetadata,
+          markets: sports.markets.map((market) => ({
+            ...market,
+            line: market.line ?? null,
+          })),
+        },
+      ],
+      limit: 8,
+    });
+
+    expect(entries.slice(0, 4).map((entry) => entry.id)).toEqual([
+      "politics-card",
+      "world-card",
+      "crypto-card",
+      "sports-card",
     ]);
   });
 });

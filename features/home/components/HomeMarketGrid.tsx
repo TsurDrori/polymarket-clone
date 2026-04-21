@@ -20,6 +20,12 @@ type HomeMarketGridProps = {
   items: ReadonlyArray<HomeCardEntry>;
   initialCount?: number;
   incrementCount?: number;
+  continuation?: {
+    hasMore: boolean;
+    disabled?: boolean;
+    label?: string;
+    onContinue: () => void;
+  };
 };
 
 const HOME_OVERSCAN_COUNT = 6;
@@ -36,6 +42,7 @@ export function HomeMarketGrid({
   items,
   initialCount = 12,
   incrementCount = 12,
+  continuation,
 }: HomeMarketGridProps) {
   const feedItems = useMemo<SurfaceFeedItem<HomeCardEntry>[]>(
     () =>
@@ -84,16 +91,21 @@ export function HomeMarketGrid({
     policy: projectionPolicy,
   });
   const liveLeaderIds = useMemo(() => leaderIds.slice(0, HOME_LEADER_COUNT), [leaderIds]);
+  const resolvedContinuation = hasMore
+    ? {
+        hasMore,
+        onContinue: showMore,
+      }
+    : continuation?.hasMore
+      ? continuation
+      : undefined;
 
   return (
     <SurfaceFeed
       items={visibleItems}
       highlightedIds={highlightedIds}
       leaderIds={liveLeaderIds}
-      continuation={{
-        hasMore,
-        onContinue: showMore,
-      }}
+      continuation={resolvedContinuation}
       className={styles.stack}
       gridClassName={styles.grid}
       actionRowClassName={styles.actionRow}
