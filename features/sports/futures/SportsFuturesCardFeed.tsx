@@ -99,6 +99,7 @@ export function SportsFuturesCardFeed({
       maxPromotionsPerCycle: 1,
       reorderCooldownMs: SPORTS_FUTURES_REORDER_COOLDOWN_MS,
       highlightMs: SPORTS_FUTURES_HIGHLIGHT_MS,
+      allowReordering: false,
     }),
     [feedItems.length, incrementCount, initialCount],
   );

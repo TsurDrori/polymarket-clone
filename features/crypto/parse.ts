@@ -180,6 +180,20 @@ export const ASSET_LABELS: Record<CryptoAsset, string> = {
 };
 
 const CERTAINTY_THRESHOLD = 0.995;
+const HOT_CRYPTO_MIN_PRICE = 0.02;
+const HOT_CRYPTO_MAX_PRICE = 0.98;
+const CRYPTO_TIME_BUCKET_PRIORITY: Record<CryptoCardTimeBucket, number> = {
+  "5m": 0,
+  "15m": 1,
+  "1h": 2,
+  "4h": 3,
+  daily: 4,
+  weekly: 5,
+  monthly: 6,
+  yearly: 7,
+  "pre-market": 8,
+  other: 9,
+};
 
 const asSingleValue = (value: SearchParamValue): string | undefined =>
   Array.isArray(value) ? value[0] : value;
@@ -204,6 +218,14 @@ const getYesPrice = (market: PolymarketMarket): number => {
 
 const getMarketLabel = (market: PolymarketMarket): string =>
   market.groupItemTitle?.trim() || market.question.trim();
+
+const getEventTimestamp = (event: PolymarketEvent): number => {
+  const candidate = event.endDate ?? event.startDate ?? event.creationDate;
+  if (!candidate) return Number.MAX_SAFE_INTEGER;
+
+  const parsed = Date.parse(candidate);
+  return Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER;
+};
 
 const getFallbackSnippetMarkets = (
   markets: ReadonlyArray<PolymarketMarket>,
@@ -438,6 +460,51 @@ const buildCardModel = (event: PolymarketEvent): CryptoCardModel => {
   };
 };
 
+const isTradableCryptoEvent = (event: PolymarketEvent): boolean =>
+  event.active &&
+  !event.closed &&
+  !event.archived &&
+  event.markets.some((market) => !market.closed && market.acceptingOrders);
+
+const isHotCryptoPrice = (price: number): boolean =>
+  price > HOT_CRYPTO_MIN_PRICE && price < HOT_CRYPTO_MAX_PRICE;
+
+const scoreCryptoEventHotness = (event: PolymarketEvent) => {
+  const card = buildCardModel(event);
+  const price = card.primarySnippet.fallbackPrice;
+  const timestamp = getEventTimestamp(event);
+  const now = Date.now();
+
+  return {
+    card,
+    isTradable: isTradableCryptoEvent(event),
+    isLive: card.showLiveDot,
+    isOpenPrice: isHotCryptoPrice(price),
+    timeBucketPriority: CRYPTO_TIME_BUCKET_PRIORITY[card.timeBucket],
+    volume: event.volume24hr || event.volume,
+    isFuture: timestamp >= now,
+    futureDistance: timestamp >= now ? timestamp - now : Number.MAX_SAFE_INTEGER,
+  };
+};
+
+export const compareCryptoEventsForDisplay = (
+  left: PolymarketEvent,
+  right: PolymarketEvent,
+): number => {
+  const leftScore = scoreCryptoEventHotness(left);
+  const rightScore = scoreCryptoEventHotness(right);
+
+  return (
+    Number(rightScore.isTradable) - Number(leftScore.isTradable) ||
+    Number(rightScore.isLive) - Number(leftScore.isLive) ||
+    Number(rightScore.isOpenPrice) - Number(leftScore.isOpenPrice) ||
+    leftScore.timeBucketPriority - rightScore.timeBucketPriority ||
+    rightScore.volume - leftScore.volume ||
+    Number(rightScore.isFuture) - Number(leftScore.isFuture) ||
+    leftScore.futureDistance - rightScore.futureDistance
+  );
+};
+
 const matchesFamily = (
   card: CryptoCardModel,
   family: CryptoFamily,
@@ -518,7 +585,7 @@ const buildAssetOptions = (
 export const buildCryptoWorkingSet = (
   events: ReadonlyArray<PolymarketEvent>,
 ): CryptoWorkingSet => {
-  const cards = events.map(buildCardModel);
+  const cards = [...events].sort(compareCryptoEventsForDisplay).map(buildCardModel);
 
   return {
     cards,

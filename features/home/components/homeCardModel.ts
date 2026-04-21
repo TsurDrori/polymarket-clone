@@ -6,7 +6,11 @@ import {
   type PriceHydrationSeed,
 } from "@/features/realtime/seeds";
 import { buildSportsGameRows, type SportsGameEvent } from "@/features/sports/games/parse";
-import { deriveCryptoAsset, deriveCryptoFamily } from "@/features/crypto/parse";
+import {
+  buildCryptoWorkingSet,
+  compareCryptoEventsForDisplay,
+  deriveCryptoFamily,
+} from "@/features/crypto/parse";
 import { formatVolume } from "@/shared/lib/format";
 import { getVisibleTags } from "@/shared/lib/tags";
 import {
@@ -271,10 +275,14 @@ const buildGroupedModel = (event: PolymarketEvent): HomeGroupedCardModel => {
 
 const buildCryptoUpDownModel = (event: PolymarketEvent): HomeCryptoUpDownCardModel => {
   const primaryMarket = getPrimaryHomeMarket(event) ?? getVisibleMarkets(event)[0];
-  const [upLabel, downLabel] = primaryMarket
-    ? getOutcomeLabels(primaryMarket)
-    : (["Up", "Down"] as [string, string]);
-  const asset = deriveCryptoAsset(event);
+  const cryptoCard = buildCryptoWorkingSet([event]).cards[0];
+  const primarySnippet = cryptoCard?.primarySnippet;
+  const [upLabel, downLabel] = primarySnippet
+    ? [primarySnippet.primaryOutcomeLabel, primarySnippet.secondaryOutcomeLabel]
+    : primaryMarket
+      ? getOutcomeLabels(primaryMarket)
+      : (["Up", "Down"] as [string, string]);
+  const price = primarySnippet?.fallbackPrice ?? (primaryMarket ? getDisplayPrice(primaryMarket) : 0);
 
   return {
     kind: "crypto-up-down",
@@ -282,18 +290,31 @@ const buildCryptoUpDownModel = (event: PolymarketEvent): HomeCryptoUpDownCardMod
     href: `/event/${event.slug}`,
     imageSrc: getEventImage(event) ?? "/placeholder.svg",
     metaLabels: buildMetaLabels(event),
-    assetLabel: asset === "other" ? undefined : asset,
+    assetLabel: cryptoCard?.metaLabel ?? undefined,
     volumeLabel: `${formatVolume(event.volume24hr || event.volume)} Vol.`,
-    liveLabel: event.live ? "Live" : "Crypto",
-    tokenId: primaryMarket?.clobTokenIds[0],
-    price: primaryMarket ? getDisplayPrice(primaryMarket) : 0,
-    actions: primaryMarket
-      ? buildActionPair(primaryMarket, [upLabel, downLabel])
+    liveLabel: cryptoCard?.showLiveDot ? "Live" : "Crypto",
+    tokenId: primarySnippet?.tokenId ?? primaryMarket?.clobTokenIds[0],
+    price,
+    actions: primaryMarket || primarySnippet
+      ? [
+          { label: upLabel, price },
+          { label: downLabel, price: clampPrice(1 - price) },
+        ]
       : [
           { label: upLabel, price: 0.5 },
           { label: downLabel, price: 0.5 },
         ],
   };
+};
+
+const selectHomeCryptoEntry = (
+  cryptoEvents: ReadonlyArray<PolymarketEvent>,
+): HomeCardEntry | undefined => {
+  const [bestEvent] = [...cryptoEvents]
+    .filter((event) => deriveCryptoFamily(event) === "up-down")
+    .sort(compareCryptoEventsForDisplay);
+
+  return bestEvent ? buildHomeCardEntry(bestEvent) : undefined;
 };
 
 const buildSportsLiveModel = (event: PolymarketEvent): HomeSportsLiveCardModel => {
@@ -466,14 +487,16 @@ export const buildHomeExploreCardEntries = ({
   sportsEvents?: ReadonlyArray<SportsGameEvent>;
   limit?: number;
 }): HomeCardEntry[] => {
-  const baseEntries = buildHomeEventCardEntries(events);
+  const cryptoEntry = selectHomeCryptoEntry(cryptoEvents);
+  const baseEntries = buildHomeEventCardEntries(events).filter(
+    (entry) => entry.model.kind !== "crypto-up-down" || entry.id === cryptoEntry?.id,
+  );
   const groupedEntries = baseEntries.filter((entry) => entry.model.kind === "grouped");
   const binaryEntries = baseEntries.filter((entry) => entry.model.kind === "binary");
   const leadEvents = selectHomeFeedEvents(events, { limit: 4 });
-  const leadEntries = leadEvents.map(buildHomeCardEntry);
-  const cryptoEntry = cryptoEvents
+  const leadEntries = leadEvents
     .map(buildHomeCardEntry)
-    .find((entry) => entry.model.kind === "crypto-up-down");
+    .filter((entry) => entry.model.kind !== "crypto-up-down" || entry.id === cryptoEntry?.id);
   const sportsEntry = sportsEvents
     .map(buildHomeSportsLiveCardEntry)
     .find((entry) => entry.model.kind === "sports-live");

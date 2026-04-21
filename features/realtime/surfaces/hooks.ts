@@ -225,8 +225,10 @@ export function useProjectedSurfaceWindow<T>({
       visibleCount,
       overscanCount: policy.overscanCount,
       reducedMotion: prefersReducedMotion,
+      allowReordering: policy.allowReordering ?? true,
     });
   }, [
+    policy.allowReordering,
     deferredTokenVersion,
     getItemId,
     getItemLiveScore,
@@ -239,8 +241,9 @@ export function useProjectedSurfaceWindow<T>({
   const projectedVisibleIds = projectedWindow.visibleIds;
   const projectedCandidateIds = projectedWindow.candidateIds;
   const projectedOrderedIds = projectedWindow.orderedIds;
+  const projectedLeaderIds = projectedWindow.leaderIds;
   const pinnedIdsKey = pinnedIds.join("|");
-  const leaderIds = projectedVisibleIds;
+  const leaderIds = projectedLeaderIds;
   const projectedVisibleIdsKey = projectedVisibleIds.join("|");
   const projectedOrderedIdsKey = projectedOrderedIds.join("|");
 

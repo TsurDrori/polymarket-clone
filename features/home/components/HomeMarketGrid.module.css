@@ -55,6 +55,11 @@
   gap: 8px;
 }
 
+.cardCrypto {
+  gap: 8px;
+  padding: 12px 12px 10px;
+}
+
 .header {
   display: flex;
   align-items: flex-start;
@@ -66,13 +71,14 @@
 .titleRow {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 16px;
   min-width: 0;
   flex: 1 1 auto;
 }
 
 .headerAside {
   flex: 0 0 auto;
+  min-width: 72px;
 }
 
 .mediaWrap {
@@ -94,6 +100,20 @@
   flex: 1 1 auto;
 }
 
+.featuredThumb {
+  width: 74px;
+  height: 74px;
+  min-width: 74px;
+  border-radius: 18px;
+}
+
+.cryptoThumb {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 10px;
+}
+
 .title {
   margin: 0;
   color: var(--text-secondary);
@@ -107,65 +127,130 @@
   -webkit-box-orient: vertical;
 }
 
-.arcGauge {
+.cardBinary .title,
+.cardCrypto .title {
+  -webkit-line-clamp: 2;
+}
+
+.cardCrypto .title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.16px;
+}
+
+.titleSubline {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 540;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cryptoWidget {
   position: relative;
   width: 58px;
-  height: 42px;
-  display: flex;
-  align-items: flex-start;
+  min-width: 58px;
+  height: 78px;
+  display: grid;
+  align-items: start;
   justify-content: center;
 }
 
-.arcSvg {
+.cryptoWidgetSvg {
   width: 58px;
-  height: 34px;
+  height: 38px;
   overflow: visible;
 }
 
-.arcTrack {
+.cryptoWidgetTrack {
   fill: none;
   stroke: color-mix(in srgb, var(--border-soft) 88%, transparent);
-  stroke-width: 4.5;
+  stroke-width: 4;
   stroke-linecap: round;
 }
 
-.arcValueUp,
-.arcValueDown {
+.cryptoWidgetValue {
   fill: none;
-  stroke-width: 4.5;
+  stroke-width: 4;
   stroke-linecap: round;
-}
-
-.arcValueUp {
   stroke: rgb(61 180 104);
 }
 
-.arcValueDown {
-  stroke: rgb(203 49 49);
-}
-
-.arcGaugeCopy {
+.cryptoWidgetCopy {
   position: absolute;
-  inset: 11px 0 0;
+  inset: 8px 0 0;
   display: grid;
   justify-items: center;
-  gap: 0;
+  gap: 2px;
+  max-width: 100%;
+  padding-inline: 0;
 }
 
-.arcGaugeValue {
+.cryptoWidgetValueText {
   color: var(--text-secondary);
-  font-size: 23px;
-  font-weight: 500;
-  line-height: 22px;
-  letter-spacing: -0.4px;
+  max-width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 19px;
+  letter-spacing: -0.24px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.arcGaugeLabel {
+.cryptoWidgetLabel {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 12px;
   text-align: center;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cryptoSpacer {
+  flex: 1 1 auto;
+  min-height: 14px;
+}
+
+.binaryChanceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.binaryChanceValue {
+  color: var(--text-secondary);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: -0.3px;
+}
+
+.binaryChanceLabel {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 540;
+  line-height: 20px;
+}
+
+.binaryChange {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.binaryChangeUp {
+  color: var(--accent-yes);
+}
+
+.binaryChangeDown {
+  color: var(--accent-no);
 }
 
 .binarySummary,
@@ -193,15 +278,81 @@
   gap: 8px;
 }
 
+.cryptoActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .binaryActionPill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 40px;
+  min-width: 0;
+  padding-inline: 10px;
   border-radius: 7.2px;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardCrypto .binaryActionPill {
+  min-height: 40px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.cryptoFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cryptoFooterMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cryptoLiveDot {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 999px;
+  background: #ef4444;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #ef4444 16%, transparent);
+}
+
+.cryptoLiveLabel {
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: -0.1px;
+}
+
+.cryptoFooterDivider,
+.cryptoFooterAsset {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.cryptoBookmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex: 0 0 auto;
 }
 
 .rows {

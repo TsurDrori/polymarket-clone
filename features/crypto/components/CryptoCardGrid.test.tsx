@@ -128,7 +128,7 @@ describe("CryptoCardGrid", () => {
     expect(screen.getByRole("heading", { name: "BTC Four" })).toBeTruthy();
   });
 
-  it("can promote an overscan candidate into the visible slice on a live move", () => {
+  it("keeps card positions stable when an overscan candidate gets hotter", () => {
     const store = getRealtimeStore();
     const workingSet = buildCryptoWorkingSet([
       buildEvent({
@@ -195,13 +195,7 @@ describe("CryptoCardGrid", () => {
       });
     });
 
-    expect(screen.getByRole("heading", { name: "BTC Three" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: "BTC Two" })).toBeNull();
-    expect(
-      screen
-        .getByRole("heading", { name: "BTC Three" })
-        .closest("article")
-        ?.getAttribute("data-promoted"),
-    ).toBe("true");
+    expect(screen.queryByRole("heading", { name: "BTC Three" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "BTC Two" })).toBeTruthy();
   });
 });

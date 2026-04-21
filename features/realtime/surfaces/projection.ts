@@ -266,33 +266,48 @@ export const buildProjectedSurfaceWindow = (
     visibleCount,
     overscanCount,
     reducedMotion = false,
+    allowReordering = true,
   }: {
     visibleCount: number;
     overscanCount: number;
     reducedMotion?: boolean;
+    allowReordering?: boolean;
   },
 ): ProjectedSurfaceWindow => {
   const candidateCount = getCandidateCount(items.length, visibleCount, overscanCount);
-  const orderedItems = reducedMotion
-    ? [...items].sort((left, right) => left.baseIndex - right.baseIndex)
-    : [...items.slice(0, candidateCount)].sort(compareProjectableItems);
-  const candidateItems = reducedMotion
-    ? orderedItems.slice(0, candidateCount)
-    : orderedItems;
-  const remainingIds = reducedMotion
+  const stableItems = [...items].sort((left, right) => left.baseIndex - right.baseIndex);
+  const stableCandidateItems = stableItems.slice(0, candidateCount);
+  const rankedCandidateItems =
+    reducedMotion || !allowReordering
+      ? [...stableCandidateItems]
+      : [...stableCandidateItems].sort(compareProjectableItems);
+  const orderedItems =
+    reducedMotion || !allowReordering ? stableItems : rankedCandidateItems;
+  const candidateItems =
+    reducedMotion || !allowReordering ? stableCandidateItems : rankedCandidateItems;
+  const remainingIds = reducedMotion || !allowReordering
     ? []
     : items
         .slice(candidateCount)
         .sort((left, right) => left.baseIndex - right.baseIndex)
         .map((item) => item.id);
+  const visibleIds = candidateItems
+    .slice(0, clampVisibleCount(candidateItems.length, visibleCount))
+    .map((item) => item.id);
+  const visibleIdSet = new Set(visibleIds);
+  const leaderIds = rankedCandidateItems
+    .filter((item) => visibleIdSet.has(item.id))
+    .slice(0, clampVisibleCount(visibleIds.length, visibleCount))
+    .map((item) => item.id);
 
   return {
     candidateIds: candidateItems.map((item) => item.id),
-    visibleIds: candidateItems
-      .slice(0, clampVisibleCount(candidateItems.length, visibleCount))
-      .map((item) => item.id),
+    visibleIds,
+    leaderIds,
     orderedIds: reducedMotion
       ? orderedItems.map((item) => item.id)
-      : [...candidateItems.map((item) => item.id), ...remainingIds],
+      : !allowReordering
+        ? stableItems.map((item) => item.id)
+        : [...candidateItems.map((item) => item.id), ...remainingIds],
   };
 };

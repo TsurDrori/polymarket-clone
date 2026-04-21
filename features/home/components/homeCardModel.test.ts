@@ -254,4 +254,176 @@ describe("homeCardModel", () => {
       "sports-card",
     ]);
   });
+
+  it("prefers a current tradable crypto up/down card over a stale near-resolved one", () => {
+    const staleCrypto = buildEvent(
+      "Bitcoin Up or Down - April 20, 11PM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up or Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+      ],
+      {
+        id: "stale-crypto",
+        startDate: "2026-04-20T23:00:00.000Z",
+        endDate: "2026-04-21T00:00:00.000Z",
+        volume24hr: 90_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.999,
+            bestBid: 0.999,
+            bestAsk: 1,
+          }),
+        ],
+      },
+    );
+    const currentCrypto = buildEvent(
+      "Bitcoin Up or Down - April 21, 1AM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up or Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+      ],
+      {
+        id: "current-crypto",
+        startDate: "2026-04-21T01:00:00.000Z",
+        endDate: "2026-04-21T02:00:00.000Z",
+        volume24hr: 50_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.61,
+            bestBid: 0.6,
+            bestAsk: 0.62,
+          }),
+        ],
+      },
+    );
+
+    const entries = buildHomeExploreCardEntries({
+      events: [],
+      cryptoEvents: [staleCrypto, currentCrypto],
+      sportsEvents: [],
+      limit: 2,
+    });
+
+    expect(entries[0]?.id).toBe("current-crypto");
+    expect(entries[0]?.model.kind).toBe("crypto-up-down");
+    expect(
+      entries[0]?.model.kind === "crypto-up-down" ? entries[0].model.price : null,
+    ).toBe(0.61);
+  });
+
+  it("prefers the higher-volume live crypto card when multiple tradable sessions exist", () => {
+    const lowerVolume = buildEvent(
+      "Bitcoin Up or Down - April 21, 1AM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up or Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+        { id: "5m", slug: "5m", label: "5M" },
+      ],
+      {
+        id: "btc-low-volume",
+        volume24hr: 120_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.59,
+            bestBid: 0.58,
+            bestAsk: 0.6,
+          }),
+        ],
+      },
+    );
+    const higherVolume = buildEvent(
+      "Bitcoin Up or Down - April 21, 1:05AM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up or Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+        { id: "5m", slug: "5m", label: "5M" },
+      ],
+      {
+        id: "btc-high-volume",
+        volume24hr: 480_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.57,
+            bestBid: 0.56,
+            bestAsk: 0.58,
+          }),
+        ],
+      },
+    );
+
+    const entries = buildHomeExploreCardEntries({
+      events: [],
+      cryptoEvents: [lowerVolume, higherVolume],
+      sportsEvents: [],
+      limit: 2,
+    });
+
+    expect(entries[0]?.id).toBe("btc-high-volume");
+  });
+
+  it("replaces stale homepage crypto cards in the initial curated mix", () => {
+    const staleCrypto = buildEvent(
+      "Bitcoin Up or Down - April 20, 11PM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up or Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+      ],
+      {
+        id: "stale-crypto-feed",
+        featured: true,
+        startDate: "2026-04-20T23:00:00.000Z",
+        endDate: "2026-04-21T04:00:00.000Z",
+        volume24hr: 90_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.999,
+            bestBid: 0.999,
+            bestAsk: 1,
+          }),
+        ],
+      },
+    );
+    const currentCrypto = buildEvent(
+      "Bitcoin Up or Down - April 21, 1AM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up or Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+      ],
+      {
+        id: "current-crypto-feed",
+        startDate: "2026-04-21T01:00:00.000Z",
+        endDate: "2026-04-21T06:00:00.000Z",
+        volume24hr: 10_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.61,
+            bestBid: 0.6,
+            bestAsk: 0.62,
+          }),
+        ],
+      },
+    );
+
+    const entries = buildHomeExploreCardEntries({
+      events: [staleCrypto],
+      cryptoEvents: [staleCrypto, currentCrypto],
+      sportsEvents: [],
+      limit: 4,
+    });
+
+    expect(entries.some((entry) => entry.id === "stale-crypto-feed")).toBe(false);
+    expect(entries.some((entry) => entry.id === "current-crypto-feed")).toBe(true);
+  });
 });

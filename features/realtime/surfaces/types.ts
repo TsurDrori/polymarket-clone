@@ -5,6 +5,7 @@ export type SurfaceProjectionPolicy = {
   maxPromotionsPerCycle: number;
   reorderCooldownMs: number;
   highlightMs: number;
+  allowReordering?: boolean;
 };
 
 export type ProjectableSurfaceItem = {
@@ -17,6 +18,7 @@ export type ProjectedSurfaceWindow = {
   orderedIds: ReadonlyArray<string>;
   candidateIds: ReadonlyArray<string>;
   visibleIds: ReadonlyArray<string>;
+  leaderIds: ReadonlyArray<string>;
 };
 
 export type SurfaceProjectionCommit = {

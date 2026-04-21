@@ -104,6 +104,7 @@ export function CryptoCardGrid({
       maxPromotionsPerCycle: 1,
       reorderCooldownMs: CRYPTO_REORDER_COOLDOWN_MS,
       highlightMs: CRYPTO_HIGHLIGHT_MS,
+      allowReordering: false,
     }),
     [feedItems.length, incrementCount, initialCount],
   );

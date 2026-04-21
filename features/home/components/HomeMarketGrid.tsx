@@ -74,6 +74,7 @@ export function HomeMarketGrid({
       maxPromotionsPerCycle: 1,
       reorderCooldownMs: HOME_REORDER_COOLDOWN_MS,
       highlightMs: HOME_HIGHLIGHT_MS,
+      allowReordering: false,
     }),
     [feedItems.length, incrementCount, initialCount],
   );
