@@ -5,6 +5,8 @@ import { getSportsLivePagePayload } from "@/features/sports/server";
 import { SportsLiveRoute } from "@/features/sports/live/SportsLiveRoute";
 import styles from "./page.module.css";
 
+export const revalidate = 30;
+
 export const metadata: Metadata = {
   title: "Sports Prediction Markets & Live Odds 2026 | Polymarket",
   description:

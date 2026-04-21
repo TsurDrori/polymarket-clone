@@ -32,6 +32,7 @@ export function SportsLiveRoute({
   const { items: sections } = useDeferredCollection<SportsbookSectionModel>({
     endpoint: catalogEndpoint,
     initialItems: initialSections,
+    preload: false,
     selectItems: (payload) =>
       payload && typeof payload === "object" && "sections" in payload
         ? (((payload as { sections?: ReadonlyArray<SportsbookSectionModel> }).sections ??

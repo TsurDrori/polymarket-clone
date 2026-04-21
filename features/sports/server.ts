@@ -11,7 +11,10 @@ import {
   type SportsCardModel,
   type SportsLeagueChip as SportsCardLeagueChip,
 } from "./futures/parse";
-import { getSportsGamesWorkingSet } from "./games/api";
+import {
+  getSportsGamesWorkingSet,
+  getSportsLiveInitialPageEvents,
+} from "./games/api";
 import {
   buildLeagueRouteSections,
   buildLiveRouteSections,
@@ -163,12 +166,15 @@ export async function getSportsLiveSectionsPayload(): Promise<SportsSectionsPayl
 }
 
 export async function getSportsLivePagePayload(): Promise<SportsLivePagePayload> {
-  const { rows, sections } = await getSportsGamesCatalog();
+  const { events, hasMorePages } = await getSportsLiveInitialPageEvents();
+  const rows = buildSportsGameRows(events);
+  const sections = buildLiveRouteSections(rows);
   const initialSections = sections.slice(0, SPORTS_LIVE_INITIAL_SECTION_LIMIT);
 
   return {
     initialSections,
-    hasMoreSections: sections.length > initialSections.length,
+    hasMoreSections:
+      hasMorePages || sections.length > initialSections.length,
     leagueChips: buildSportsGamesLeagueChips(rows),
     hydrationSeeds: buildSportsPreviewHydrationSeeds(
       initialSections.flatMap((section) => section.rows),

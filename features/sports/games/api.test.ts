@@ -1,5 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getSportsGamesWorkingSet } from "./api";
+import {
+  getSportsGamesWorkingSet,
+  getSportsLiveInitialPageEvents,
+} from "./api";
+
+vi.mock("next/cache", () => ({
+  unstable_cache:
+    <T extends (...args: never[]) => unknown>(fn: T) =>
+    (...args: Parameters<T>) =>
+      fn(...args),
+}));
 
 type MockFetchPayload = {
   events: unknown[];
@@ -104,5 +114,27 @@ describe("getSportsGamesWorkingSet", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(events).toHaveLength(750);
+  });
+
+  it("supports a cached single-page sports-live slice for the initial route paint", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        createFetchResponse({
+          events: Array.from({ length: 250 }, (_, eventIndex) =>
+            buildRawEvent(`initial-${eventIndex}`),
+          ),
+          next_cursor: "cursor-1",
+        }),
+      );
+
+    const payload = await getSportsLiveInitialPageEvents();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("tag_slug=games"),
+      { cache: "no-store" },
+    );
+    expect(payload.events).toHaveLength(250);
+    expect(payload.hasMorePages).toBe(true);
   });
 });

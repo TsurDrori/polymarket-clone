@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import {
   CRYPTO_INITIAL_VISIBLE_COUNT,
   CRYPTO_OVERSCAN_COUNT,
@@ -33,11 +34,14 @@ export type CryptoPagePayload = {
 export const CRYPTO_INITIAL_ROUTE_CARD_LIMIT =
   CRYPTO_INITIAL_VISIBLE_COUNT + CRYPTO_VISIBLE_INCREMENT + CRYPTO_OVERSCAN_COUNT;
 
+const CRYPTO_ROUTE_REVALIDATE_SECONDS = 30;
+
 export type CryptoCatalogPayload = {
   cards: ReadonlyArray<CryptoCardModel>;
 };
 
-export async function getCryptoCatalogPayload(): Promise<CryptoCatalogPayload> {
+const getCachedCryptoCatalogPayload = unstable_cache(
+  async (): Promise<CryptoCatalogPayload> => {
   const { events } = await listEventsKeyset({
     tagSlug: "crypto",
     limit: 120,
@@ -46,6 +50,15 @@ export async function getCryptoCatalogPayload(): Promise<CryptoCatalogPayload> {
   });
 
   return buildCryptoWorkingSet(events);
+  },
+  ["crypto-catalog-payload"],
+  {
+    revalidate: CRYPTO_ROUTE_REVALIDATE_SECONDS,
+  },
+);
+
+export async function getCryptoCatalogPayload(): Promise<CryptoCatalogPayload> {
+  return getCachedCryptoCatalogPayload();
 }
 
 export async function getCryptoPagePayload(

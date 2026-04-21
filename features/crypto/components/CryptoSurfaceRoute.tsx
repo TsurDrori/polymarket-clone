@@ -59,6 +59,7 @@ export function CryptoSurfaceRoute({
   } = useDeferredCollection<CryptoCardModel>({
     endpoint: catalogEndpoint,
     initialItems: cards,
+    preload: false,
     selectItems: (payload) =>
       payload && typeof payload === "object" && "cards" in payload
         ? (((payload as { cards?: ReadonlyArray<CryptoCardModel> }).cards ?? cards) as ReadonlyArray<CryptoCardModel>)

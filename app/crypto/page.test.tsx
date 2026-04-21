@@ -20,6 +20,13 @@ vi.mock("@/features/realtime/Hydrator", () => ({
   Hydrator,
 }));
 
+vi.mock("next/cache", () => ({
+  unstable_cache:
+    <T extends (...args: never[]) => unknown>(fn: T) =>
+    (...args: Parameters<T>) =>
+      fn(...args),
+}));
+
 import CryptoPage from "./page";
 
 const buildEvent = (

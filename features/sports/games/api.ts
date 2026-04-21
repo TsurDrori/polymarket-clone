@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { GammaError } from "@/features/events/api/gamma";
 import type { SportsGameEvent } from "./parse";
 
@@ -7,6 +8,7 @@ const ALL_LEAGUE_TARGET_EVENTS = 750;
 const ALL_LEAGUE_MAX_PAGES = 4;
 const LEAGUE_MAX_PAGES = 4;
 const TARGET_LEAGUE_ROWS = 8;
+const SPORTS_LIVE_INITIAL_REVALIDATE_SECONDS = 30;
 
 type RawTag = {
   id?: unknown;
@@ -263,15 +265,25 @@ export async function getHomeSportsGamePreviewEvents(
 
 const fetchSportsGamePage = async (
   afterCursor?: string,
+  {
+    revalidate,
+  }: {
+    revalidate?: number;
+  } = {},
 ): Promise<{
   events: SportsGameEvent[];
   nextCursor: string | null;
 }> => {
-  const res = await fetch(buildKeysetUrl(afterCursor), {
-    // The public games bundle is too large for Next's data cache, so live pages
-    // read it directly at request time instead of tripping cache-size warnings.
-    cache: "no-store",
-  });
+  const res = await fetch(
+    buildKeysetUrl(afterCursor),
+    typeof revalidate === "number"
+      ? { next: { revalidate } }
+      : {
+          // The public games bundle is too large for Next's data cache, so
+          // non-bounded catalogs still read it directly at request time.
+          cache: "no-store",
+        },
+  );
 
   if (!res.ok) {
     throw new GammaError(
@@ -290,6 +302,31 @@ const fetchSportsGamePage = async (
         : String(payload.next_cursor),
   };
 };
+
+const getCachedSportsLiveInitialPageEvents = unstable_cache(
+  async (): Promise<{
+    events: SportsGameEvent[];
+    hasMorePages: boolean;
+  }> => {
+    const { events, nextCursor } = await fetchSportsGamePage();
+
+    return {
+      events,
+      hasMorePages: Boolean(nextCursor),
+    };
+  },
+  ["sports-live-initial-page-events"],
+  {
+    revalidate: SPORTS_LIVE_INITIAL_REVALIDATE_SECONDS,
+  },
+);
+
+export async function getSportsLiveInitialPageEvents(): Promise<{
+  events: SportsGameEvent[];
+  hasMorePages: boolean;
+}> {
+  return getCachedSportsLiveInitialPageEvents();
+}
 
 const normalizeLeagueSlug = (value: string): string =>
   value.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replaceAll(/^-|-$/g, "");
@@ -337,17 +374,28 @@ const countLeagueRows = (
 
 export async function getSportsGamesWorkingSet({
   desiredLeagueSlug,
+  revalidate,
+  maxPages,
 }: {
   desiredLeagueSlug?: string;
+  revalidate?: number;
+  maxPages?: number;
 } = {}): Promise<SportsGameEvent[]> {
   const events: SportsGameEvent[] = [];
   const seen = new Set<string>();
   let cursor: string | undefined;
   let pageCount = 0;
-  const maximumPages = desiredLeagueSlug ? LEAGUE_MAX_PAGES : ALL_LEAGUE_MAX_PAGES;
+  const maximumPages =
+    typeof maxPages === "number" && maxPages > 0
+      ? maxPages
+      : desiredLeagueSlug
+        ? LEAGUE_MAX_PAGES
+        : ALL_LEAGUE_MAX_PAGES;
 
   while (pageCount < maximumPages) {
-    const { events: pageEvents, nextCursor } = await fetchSportsGamePage(cursor);
+    const { events: pageEvents, nextCursor } = await fetchSportsGamePage(cursor, {
+      revalidate,
+    });
     pageCount += 1;
 
     for (const event of pageEvents) {
