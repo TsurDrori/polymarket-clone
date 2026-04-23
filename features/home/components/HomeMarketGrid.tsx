@@ -32,6 +32,11 @@ const HOME_OVERSCAN_COUNT = 6;
 const HOME_REORDER_COOLDOWN_MS = 10_000;
 const HOME_HIGHLIGHT_MS = 1_800;
 const HOME_LEADER_COUNT = 4;
+const HOME_GRID_STYLE = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+  gap: "12px",
+} as const;
 
 const getHomeLayoutVariant = (): SurfaceFeedLayoutVariant => "compact";
 
@@ -119,7 +124,9 @@ export function HomeMarketGrid({
     }
 
     if (pendingRemoteExpansion && !continuation?.disabled && !continuation?.hasMore) {
-      setPendingRemoteExpansion(false);
+      queueMicrotask(() => {
+        setPendingRemoteExpansion(false);
+      });
     }
 
     previousItemCountRef.current = items.length;
@@ -155,6 +162,7 @@ export function HomeMarketGrid({
       continuation={resolvedContinuation}
       className={styles.stack}
       gridClassName={styles.grid}
+      gridStyle={HOME_GRID_STYLE}
       actionRowClassName={styles.actionRow}
       renderItem={(item, meta) => (
         <HomeMarketCard

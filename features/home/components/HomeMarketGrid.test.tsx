@@ -474,6 +474,21 @@ describe("HomeMarketGrid", () => {
     expect(container.textContent?.includes("0|")).toBe(false);
   });
 
+  it("renders the market grid with an inline layout fallback for first paint", () => {
+    const event = buildEvent("Will this happen?", [
+      { id: "1", slug: "politics", label: "Politics" },
+    ]);
+
+    const { container } = render(<HomeMarketGrid items={buildHomeEventCardEntries([event])} />);
+    const grid = container.querySelector("[data-surface-feed-slot]")?.parentElement;
+
+    expect(grid?.getAttribute("style")).toContain("display: grid");
+    expect(grid?.getAttribute("style")).toContain(
+      "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))",
+    );
+    expect(grid?.getAttribute("style")).toContain("gap: 12px");
+  });
+
   it("uses the live websocket delta slot on binary cards instead of the static daily change text", () => {
     const event = buildEvent(
       "Strait of Hormuz traffic returns to normal?",

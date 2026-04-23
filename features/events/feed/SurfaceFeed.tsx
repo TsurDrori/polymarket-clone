@@ -22,6 +22,7 @@ type SurfaceFeedProps<T> = {
   leaderIds?: ReadonlyArray<string>;
   className?: string;
   gridClassName?: string;
+  gridStyle?: CSSProperties;
   actionRowClassName?: string;
 };
 
@@ -63,6 +64,7 @@ export function SurfaceFeed<T>({
   leaderIds = [],
   className,
   gridClassName,
+  gridStyle,
   actionRowClassName,
 }: SurfaceFeedProps<T>) {
   const highlightedIdSet = useMemo(() => new Set(highlightedIds), [highlightedIds]);
@@ -73,7 +75,7 @@ export function SurfaceFeed<T>({
 
   return (
     <div className={cn(styles.stack, className)}>
-      <div className={cn(styles.grid, gridClassName)}>
+      <div className={cn(styles.grid, gridClassName)} style={gridStyle}>
         {items.map((item, index) => {
           const { descriptor } = item;
           const layout = resolveSurfaceFeedLayout(descriptor);
