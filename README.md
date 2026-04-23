@@ -18,6 +18,7 @@ including :
 - Dedicated `Sports Live` and `Sports Futures` surfaces, plus league-specific sports routes
 - Dynamic event detail route backed by live Gamma data
 - Realtime CLOB WebSocket hydration using token-level Jotai atoms
+- Shared market-card primitives reused across home, crypto, sports props, and event feeds
 - Loading states, route contracts, and a substantial test suite
 
 ## What’s Shipped
@@ -37,6 +38,7 @@ including :
 
 - Live event and market data from Polymarket Gamma REST endpoints
 - Live price updates from the public Polymarket CLOB WebSocket
+- Bounded home-hero price history served through `/api/market-price-history`
 - Support for both array-wrapped `book` messages and object `price_change` messages
 - Token-level hydration seeds generated server-side and mounted client-side
 - Batched update dispatch to avoid broad rerenders on rapid market activity
@@ -44,6 +46,7 @@ including :
 ### UX and implementation details
 
 - Shared Polymarket-cloned shell with sticky header, market nav, footer, and mobile controls
+- Shared Polymarket-aligned side rails across crypto and sports surfaces
 - Dark/light theme support with bootstrap script to avoid theme flicker on first paint
 - Server-first route composition with targeted client interactivity where it pays off
 - Thin internal API routes for client-side pagination/filter expansion
@@ -57,6 +60,7 @@ The codebase is organized around product domains:
 ```text
 app/                   Next.js App Router routes and route-level loading/error states
 features/home/         Home hero, card feed, chip rail, selectors, client feed expansion
+features/market-cards/ Shared Polymarket card primitives reused across surfaces
 features/crypto/       Crypto parsing, facets, server payload assembly, surface components
 features/sports/       Live, futures, games, props, and league-specific sports surfaces
 features/events/       Gamma parsing, event-card modeling, shared event feeds
@@ -90,11 +94,12 @@ flowchart TD
   A["app/"] --> A3["API route handlers"]
 
   B["features/"] --> B1["home"]
-  B["features/"] --> B2["crypto"]
-  B["features/"] --> B3["sports"]
-  B["features/"] --> B4["events"]
-  B["features/"] --> B5["detail"]
-  B["features/"] --> B6["realtime"]
+  B["features/"] --> B2["market-cards"]
+  B["features/"] --> B3["crypto"]
+  B["features/"] --> B4["sports"]
+  B["features/"] --> B5["events"]
+  B["features/"] --> B6["detail"]
+  B["features/"] --> B7["realtime"]
 
   C["shared/"] --> C1["theme"]
   C["shared/"] --> C2["lib"]
@@ -105,6 +110,7 @@ A few architecture choices worth calling out:
 
 - `Next.js App Router` is used in a server-first way for initial data fetches and route composition.
 - `Jotai` stores live prices at the token level via atom families, which keeps updates local to the smallest UI leaves possible.
+- Shared `features/market-cards` primitives let parity work land once and flow into home, crypto, sports props, and event feeds.
 - `unstable_cache` and route-level `revalidate` windows are used to balance freshness and page responsiveness.
 - The app fetches from live Polymarket APIs directly, then normalizes payload quirks in parser modules instead of leaking raw API shapes through the UI.
 - CSS Modules are used throughout to keep styling local, predictable, and easy to audit.
@@ -125,12 +131,12 @@ This keeps the app responsive while still feeling live in the places a grader wi
 
 This repo already goes beyond a “one-weekend assignment” baseline:
 
-- `262` source files under `app/`, `features/`, and `shared/`
-- `48` passing test files
-- `188` passing tests
+- `254` source files under `app/`, `features/`, and `shared/`
+- `50` passing test files
+- `199` passing tests
 - Green production build on `Next.js 16.2.4`
 
-Verified locally on `2026-04-21`:
+Verified locally on `2026-04-23`:
 
 - `pnpm exec vitest run`
 - `pnpm build`
