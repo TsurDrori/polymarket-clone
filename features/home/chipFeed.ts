@@ -3,7 +3,6 @@ import {
   type ListEventsKeysetParams,
   type ListEventsKeysetResult,
 } from "@/features/events/api/gamma";
-import type { PolymarketEvent } from "@/features/events/types";
 import { isEventVisible } from "@/shared/lib/tags";
 
 export const HOME_CHIP_EVENT_LIMIT = 24;

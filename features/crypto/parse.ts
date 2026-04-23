@@ -94,11 +94,11 @@ export type CryptoCardModel = {
   snippets: ReadonlyArray<CryptoCardSnippet>;
 };
 
-export type CryptoWorkingSet = {
+type CryptoWorkingSet = {
   cards: ReadonlyArray<CryptoCardModel>;
 };
 
-export type CryptoResolvedSurfaceState = {
+type CryptoResolvedSurfaceState = {
   filters: CryptoFilterState;
   facets: CryptoFacetState;
   cards: ReadonlyArray<CryptoCardModel>;

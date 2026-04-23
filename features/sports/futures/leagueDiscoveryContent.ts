@@ -1,4 +1,4 @@
-export type SportsFuturesLeagueDiscoveryColumn = {
+type SportsFuturesLeagueDiscoveryColumn = {
   title: string;
   links: ReadonlyArray<{
     label: string;
@@ -7,7 +7,7 @@ export type SportsFuturesLeagueDiscoveryColumn = {
   }>;
 };
 
-export type SportsFuturesLeagueDiscoveryContent = {
+type SportsFuturesLeagueDiscoveryContent = {
   relatedTopics: SportsFuturesLeagueDiscoveryColumn;
   popularMarkets: SportsFuturesLeagueDiscoveryColumn;
   newMarkets: SportsFuturesLeagueDiscoveryColumn;

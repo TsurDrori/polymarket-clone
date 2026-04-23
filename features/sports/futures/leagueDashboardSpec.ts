@@ -1,6 +1,6 @@
 export type SportsFuturesCardRole = "hero" | "compact-list" | "bar";
 
-export type SportsFuturesLeagueDashboardSpec = {
+type SportsFuturesLeagueDashboardSpec = {
   league: string;
   title: string;
   routeTitle: string;
@@ -16,13 +16,13 @@ export type SportsFuturesLeagueDashboardSpec = {
   }>;
 };
 
-export type SportsFuturesLeagueIdentity = {
+type SportsFuturesLeagueIdentity = {
   label: string;
   shortLabel: string;
   accentColor: string;
 };
 
-export type SportsFuturesGroupSectionSpec = {
+type SportsFuturesGroupSectionSpec = {
   title: string;
   items: ReadonlyArray<{
     slug: string;
@@ -37,7 +37,7 @@ export const SPORTS_FUTURES_FEATURED_LEAGUES = [
   { slug: "nba", label: "NBA", countKey: "nba" },
 ] as const;
 
-export const SPORTS_FUTURES_LEAGUE_SPECS: Record<
+const SPORTS_FUTURES_LEAGUE_SPECS: Record<
   string,
   SportsFuturesLeagueDashboardSpec
 > = {
@@ -87,7 +87,7 @@ export const SPORTS_FUTURES_LEAGUE_SPECS: Record<
   },
 };
 
-export const NBA_TEAM_IDENTITIES: Record<string, SportsFuturesLeagueIdentity> = {
+const NBA_TEAM_IDENTITIES: Record<string, SportsFuturesLeagueIdentity> = {
   "Oklahoma City Thunder": {
     label: "Oklahoma City Thunder",
     shortLabel: "OKC",

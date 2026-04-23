@@ -68,10 +68,21 @@ const fetchSpotlightChart = async (
 
 export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
   const [hoveredPoint, setHoveredPoint] = useState<HeroChartHoverState | null>(null);
-  const [chart, setChart] = useState<HeroChartModel | null>(
+  const cachedChart =
     spotlight.chart ??
-      (spotlight.tokenId ? spotlightChartCache.get(spotlight.tokenId) ?? null : null),
-  );
+    (spotlight.tokenId ? spotlightChartCache.get(spotlight.tokenId) ?? null : null);
+  const chartKey = spotlight.tokenId ?? spotlight.market.id;
+  const [loadedChartState, setLoadedChartState] = useState<{
+    key: string;
+    chart: HeroChartModel | null;
+  }>(() => ({
+    key: chartKey,
+    chart: cachedChart,
+  }));
+  const chart =
+    loadedChartState.key === chartKey
+      ? (spotlight.chart ?? loadedChartState.chart ?? cachedChart)
+      : cachedChart;
   const imageSrc = getEventImage(spotlight.event) ?? "/placeholder.svg";
   const sourceRows =
     spotlight.sourceRows.length > 1
@@ -91,28 +102,36 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
   const secondaryOutcome = spotlight.outcomeItems[1];
 
   useEffect(() => {
-    setChart(
-      spotlight.chart ??
-        (spotlight.tokenId ? spotlightChartCache.get(spotlight.tokenId) ?? null : null),
-    );
-  }, [spotlight.chart, spotlight.market.id, spotlight.tokenId]);
-
-  useEffect(() => {
     if (spotlight.chart || !spotlight.tokenId) {
       return;
     }
 
     let isCancelled = false;
+    const activeChartKey = spotlight.tokenId;
 
     void fetchSpotlightChart(spotlight.tokenId)
       .then((nextChart) => {
         if (!isCancelled) {
-          setChart(nextChart);
+          setLoadedChartState((current) =>
+            current.key === activeChartKey && current.chart === nextChart
+              ? current
+              : {
+                  key: activeChartKey,
+                  chart: nextChart,
+                },
+          );
         }
       })
       .catch(() => {
         if (!isCancelled) {
-          setChart(null);
+          setLoadedChartState((current) =>
+            current.key === activeChartKey && current.chart === null
+              ? current
+              : {
+                  key: activeChartKey,
+                  chart: null,
+                },
+          );
         }
       });
 

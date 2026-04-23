@@ -1,4 +1,4 @@
-export class ClobError extends Error {
+class ClobError extends Error {
   constructor(
     message: string,
     readonly status?: number,
@@ -8,12 +8,12 @@ export class ClobError extends Error {
   }
 }
 
-export type MarketPriceHistoryPoint = {
+type MarketPriceHistoryPoint = {
   t: number;
   p: number;
 };
 
-export type PriceHistoryInterval = "1h" | "6h" | "1d" | "1w" | "1m" | "max" | "all";
+type PriceHistoryInterval = "1h" | "6h" | "1d" | "1w" | "1m" | "max" | "all";
 
 const CLOB_BASE = "https://clob.polymarket.com";
 

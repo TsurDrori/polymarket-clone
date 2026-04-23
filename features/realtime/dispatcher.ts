@@ -81,7 +81,7 @@ const getBestAsk = (
   return Number.isFinite(bestAsk) ? bestAsk : 0;
 };
 
-export const applyBook = (message: BookMessage): void => {
+const applyBook = (message: BookMessage): void => {
   if (!message.asset_id) {
     return;
   }
@@ -109,7 +109,7 @@ export const applyBook = (message: BookMessage): void => {
   });
 };
 
-export const applyPriceChange = (message: PriceChangeMessage): void => {
+const applyPriceChange = (message: PriceChangeMessage): void => {
   if (!Array.isArray(message.price_changes)) {
     return;
   }
@@ -141,7 +141,7 @@ export const applyPriceChange = (message: PriceChangeMessage): void => {
   }
 };
 
-export const applyLastTradePrice = (message: LastTradePriceMessage): void => {
+const applyLastTradePrice = (message: LastTradePriceMessage): void => {
   if (!message.asset_id) {
     return;
   }

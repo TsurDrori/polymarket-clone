@@ -33,13 +33,13 @@ const SPORTS_LEAGUE_INITIAL_SECTION_LIMIT = 6;
 const SPORTS_LIVE_INITIAL_HYDRATION_ROW_LIMIT = 8;
 const SPORTS_INITIAL_CARD_LIMIT = 12;
 
-export type SportsLivePagePayload = {
+type SportsLivePagePayload = {
   initialSections: ReadonlyArray<SportsbookSectionModel>;
   leagueChips: ReadonlyArray<SportsGamesLeagueChip>;
   hydrationSeeds: ReadonlyArray<PriceHydrationSeed>;
 };
 
-export type SportsLeagueGamesPagePayload = {
+type SportsLeagueGamesPagePayload = {
   initialSections: ReadonlyArray<SportsbookSectionModel>;
   leagueChips: ReadonlyArray<SportsGamesLeagueChip>;
   hydrationSeeds: ReadonlyArray<PriceHydrationSeed>;
@@ -47,7 +47,7 @@ export type SportsLeagueGamesPagePayload = {
   title: string;
 };
 
-export type SportsLeagueCardsPayload = {
+type SportsLeagueCardsPayload = {
   initialCards: ReadonlyArray<SportsCardModel>;
   cards: ReadonlyArray<SportsCardModel>;
   hasMoreCards: boolean;
@@ -59,7 +59,7 @@ export type SportsLeagueCardsPayload = {
   leagueChips?: ReadonlyArray<SportsCardLeagueChip>;
 };
 
-export type SportsLeaguePropsPayload = {
+type SportsLeaguePropsPayload = {
   initialItems: ReadonlyArray<HomeCardEntry>;
   items: ReadonlyArray<HomeCardEntry>;
   hasMoreItems: boolean;
@@ -70,7 +70,7 @@ export type SportsLeaguePropsPayload = {
   propsHref: string;
 };
 
-export type SportsFuturesIndexPagePayload = {
+type SportsFuturesIndexPagePayload = {
   dashboard: SportsFuturesLeagueDashboardPayload;
 };
 

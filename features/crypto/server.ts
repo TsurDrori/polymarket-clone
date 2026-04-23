@@ -21,7 +21,7 @@ type CryptoSearchParams = {
   asset?: string | string[] | undefined;
 };
 
-export type CryptoPagePayload = {
+type CryptoPagePayload = {
   totalCount: number;
   cards: ReadonlyArray<CryptoCardModel>;
   facets: CryptoFacetState;
@@ -31,12 +31,12 @@ export type CryptoPagePayload = {
   visibleIncrement: number;
 };
 
-export const CRYPTO_INITIAL_ROUTE_CARD_LIMIT =
+const CRYPTO_INITIAL_ROUTE_CARD_LIMIT =
   CRYPTO_INITIAL_VISIBLE_COUNT + CRYPTO_VISIBLE_INCREMENT + CRYPTO_OVERSCAN_COUNT;
 
 const CRYPTO_ROUTE_REVALIDATE_SECONDS = 30;
 
-export type CryptoCatalogPayload = {
+type CryptoCatalogPayload = {
   cards: ReadonlyArray<CryptoCardModel>;
 };
 

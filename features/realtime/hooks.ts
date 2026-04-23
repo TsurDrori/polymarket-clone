@@ -13,7 +13,7 @@ import { subscribe, unsubscribe } from "./subscriptions";
 export const useLivePrice = (tokenId: string): Tick =>
   useAtomValue(priceAtomFamily(tokenId));
 
-export const useFlash = (tokenId: string): FlashState =>
+const useFlash = (tokenId: string): FlashState =>
   useAtomValue(flashAtomFamily(tokenId));
 
 export const useRetainedLivePrice = (

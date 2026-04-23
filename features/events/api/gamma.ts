@@ -13,7 +13,7 @@ export class GammaError extends Error {
   }
 }
 
-export interface ListEventsParams {
+interface ListEventsParams {
   limit: number;
   offset?: number;
   order?: string;

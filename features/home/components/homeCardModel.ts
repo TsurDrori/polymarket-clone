@@ -19,7 +19,7 @@ import {
   selectSpotlightMarket,
 } from "../selectors";
 
-export type HomeCardFamily =
+type HomeCardFamily =
   | "binary"
   | "grouped"
   | "crypto-up-down"
@@ -158,7 +158,7 @@ const getVisibleMarkets = (event: PolymarketEvent): PolymarketMarket[] => {
   return visibleMarkets.length > 0 ? visibleMarkets : event.markets;
 };
 
-export const getHomeCardMarkets = (event: PolymarketEvent): PolymarketMarket[] => {
+const getHomeCardMarkets = (event: PolymarketEvent): PolymarketMarket[] => {
   const marketsToDisplay = getVisibleMarkets(event);
 
   if (event.showAllOutcomes && marketsToDisplay.length > 1) {
@@ -168,7 +168,7 @@ export const getHomeCardMarkets = (event: PolymarketEvent): PolymarketMarket[] =
   return marketsToDisplay.slice(0, 1);
 };
 
-export const getPrimaryHomeMarket = (
+const getPrimaryHomeMarket = (
   event: PolymarketEvent,
 ): PolymarketMarket | undefined => selectSpotlightMarket(event) ?? getPrimaryMarket(event);
 
@@ -463,7 +463,7 @@ export const buildHomeCardModel = (event: PolymarketEvent): HomeCardModel => {
   }
 };
 
-export const buildHomeCardEntry = (event: PolymarketEvent): HomeCardEntry => {
+const buildHomeCardEntry = (event: PolymarketEvent): HomeCardEntry => {
   const model = buildHomeCardModel(event);
 
   return {
@@ -478,7 +478,7 @@ export const buildHomeCardEntry = (event: PolymarketEvent): HomeCardEntry => {
   };
 };
 
-export const buildHomeSportsLiveCardEntry = (
+const buildHomeSportsLiveCardEntry = (
   event: SportsGameEvent,
 ): HomeCardEntry => buildHomeCardEntry(adaptSportsGameEventToPolymarketEvent(event));
 
@@ -659,5 +659,5 @@ export const getHomeCardLiveScore = (
       );
   }
 };
-export const getHomeCardMotionKey = (event: PolymarketEvent): string =>
+const getHomeCardMotionKey = (event: PolymarketEvent): string =>
   getPrimaryHomeMarket(event)?.id ?? event.id;

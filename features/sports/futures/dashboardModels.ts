@@ -3,7 +3,6 @@ import { getEventImage } from "@/features/events/api/parse";
 import type {
   PolymarketEvent,
   PolymarketMarket,
-  PolymarketTag,
 } from "@/features/events/types";
 import { formatSportsPct } from "@/shared/lib/format";
 import {
@@ -70,9 +69,6 @@ export type SportsFuturesLeagueDashboardPayload = {
 };
 
 const FUTURES_CARD_RAIL_COUNT_KEYS = new Set(["nba"]);
-
-const normalizeSlug = (value: string): string =>
-  value.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replaceAll(/^-|-$/g, "");
 
 const getMarketProbability = (market: PolymarketMarket): number => {
   const rawOutcome = Number(market.outcomePrices[0] ?? market.lastTradePrice ?? 0);
@@ -230,9 +226,3 @@ export async function getSportsLeagueDashboardPayload(
     hydrationEvents: cards.map((card) => card.event),
   };
 }
-
-export const isSportsLeagueDashboardSupported = (league: string): boolean =>
-  getSportsFuturesLeagueSpec(normalizeSlug(league)) !== null;
-
-export const isSportsTaxonomyTag = (tag: PolymarketTag): boolean =>
-  normalizeSlug(tag.slug) === "sports";

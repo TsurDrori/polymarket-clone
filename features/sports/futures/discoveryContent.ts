@@ -1,4 +1,4 @@
-export type SportsFuturesFaqItem = {
+type SportsFuturesFaqItem = {
   question: string;
   answer: string;
 };

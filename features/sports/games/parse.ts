@@ -274,7 +274,7 @@ const getPreferredTag = (event: SportsGameEvent): SportsGameTag | undefined => {
   return specificTag ?? candidates[0];
 };
 
-export const getEventLeague = (event: SportsGameEvent): SportsLeague => {
+const getEventLeague = (event: SportsGameEvent): SportsLeague => {
   const preferredTag = getPreferredTag(event);
   if (preferredTag) {
     const slug = normalizeSlug(preferredTag.slug);

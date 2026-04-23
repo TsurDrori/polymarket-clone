@@ -22,13 +22,13 @@ export function TrendingMark(props: IconProps) {
   );
 }
 
-export type CategoryNavItem = {
+type CategoryNavItem = {
   label: string;
   href: string;
   icon: ComponentType<IconProps>;
 };
 
-export type ShellLinkItem = {
+type ShellLinkItem = {
   label: string;
   href?: string;
   description?: string;
@@ -45,33 +45,6 @@ export const HEADER_MARKET_ITEMS: readonly ShellLinkItem[] = [
   { label: "Trending", href: "/", activeMatch: "/" },
   { label: "Sports", href: "/sports/live", activeMatch: "/sports" },
   { label: "Crypto", href: "/crypto", activeMatch: "/crypto" },
-] as const;
-
-export const DRAWER_DESTINATION_ITEMS: readonly ShellLinkItem[] = [
-  {
-    label: "Trending",
-    href: "/",
-    description: "Top active markets across the whole exchange.",
-    activeMatch: "/",
-  },
-  {
-    label: "Sports Live",
-    href: "/sports/live",
-    description: "Real-time match markets and in-play price action.",
-    activeMatch: "/sports",
-  },
-  {
-    label: "Sports Futures",
-    href: "/sports/futures",
-    description: "Season-long outrights and league winner boards.",
-    activeMatch: "/sports",
-  },
-  {
-    label: "Crypto",
-    href: "/crypto",
-    description: "Short-window directional trades and asset narratives.",
-    activeMatch: "/crypto",
-  },
 ] as const;
 
 export const MOBILE_BOTTOM_ITEMS = [

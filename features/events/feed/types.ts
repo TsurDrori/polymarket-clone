@@ -33,11 +33,6 @@ export type SurfaceFeedItem<T> = {
   model: T;
 };
 
-export type SurfaceFeedVisibleSlice = {
-  initialVisibleCount?: number;
-  visibleIncrement?: number;
-};
-
 export type SurfaceFeedContinuation = {
   hasMore: boolean;
   disabled?: boolean;
@@ -53,7 +48,7 @@ export type SurfaceFeedRenderMeta = {
   leaderIndex: number;
 };
 
-export type ResolvedSurfaceFeedLayout = {
+type ResolvedSurfaceFeedLayout = {
   density: SurfaceFeedDensity;
   spans: Record<SurfaceFeedBreakpoint, SurfaceFeedSpan>;
 };

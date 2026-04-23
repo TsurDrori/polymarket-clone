@@ -26,7 +26,7 @@ export type SportsRailGroup = {
   children: SportsRailLeaf[];
 };
 
-export type SportsDesktopRailModel = {
+type SportsDesktopRailModel = {
   topLeafs: ReadonlyArray<SportsRailLeaf>;
   groups: ReadonlyArray<SportsRailGroup>;
   trailingLeafs: ReadonlyArray<SportsRailLeaf>;

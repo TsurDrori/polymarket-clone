@@ -59,21 +59,13 @@ export const getCandidateCount = (
   return Math.min(totalCount, normalizedVisibleCount + normalizedOverscan);
 };
 
-export const areIdListsEqual = (
+const areIdListsEqual = (
   left: ReadonlyArray<string>,
   right: ReadonlyArray<string>,
 ): boolean =>
   left.length === right.length && left.every((value, index) => value === right[index]);
 
-export const collectInsertedIds = (
-  previousIds: ReadonlyArray<string>,
-  nextIds: ReadonlyArray<string>,
-): string[] => {
-  const previous = new Set(previousIds);
-  return nextIds.filter((id) => !previous.has(id));
-};
-
-export const collectHighlightedIds = (
+const collectHighlightedIds = (
   previousIds: ReadonlyArray<string>,
   nextIds: ReadonlyArray<string>,
 ): string[] => {
@@ -141,7 +133,7 @@ export const limitVisiblePromotions = ({
   return nextVisibleIds.slice(0, previousVisibleIds.length);
 };
 
-export const applyPinnedVisibleIds = ({
+const applyPinnedVisibleIds = ({
   visibleIds,
   orderedIds,
   pinnedIds,

@@ -3,23 +3,23 @@ import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types"
 import { formatEndDate, formatVolume } from "@/shared/lib/format";
 import { getVisibleTags } from "@/shared/lib/tags";
 
-export type EventCardTone = "yes" | "no";
+type EventCardTone = "yes" | "no";
 
-export type EventCardActionModel = {
+type EventCardActionModel = {
   tone: EventCardTone;
   label: string;
   tokenId?: string;
   fallbackPrice: number;
 };
 
-export type EventCardBinaryModel = {
+type EventCardBinaryModel = {
   kind: "binary";
   probabilityTokenId?: string;
   probabilityFallback: number;
   actions: [EventCardActionModel, EventCardActionModel];
 };
 
-export type EventCardGroupedRowModel = {
+type EventCardGroupedRowModel = {
   id: string;
   label: string;
   probabilityTokenId?: string;
@@ -27,16 +27,16 @@ export type EventCardGroupedRowModel = {
   actions: [EventCardActionModel, EventCardActionModel];
 };
 
-export type EventCardGroupedModel = {
+type EventCardGroupedModel = {
   kind: "grouped";
   rows: EventCardGroupedRowModel[];
 };
 
-export type EventCardBodyModel = EventCardBinaryModel | EventCardGroupedModel;
+type EventCardBodyModel = EventCardBinaryModel | EventCardGroupedModel;
 
-export type EventCardFamily = EventCardBodyModel["kind"];
+type EventCardFamily = EventCardBodyModel["kind"];
 
-export type EventCardViewModel = {
+type EventCardViewModel = {
   family: EventCardFamily;
   href: string;
   title: string;

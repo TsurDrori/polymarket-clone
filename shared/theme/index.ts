@@ -1,11 +1,11 @@
 export type Theme = "dark" | "light";
 
 export const THEME_STORAGE_KEY = "polymarket-clone-theme";
-export const THEME_CHANGE_EVENT = "polymarket-clone-theme-change";
+const THEME_CHANGE_EVENT = "polymarket-clone-theme-change";
 
 const LIGHT_MEDIA_QUERY = "(prefers-color-scheme: light)";
 
-export const isTheme = (value: string | null | undefined): value is Theme =>
+const isTheme = (value: string | null | undefined): value is Theme =>
   value === "dark" || value === "light";
 
 export const resolveThemeSelection = (
@@ -22,7 +22,7 @@ const getMediaPreference = (): boolean =>
   typeof window.matchMedia === "function" &&
   window.matchMedia(LIGHT_MEDIA_QUERY).matches;
 
-export const readStoredTheme = (): Theme | null => {
+const readStoredTheme = (): Theme | null => {
   try {
     const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     return isTheme(storedTheme) ? storedTheme : null;
@@ -31,7 +31,7 @@ export const readStoredTheme = (): Theme | null => {
   }
 };
 
-export const readAppliedTheme = (): Theme | null => {
+const readAppliedTheme = (): Theme | null => {
   if (typeof document === "undefined") {
     return null;
   }

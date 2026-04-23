@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import type { SportsLeagueChip } from "@/features/sports/games/parse";
@@ -126,17 +126,28 @@ export function SportsLeagueRail({
     activeLeagueSlug,
   });
 
-  const initialOpenGroups = desktopModel.groups
-    .filter((group) => group.active || (!activeLeagueSlug && group.slug === "football"))
-    .map((group) => group.slug);
-
-  const [openGroups, setOpenGroups] = useState<Set<string>>(
-    () => new Set(initialOpenGroups),
+  const initialOpenGroups = useMemo(
+    () =>
+      desktopModel.groups
+        .filter((group) => group.active || (!activeLeagueSlug && group.slug === "football"))
+        .map((group) => group.slug),
+    [activeLeagueSlug, desktopModel.groups],
   );
-
-  useEffect(() => {
-    setOpenGroups(new Set(initialOpenGroups));
-  }, [activeLeagueSlug, chips]);
+  const openGroupsKey = useMemo(
+    () => initialOpenGroups.join("|"),
+    [initialOpenGroups],
+  );
+  const [openGroupsState, setOpenGroupsState] = useState<{
+    key: string;
+    value: Set<string>;
+  }>(() => ({
+    key: openGroupsKey,
+    value: new Set(initialOpenGroups),
+  }));
+  const openGroups =
+    openGroupsState.key === openGroupsKey
+      ? openGroupsState.value
+      : new Set(initialOpenGroups);
 
   return (
     <div className={cn(styles.rail, className)}>
@@ -178,15 +189,20 @@ export function SportsLeagueRail({
               item={item}
               open={openGroups.has(item.slug)}
               onToggle={() => {
-                setOpenGroups((current) => {
-                  const next = new Set(current);
+                setOpenGroupsState((current) => {
+                  const base =
+                    current.key === openGroupsKey ? current.value : new Set(initialOpenGroups);
+                  const next = new Set(base);
                   if (next.has(item.slug)) {
                     next.delete(item.slug);
                   } else {
                     next.add(item.slug);
                   }
 
-                  return next;
+                  return {
+                    key: openGroupsKey,
+                    value: next,
+                  };
                 });
               }}
             />

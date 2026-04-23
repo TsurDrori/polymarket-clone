@@ -93,7 +93,7 @@ export type HomePageModel = {
   exploreEvents: PolymarketEvent[];
 };
 
-export const HOME_HERO_SPOTLIGHT_LIMIT = 6;
+const HOME_HERO_SPOTLIGHT_LIMIT = 6;
 export const HOME_EXPLORE_EVENT_LIMIT = 40;
 
 const GENERIC_TOPIC_SLUGS = new Set([
@@ -307,20 +307,6 @@ const isDirectCryptoLeadEvent = (event: PolymarketEvent): boolean =>
 
 const isDirectSportsLeadEvent = (event: PolymarketEvent): boolean =>
   getPrimaryLeadTagSlug(event) === "sports" || Boolean(event.eventMetadata?.league);
-
-const getRankedEvents = (
-  events: ReadonlyArray<PolymarketEvent>,
-): PolymarketEvent[] =>
-  [...events].sort(
-    (left, right) =>
-      Number(right.featured) - Number(left.featured) ||
-      compareNumbersDesc(
-        Number(!isSportsEvent(left)),
-        Number(!isSportsEvent(right)),
-      ) ||
-      compareNumbersDesc(left.volume24hr || left.volume, right.volume24hr || right.volume) ||
-      compareNumbersDesc(left.volume, right.volume),
-  );
 
 const getHomeFeedRankedEvents = (
   events: ReadonlyArray<PolymarketEvent>,
@@ -713,11 +699,6 @@ export const selectSpotlightEvents = (
     .map(({ event }) => event);
 };
 
-export const selectFeaturedEvents = (
-  events: ReadonlyArray<PolymarketEvent>,
-  limit = 5,
-): PolymarketEvent[] => getRankedEvents(events).slice(0, limit);
-
 export const selectHeroPulse = (
   events: ReadonlyArray<PolymarketEvent>,
   {
@@ -768,11 +749,6 @@ export const selectHeroPulse = (
   return selected;
 };
 
-export const selectPulseItems = (
-  events: ReadonlyArray<PolymarketEvent>,
-  limit = 4,
-): HeroPulseItem[] => selectHeroPulse(events, { limit });
-
 export const collectTrendingTopics = (
   events: ReadonlyArray<PolymarketEvent>,
   limit = 10,
@@ -809,12 +785,12 @@ export const collectTrendingTopics = (
     .slice(0, limit);
 };
 
-export const selectHeroTopics = (
+const selectHeroTopics = (
   events: ReadonlyArray<PolymarketEvent>,
   limit = 5,
 ): HeroTopicItem[] => buildTopicItems(events, limit);
 
-export const selectHeroContextChips = (
+const selectHeroContextChips = (
   spotlight: HeroSpotlightModel | null,
   topics: ReadonlyArray<HeroTopicItem>,
   limit = 8,
@@ -1008,7 +984,7 @@ export const selectHomeFeedEvents = (
   return selected;
 };
 
-export const selectHomeMarketChips = (
+const selectHomeMarketChips = (
   events: ReadonlyArray<PolymarketEvent>,
   limit = 30,
 ): HeroChip[] => buildHomeMarketChips(events, limit);
