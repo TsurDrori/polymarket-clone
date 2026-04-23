@@ -1,4 +1,5 @@
 import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
+import { normalizeSportsScore } from "@/features/sports/scoreDisplay";
 
 export type SportsGameTag = {
   id: string;
@@ -252,7 +253,7 @@ const formatStatusLabel = (event: SportsGameEvent): string => {
 
 const formatStatusDetail = (event: SportsGameEvent): string | undefined => {
   if (event.live && event.period) return event.period;
-  if (event.ended && event.score) return event.score;
+  if (event.ended) return normalizeSportsScore(event.score);
   return undefined;
 };
 

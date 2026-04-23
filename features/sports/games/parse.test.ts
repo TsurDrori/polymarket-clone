@@ -54,6 +54,8 @@ const buildEvent = ({
   startTime = "2026-04-19T17:00:00.000Z",
   live = false,
   ended = false,
+  period = live ? "Q3 - 08:31" : undefined,
+  score = ended ? "101-98" : undefined,
 }: Partial<SportsGameEvent> = {}): SportsGameEvent => ({
   id: crypto.randomUUID(),
   slug: title.toLowerCase().replaceAll(/\s+/g, "-"),
@@ -64,8 +66,8 @@ const buildEvent = ({
   volume24hr: 10_000,
   live,
   ended,
-  period: live ? "Q3 - 08:31" : undefined,
-  score: ended ? "101-98" : undefined,
+  period,
+  score,
   eventWeek: 3,
   image: undefined,
   icon: undefined,
@@ -236,6 +238,26 @@ describe("sports games parser", () => {
 
     expect(nbaRows).toHaveLength(1);
     expect(nbaRows[0]?.league.label).toBe("NBA");
+  });
+
+  it("normalizes composite esports final scores before rendering status detail", () => {
+    const [row] = buildSportsGameRows([
+      buildEvent({
+        title: "Team Liquid vs Team Falcons",
+        live: false,
+        ended: true,
+        tags: [
+          { id: "sports", slug: "sports", label: "Sports" },
+          { id: "games", slug: "games", label: "Games" },
+          { id: "dota-2", slug: "dota-2", label: "Dota 2" },
+        ],
+        teams: buildTeams(["Team Liquid", "Team Falcons"]),
+        score: "000-000|2-0|Bo3",
+      }),
+    ]);
+
+    expect(row?.statusLabel).toBe("Final");
+    expect(row?.statusDetail).toBe("2-0");
   });
 
   it("hydrates only tokens from rendered live-preview rows", () => {

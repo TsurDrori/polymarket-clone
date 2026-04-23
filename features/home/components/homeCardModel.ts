@@ -6,6 +6,7 @@ import {
   type PriceHydrationSeed,
 } from "@/features/realtime/seeds";
 import { buildSportsGameRows, type SportsGameEvent } from "@/features/sports/games/parse";
+import { parseDisplayedSportsScoreParts } from "@/features/sports/scoreDisplay";
 import {
   buildCryptoWorkingSet,
   compareCryptoEventsForDisplay,
@@ -348,21 +349,6 @@ const selectHomeCryptoEntry = (
     .sort(compareCryptoEventsForDisplay);
 
   return bestEvent ? buildHomeCardEntry(bestEvent) : undefined;
-};
-
-const parseDisplayedSportsScoreParts = (score?: string): string[] => {
-  if (typeof score !== "string") return [];
-
-  const normalizedScore = score.trim();
-  if (normalizedScore.length === 0) return [];
-
-  // Live feeds often carry placeholder 0-0 / 0:0 values before a real score exists.
-  if (!/[1-9]/.test(normalizedScore)) return [];
-
-  return normalizedScore
-    .split(/[-:]/)
-    .map((value) => value.trim())
-    .filter(Boolean);
 };
 
 const getHomeSportsVolumeLabel = (
