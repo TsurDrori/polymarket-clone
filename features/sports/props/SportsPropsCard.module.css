@@ -113,19 +113,38 @@
   justify-content: center;
   min-height: 34px;
   border-radius: 12px;
+  border: 1px solid transparent;
   font-size: 13px;
   font-weight: 700;
   text-align: center;
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out,
+    color 140ms ease-out;
 }
 
 .actionYes {
-  background: var(--accent-yes-soft);
+  background-color: var(--accent-yes-soft);
   color: var(--accent-yes);
+  border-color: color-mix(in srgb, var(--accent-yes) 24%, transparent);
 }
 
 .actionNo {
-  background: var(--accent-no-soft);
+  background-color: var(--accent-no-soft);
   color: var(--accent-no);
+  border-color: color-mix(in srgb, var(--accent-no) 24%, transparent);
+}
+
+.actionYes:hover {
+  background-color: var(--accent-yes-hover);
+  color: #fff;
+  border-color: var(--accent-yes-hover);
+}
+
+.actionNo:hover {
+  background-color: var(--accent-no-hover);
+  color: #fff;
+  border-color: var(--accent-no-hover);
 }
 
 .footer {

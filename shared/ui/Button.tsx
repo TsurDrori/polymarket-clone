@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, Ref } from "react";
 import { cn } from "@/shared/lib/cn";
 import styles from "./Button.module.css";
 
-type ButtonVariant = "yes" | "no";
+type ButtonVariant = "yes" | "no" | "blue" | "yellow";
 type ButtonSize = "sm" | "md";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

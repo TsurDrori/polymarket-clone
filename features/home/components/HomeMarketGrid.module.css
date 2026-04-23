@@ -4,7 +4,14 @@
 }
 
 .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
+}
+
+.grid > [data-surface-feed-slot="true"] {
+  min-width: 0;
+  grid-column: auto;
 }
 
 .actionRow {
@@ -119,22 +126,68 @@
   min-width: 0;
   padding-inline: 8px;
   border-radius: 8px;
+  border: 1px solid transparent;
   font-size: 13px;
   font-weight: 600;
   line-height: 20px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out,
+    color 140ms ease-out;
+  background-color: var(--sports-action-bg);
+  color: var(--sports-action-text);
+  border-color: color-mix(in srgb, var(--sports-action-fill) 24%, transparent);
 }
 
-.sportsActionPrimary {
-  background: color-mix(in srgb, #1f4e73 74%, transparent);
-  color: #49b9ff;
+.sportsActionPill[data-color="blue"] {
+  --sports-action-fill: var(--sports-team-blue);
+  --sports-action-bg: var(--sports-team-blue-soft);
+  --sports-action-text: var(--sports-team-blue-text);
+  --sports-action-text-hover: var(--sports-team-blue-text-on-fill);
 }
 
-.sportsActionSecondary {
-  background: color-mix(in srgb, #5e592d 72%, transparent);
-  color: #ffed1f;
+.sportsActionPill[data-color="yellow"] {
+  --sports-action-fill: var(--sports-team-yellow);
+  --sports-action-bg: var(--sports-team-yellow-soft);
+  --sports-action-text: var(--sports-team-yellow-text);
+  --sports-action-text-hover: var(--sports-team-yellow-text-on-fill);
+}
+
+.sportsActionPill[data-color="green"] {
+  --sports-action-fill: var(--sports-team-green);
+  --sports-action-bg: var(--sports-team-green-soft);
+  --sports-action-text: var(--sports-team-green-text);
+  --sports-action-text-hover: var(--sports-team-green-text-on-fill);
+}
+
+.sportsActionPill[data-color="red"] {
+  --sports-action-fill: var(--sports-team-red);
+  --sports-action-bg: var(--sports-team-red-soft);
+  --sports-action-text: var(--sports-team-red-text);
+  --sports-action-text-hover: var(--sports-team-red-text-on-fill);
+}
+
+.sportsActionPill[data-color="purple"] {
+  --sports-action-fill: var(--sports-team-purple);
+  --sports-action-bg: var(--sports-team-purple-soft);
+  --sports-action-text: var(--sports-team-purple-text);
+  --sports-action-text-hover: var(--sports-team-purple-text-on-fill);
+}
+
+.sportsActionPill[data-color="teal"] {
+  --sports-action-fill: var(--sports-team-teal);
+  --sports-action-bg: var(--sports-team-teal-soft);
+  --sports-action-text: var(--sports-team-teal-text);
+  --sports-action-text-hover: var(--sports-team-teal-text-on-fill);
+}
+
+.sportsActionPill:hover {
+  background-color: var(--sports-action-fill);
+  color: var(--sports-action-text-hover);
+  border-color: var(--sports-action-fill);
 }
 
 .sportsFooterIcon {

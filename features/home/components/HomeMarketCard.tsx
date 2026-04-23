@@ -117,23 +117,55 @@ const buildCryptoHeadline = (
 
 function SportsAction({
   label,
-  tone,
+  colorFamily,
 }: {
   label: string;
-  tone: "primary" | "secondary";
+  colorFamily: SportsActionColorFamily;
 }) {
   return (
-    <span
-      className={cn(
-        styles.sportsActionPill,
-        tone === "primary" && styles.sportsActionPrimary,
-        tone === "secondary" && styles.sportsActionSecondary,
-      )}
-    >
+    <span className={styles.sportsActionPill} data-color={colorFamily}>
       {label}
     </span>
   );
 }
+
+const SPORTS_ACTION_COLOR_FAMILIES = [
+  "blue",
+  "yellow",
+  "green",
+  "red",
+  "purple",
+  "teal",
+] as const;
+
+type SportsActionColorFamily = (typeof SPORTS_ACTION_COLOR_FAMILIES)[number];
+
+const hashString = (value: string) => {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+};
+
+const getSportsActionColorFamily = (
+  seed: string,
+  taken: Set<SportsActionColorFamily>,
+): SportsActionColorFamily => {
+  const startIndex = hashString(seed) % SPORTS_ACTION_COLOR_FAMILIES.length;
+
+  for (let offset = 0; offset < SPORTS_ACTION_COLOR_FAMILIES.length; offset += 1) {
+    const family =
+      SPORTS_ACTION_COLOR_FAMILIES[(startIndex + offset) % SPORTS_ACTION_COLOR_FAMILIES.length]!;
+
+    if (!taken.has(family)) {
+      taken.add(family);
+      return family;
+    }
+  }
+
+  return SPORTS_ACTION_COLOR_FAMILIES[startIndex]!;
+};
 
 function HomeGroupedCardBody({ model }: { model: HomeGroupedCardModel }) {
   return (
@@ -221,6 +253,7 @@ function HomeSportsLiveCardBody({
   model: HomeSportsLiveCardModel;
   emphasis?: HomeMarketCardProps["emphasis"];
 }) {
+  const usedActionFamilies = new Set<SportsActionColorFamily>();
   const leagueLabel = model.metaLabels[0] ?? "";
   const isLive = model.statusLabel === "Live";
   const compactStatusDetail =
@@ -272,7 +305,10 @@ function HomeSportsLiveCardBody({
             <SportsAction
               key={`${competitor.key}:action`}
               label={getCompactSportsActionLabel(competitor)}
-              tone={index === 0 ? "primary" : "secondary"}
+              colorFamily={getSportsActionColorFamily(
+                `${competitor.shortName}:${competitor.name}:${index}`,
+                usedActionFamilies,
+              )}
             />
           ))}
         </div>

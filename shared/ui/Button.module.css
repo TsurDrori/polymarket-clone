@@ -1,13 +1,26 @@
 .button {
+  --button-background: transparent;
+  --button-background-hover: var(--button-background);
+  --button-color: var(--text-primary);
+  --button-border: transparent;
+  --button-border-hover: var(--button-border);
+  --button-hover-opacity: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: var(--text-primary);
+  color: var(--button-color);
   font-weight: 600;
+  background-color: var(--button-background);
+  border: 1px solid var(--button-border);
   border-radius: 8px;
   padding: 8px 12px;
-  transition: filter 120ms ease-out, transform 80ms ease-out;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    color 120ms ease-out,
+    opacity 120ms ease-out,
+    transform 80ms ease-out;
 }
 
 .button[data-size="sm"] {
@@ -16,19 +29,46 @@
 }
 
 .button[data-variant="yes"] {
-  background: var(--accent-yes);
+  --button-background: var(--accent-yes-soft);
+  --button-background-hover: var(--accent-yes-hover);
+  --button-color: var(--accent-yes);
+  --button-color-hover: #fff;
+  --button-border: color-mix(in srgb, var(--accent-yes) 24%, transparent);
+  --button-border-hover: var(--accent-yes-hover);
 }
 
 .button[data-variant="no"] {
-  background: var(--accent-no);
+  --button-background: var(--accent-no-soft);
+  --button-background-hover: var(--accent-no-hover);
+  --button-color: var(--accent-no);
+  --button-color-hover: #fff;
+  --button-border: color-mix(in srgb, var(--accent-no) 24%, transparent);
+  --button-border-hover: var(--accent-no-hover);
+}
+
+.button[data-variant="blue"] {
+  --button-background: var(--accent-brand);
+  --button-background-hover: var(--accent-brand-hover);
+  --button-color: #fff;
+  --button-border: var(--accent-brand);
+  --button-border-hover: var(--accent-brand-hover);
+}
+
+.button[data-variant="yellow"] {
+  --button-background: var(--accent-warning);
+  --button-background-hover: var(--accent-warning-hover);
+  --button-color: var(--accent-warning-text-on-fill);
+  --button-border: var(--accent-warning);
+  --button-border-hover: var(--accent-warning-hover);
 }
 
 .button:hover {
-  filter: brightness(1.1);
+  background-color: var(--button-background-hover);
+  border-color: var(--button-border-hover);
+  color: var(--button-color-hover, var(--button-color));
 }
 
 .button:active {
-  filter: brightness(0.95);
   transform: scale(0.98);
 }
 
@@ -40,5 +80,4 @@
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: none;
 }
