@@ -44,8 +44,8 @@ describe("rafBatcher", () => {
       bestAsk: 0,
       ts: 11,
       prevPrice: 0,
-      changedAt: 0,
-      changeMagnitude: 0,
+      changedAt: 11,
+      changeMagnitude: 0.63,
     });
   });
 
@@ -72,8 +72,8 @@ describe("rafBatcher", () => {
       bestAsk: 0.41,
       ts: 2,
       prevPrice: 0.4,
-      changedAt: 0,
-      changeMagnitude: 0,
+      changedAt: 2,
+      changeMagnitude: 0.03999999999999998,
     });
   });
 

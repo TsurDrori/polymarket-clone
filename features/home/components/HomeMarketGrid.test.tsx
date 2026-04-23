@@ -40,6 +40,10 @@ vi.mock("@/features/events/components/PriceCell", () => ({
   PriceCell: ({ fallbackValue }: { fallbackValue: number }) => formatPct(fallbackValue),
 }));
 
+vi.mock("@/features/market-cards/components/LivePriceDelta", () => ({
+  LivePriceDelta: () => <span>LIVE-DELTA</span>,
+}));
+
 vi.mock("@/features/realtime/surfaces/hooks", () => ({
   useProjectedSurfaceWindow,
 }));
@@ -468,5 +472,36 @@ describe("HomeMarketGrid", () => {
     expect(screen.getAllByText("EME").length).toBeGreaterThan(1);
     expect(screen.getAllByText("EIS").length).toBeGreaterThan(1);
     expect(container.textContent?.includes("0|")).toBe(false);
+  });
+
+  it("uses the live websocket delta slot on binary cards instead of the static daily change text", () => {
+    const event = buildEvent(
+      "Strait of Hormuz traffic returns to normal?",
+      [{ id: "1", slug: "world", label: "World" }],
+      {
+        markets: [
+          buildMarket({
+            clobTokenIds: ["token-yes", "token-no"],
+            lastTradePrice: 0.03,
+            outcomePrices: [0.03, 0.97],
+            oneDayPriceChange: -0.04,
+          }),
+        ],
+      },
+    );
+
+    const [entry] = buildHomeEventCardEntries([event]);
+
+    render(
+      <HomeMarketGrid
+        items={entry ? [entry] : []}
+        initialCount={1}
+        incrementCount={1}
+        continuation={{ hasMore: false, onContinue: vi.fn() }}
+      />,
+    );
+
+    expect(screen.getByText("LIVE-DELTA")).toBeTruthy();
+    expect(screen.queryByText("-4%")).toBeNull();
   });
 });

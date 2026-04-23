@@ -39,6 +39,7 @@ type BinaryWidgetCardProps = {
   summaryLeading?: string;
   summaryTrailing?: string;
   summaryTrailingTone?: "up" | "down" | "default";
+  summaryTrailingNode?: React.ReactNode;
   showLiveDot?: boolean;
   liveLabel?: string;
   footerVolume?: string;
@@ -59,6 +60,7 @@ export function BinaryWidgetCard({
   summaryLeading,
   summaryTrailing,
   summaryTrailingTone = "default",
+  summaryTrailingNode,
   showLiveDot = false,
   liveLabel = "LIVE",
   footerVolume,
@@ -147,6 +149,7 @@ export function BinaryWidgetCard({
           items={footerItems}
           trailingText={summaryTrailing}
           trailingTextTone={summaryTrailingTone}
+          trailingNode={summaryTrailingNode}
         />
       }
     />

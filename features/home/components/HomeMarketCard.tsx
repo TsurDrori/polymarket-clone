@@ -6,6 +6,7 @@ import { PriceCell } from "@/features/events/components/PriceCell";
 import { BinaryGroupCard } from "@/features/market-cards/components/BinaryGroupCard";
 import { BinarySingleCardFrame } from "@/features/market-cards/components/BinarySingleCardFrame";
 import { BinaryWidgetCard } from "@/features/market-cards/components/BinaryWidgetCard";
+import { LivePriceDelta } from "@/features/market-cards/components/LivePriceDelta";
 import { SingleBinaryInfoLine } from "@/features/market-cards/components/SingleBinaryInfoLine";
 import { cn } from "@/shared/lib/cn";
 import { formatPct } from "@/shared/lib/format";
@@ -66,15 +67,6 @@ const splitEventTitle = (
     headline: headline.trim(),
     detail: rest.length > 0 ? rest.join(" - ").trim() : null,
   };
-};
-
-const formatChanceDelta = (value: number): string => {
-  if (!Number.isFinite(value) || value === 0) {
-    return "0%";
-  }
-
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${formatPct(value).replace("%", "")}%`;
 };
 
 const parseIntervalMinutes = (detail: string | null): number | null => {
@@ -378,9 +370,8 @@ export function HomeMarketCard({
             },
           ]}
           summaryLeading={model.volumeLabel}
-          summaryTrailing={formatChanceDelta(model.primaryChange)}
-          summaryTrailingTone={
-            model.primaryChange > 0 ? "up" : model.primaryChange < 0 ? "down" : "default"
+          summaryTrailingNode={
+            model.primaryTokenId ? <LivePriceDelta tokenId={model.primaryTokenId} /> : undefined
           }
           emphasis={emphasis}
         />

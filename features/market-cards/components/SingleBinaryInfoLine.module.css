@@ -123,6 +123,15 @@
   color: var(--accent-no);
 }
 
+.trailingNode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .actions {
   display: inline-flex;
   align-items: center;

@@ -23,11 +23,19 @@ const flush = (): void => {
 
   for (const [tokenId, partialTick] of entries) {
     const prevTick = store.get(priceAtomFamily(tokenId));
-    const nextTick = { ...prevTick, ...partialTick };
+    const nextPrice = partialTick.price ?? prevTick.price;
+    const didPriceChange = nextPrice !== prevTick.price;
+    const nextTick = {
+      ...prevTick,
+      ...partialTick,
+      prevPrice: didPriceChange ? prevTick.price : prevTick.prevPrice,
+      changedAt: didPriceChange ? (partialTick.ts ?? Date.now()) : prevTick.changedAt,
+      changeMagnitude: didPriceChange ? Math.abs(nextPrice - prevTick.price) : prevTick.changeMagnitude,
+    };
 
     store.set(priceAtomFamily(tokenId), nextTick);
 
-    if (nextTick.price === prevTick.price) {
+    if (!didPriceChange) {
       continue;
     }
 

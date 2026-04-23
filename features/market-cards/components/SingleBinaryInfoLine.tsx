@@ -9,6 +9,7 @@ type SingleBinaryInfoLineProps = {
   items: ReadonlyArray<SingleBinaryInfoItem>;
   trailingText?: string;
   trailingTextTone?: "default" | "up" | "down";
+  trailingNode?: React.ReactNode;
   trailingActions?: React.ReactNode;
 };
 
@@ -16,6 +17,7 @@ export function SingleBinaryInfoLine({
   items,
   trailingText,
   trailingTextTone = "default",
+  trailingNode,
   trailingActions,
 }: SingleBinaryInfoLineProps) {
   return (
@@ -47,6 +49,8 @@ export function SingleBinaryInfoLine({
 
       {trailingActions ? (
         <div className={styles.actions}>{trailingActions}</div>
+      ) : trailingNode ? (
+        <span className={styles.trailingNode}>{trailingNode}</span>
       ) : trailingText ? (
         <span className={styles.trailingText} data-tone={trailingTextTone}>
           {trailingText}
