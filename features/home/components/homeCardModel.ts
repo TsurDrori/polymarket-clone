@@ -28,6 +28,7 @@ type HomeCardFamily =
 export type HomeCardActionModel = {
   label: string;
   price: number;
+  tokenId?: string;
 };
 
 export type HomeCardRowModel = {
@@ -124,6 +125,19 @@ const clampPrice = (value: number): number => {
   return Math.max(0, Math.min(1, value));
 };
 
+const getOutcomeActionPrice = (market: PolymarketMarket, index: number): number => {
+  if (index === 0) {
+    return getDisplayPrice(market);
+  }
+
+  const directPrice = market.outcomePrices[index];
+  if (Number.isFinite(directPrice)) {
+    return clampPrice(directPrice);
+  }
+
+  return clampPrice(1 - getDisplayPrice(market));
+};
+
 const formatShortEndDate = (iso?: string): string => {
   if (!iso) return "";
 
@@ -199,16 +213,17 @@ const buildActionPair = (
   labels?: [string, string],
 ): [HomeCardActionModel, HomeCardActionModel] => {
   const [primaryLabel, secondaryLabel] = labels ?? getOutcomeLabels(market);
-  const yesPrice = getDisplayPrice(market);
 
   return [
     {
       label: primaryLabel,
-      price: yesPrice,
+      price: getOutcomeActionPrice(market, 0),
+      tokenId: market.clobTokenIds[0],
     },
     {
       label: secondaryLabel,
-      price: clampPrice(1 - yesPrice),
+      price: getOutcomeActionPrice(market, 1),
+      tokenId: market.clobTokenIds[1],
     },
   ];
 };
@@ -335,11 +350,29 @@ const selectHomeCryptoEntry = (
   return bestEvent ? buildHomeCardEntry(bestEvent) : undefined;
 };
 
+const parseDisplayedSportsScoreParts = (score?: string): string[] => {
+  if (typeof score !== "string") return [];
+
+  const normalizedScore = score.trim();
+  if (normalizedScore.length === 0) return [];
+
+  // Live feeds often carry placeholder 0-0 / 0:0 values before a real score exists.
+  if (!/[1-9]/.test(normalizedScore)) return [];
+
+  return normalizedScore
+    .split(/[-:]/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+};
+
+const getHomeSportsVolumeLabel = (
+  event: PolymarketEvent,
+  eventVolume?: number,
+): string =>
+  `${formatVolume(eventVolume ?? (event.volume24hr > 0 ? event.volume24hr : event.volume))} Vol.`;
+
 const buildSportsLiveModel = (event: PolymarketEvent): HomeSportsLiveCardModel => {
-  const scoreParts =
-    typeof event.score === "string"
-      ? event.score.split(/[-:]/).map((value) => value.trim()).filter(Boolean)
-      : [];
+  const scoreParts = parseDisplayedSportsScoreParts(event.score);
   const sportsEvent: SportsGameEvent = {
     id: event.id,
     slug: event.slug,
@@ -371,7 +404,7 @@ const buildSportsLiveModel = (event: PolymarketEvent): HomeSportsLiveCardModel =
     href: `/event/${event.slug}`,
     imageSrc: getEventImage(event) ?? "/placeholder.svg",
     metaLabels: row ? [row.league.label] : buildMetaLabels(event),
-    volumeLabel: row?.volumeLabel ?? `${formatVolume(event.volume24hr || event.volume)} Vol.`,
+    volumeLabel: getHomeSportsVolumeLabel(event, row?.eventVolume),
     statusLabel: row?.statusLabel ?? (event.live ? "Live" : "Upcoming"),
     statusDetail: row?.statusDetail ?? event.period,
     competitors:

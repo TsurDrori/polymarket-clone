@@ -1,9 +1,13 @@
 import { PriceCell } from "@/features/events/components/PriceCell";
+import { isYesNoOutcomeLabel } from "@/shared/lib/outcomes";
+import { OutcomeActionContent } from "./OutcomeActionContent";
 import styles from "./GroupedOutcomeRows.module.css";
 
 export type GroupedOutcomeRowAction = {
   label: string;
   tone: "yes" | "no";
+  tokenId?: string;
+  fallbackPrice?: number;
 };
 
 export type GroupedOutcomeRow = {
@@ -49,7 +53,12 @@ export function GroupedOutcomeRows({ rows }: GroupedOutcomeRowsProps) {
                     action.tone === "yes" ? styles.actionYes : styles.actionNo
                   }`}
                 >
-                  {action.label}
+                  <OutcomeActionContent
+                    label={action.label}
+                    tokenId={action.tokenId}
+                    fallbackPrice={action.fallbackPrice}
+                    showPriceOnHover={isYesNoOutcomeLabel(action.label)}
+                  />
                 </span>
               ))}
             </div>

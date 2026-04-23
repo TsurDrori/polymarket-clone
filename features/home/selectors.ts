@@ -55,6 +55,7 @@ export type HeroOutcomeItem = {
   marketId: string;
   label: string;
   chance: number;
+  tokenId?: string;
   href: string;
 };
 
@@ -171,6 +172,20 @@ const getEventHref = (event: PolymarketEvent): string => `/event/${event.slug}`;
 
 const getDisplayPrice = (market: PolymarketMarket): number =>
   market.lastTradePrice || market.outcomePrices[0] || market.bestBid || 0;
+
+const getOutcomeDisplayPrice = (market: PolymarketMarket, index: number): number => {
+  if (index === 0) {
+    return getDisplayPrice(market);
+  }
+
+  const directPrice = market.outcomePrices[index];
+  if (Number.isFinite(directPrice)) {
+    return directPrice;
+  }
+
+  const yesPrice = getDisplayPrice(market);
+  return Math.max(0, Math.min(1, 1 - yesPrice));
+};
 
 const getMarketVolume = (market: PolymarketMarket): number =>
   market.volume24hr || market.volumeNum;
@@ -561,10 +576,8 @@ const buildSpotlightOutcomeItems = (
 
   const yesLabel = normalizeText(market.outcomes[0] ?? "Yes");
   const noLabel = normalizeText(market.outcomes[1] ?? "No");
-  const yesChance = getDisplayPrice(market);
-  const rawNoChance =
-    market.outcomePrices[1] ?? (Number.isFinite(yesChance) ? 1 - yesChance : 0);
-  const noChance = Math.max(0, Math.min(1, rawNoChance));
+  const yesChance = getOutcomeDisplayPrice(market, 0);
+  const noChance = getOutcomeDisplayPrice(market, 1);
 
   return {
     outcomeMode: "binary",
@@ -573,12 +586,14 @@ const buildSpotlightOutcomeItems = (
         marketId: `${market.id}-0`,
         label: yesLabel,
         chance: yesChance,
+        tokenId: market.clobTokenIds[0],
         href,
       },
       {
         marketId: `${market.id}-1`,
         label: noLabel,
         chance: noChance,
+        tokenId: market.clobTokenIds[1],
         href,
       },
     ],

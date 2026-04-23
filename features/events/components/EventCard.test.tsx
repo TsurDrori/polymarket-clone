@@ -56,6 +56,41 @@ describe("EventCard", () => {
     expect(screen.getByText("Yes")).toBeTruthy();
     expect(screen.getByText("No")).toBeTruthy();
     expect(screen.getByText(/\$\d+[MBK]? Vol\./i)).toBeTruthy();
+
+    const yesAction = screen.getByText("Yes").closest('[data-price-swap="true"]');
+    const noAction = screen.getByText("No").closest('[data-price-swap="true"]');
+
+    expect(yesAction).toBeTruthy();
+    expect(noAction).toBeTruthy();
+
+    expect(
+      within(yesAction as HTMLElement).getByText(
+        `${Math.round(baseMarket.outcomePrices[0] * 100)}%`,
+      ),
+    ).toBeTruthy();
+    expect(
+      within(noAction as HTMLElement).getByText(
+        `${Math.round(baseMarket.outcomePrices[1] * 100)}%`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it("keeps single-market custom outcomes as labels instead of enabling price-swap hover text", () => {
+    renderEventCard({
+      ...binaryEvent,
+      markets: [
+        makeMarket({
+          id: "moneyline",
+          outcomes: ["Knicks", "Celtics"],
+          clobTokenIds: ["knicks-token", "celtics-token"],
+          lastTradePrice: 0.58,
+          outcomePrices: [0.58, 0.42],
+        }),
+      ],
+    });
+
+    expect(screen.getByText("Knicks").closest('[data-price-swap="true"]')).toBeNull();
+    expect(screen.getByText("Celtics").closest('[data-price-swap="true"]')).toBeNull();
   });
 
   it("dispatches showAllOutcomes multi-market events to MultiOutcomeBody", () => {
@@ -133,6 +168,52 @@ describe("EventCard", () => {
     expect(screen.getByText("Lakers")).toBeTruthy();
     expect(screen.getByText("Over")).toBeTruthy();
     expect(screen.getByText("Under")).toBeTruthy();
+  });
+
+  it("enables hover percentage labels for grouped yes/no outcome rows", () => {
+    renderEventCard({
+      ...baseEvent,
+      title: "What happens first?",
+      slug: "what-happens-first",
+      showAllOutcomes: true,
+      markets: [
+        makeMarket({
+          id: "first",
+          question: "Will event one happen first?",
+          groupItemTitle: "Event one",
+          outcomes: ["Yes", "No"],
+          clobTokenIds: ["first-yes", "first-no"],
+          lastTradePrice: 0.78,
+          outcomePrices: [0.78, 0.22],
+        }),
+        makeMarket({
+          id: "second",
+          question: "Will event two happen first?",
+          groupItemTitle: "Event two",
+          outcomes: ["Yes", "No"],
+          clobTokenIds: ["second-yes", "second-no"],
+          lastTradePrice: 0.41,
+          outcomePrices: [0.41, 0.59],
+        }),
+      ],
+    });
+
+    const yesActions = screen.getAllByText("Yes");
+    const noActions = screen.getAllByText("No");
+
+    expect(yesActions[0]?.closest('[data-price-swap="true"]')).toBeTruthy();
+    expect(noActions[0]?.closest('[data-price-swap="true"]')).toBeTruthy();
+
+    expect(
+      within(yesActions[0]?.closest('[data-price-swap="true"]') as HTMLElement).getByText(
+        "78%",
+      ),
+    ).toBeTruthy();
+    expect(
+      within(noActions[0]?.closest('[data-price-swap="true"]') as HTMLElement).getByText(
+        "22%",
+      ),
+    ).toBeTruthy();
   });
 
   it("falls back to question when groupItemTitle is nullish", () => {

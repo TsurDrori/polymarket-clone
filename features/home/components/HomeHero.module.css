@@ -240,6 +240,7 @@
   min-width: 0;
   height: 40px;
   padding: 8px;
+  border: 1px solid transparent;
   border-radius: 7.2px;
   font-size: 14px;
   line-height: 20px;
@@ -249,35 +250,40 @@
   overflow: hidden;
   transition:
     background-color 150ms ease,
+    border-color 150ms ease,
     color 150ms ease,
     box-shadow 150ms ease;
 }
 
 .outcomePillLabel {
-  display: block;
+  width: 100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .outcomeYes {
-  background: var(--hero-outcome-yes-bg);
-  color: var(--hero-outcome-yes-text);
+  background: var(--accent-yes-soft);
+  color: var(--accent-yes);
+  border-color: color-mix(in srgb, var(--accent-yes) 24%, transparent);
 }
 
 .outcomeNo {
-  background: var(--hero-outcome-no-bg);
-  color: var(--hero-outcome-no-text);
+  background: var(--accent-no-soft);
+  color: var(--accent-no);
+  border-color: color-mix(in srgb, var(--accent-no) 24%, transparent);
 }
 
 .outcomeYes:hover {
-  background: var(--hero-outcome-yes-text);
+  background: var(--accent-yes-hover);
   color: #fff;
+  border-color: var(--accent-yes-hover);
 }
 
 .outcomeNo:hover {
-  background: var(--hero-outcome-no-text);
+  background: var(--accent-no-hover);
   color: #fff;
+  border-color: var(--accent-no-hover);
 }
 
 .outcomePill:focus-visible {

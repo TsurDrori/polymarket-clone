@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, Link2 } from "lucide-react";
 import { getEventImage } from "@/features/events/api/parse";
+import { OutcomeActionContent } from "@/features/market-cards/components/OutcomeActionContent";
 import { formatPct } from "@/shared/lib/format";
 import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
+import { isYesNoOutcomeLabel } from "@/shared/lib/outcomes";
 import type { HeroChartModel, HeroSpotlightModel } from "../selectors";
 import { HeroPriceChart, type HeroChartHoverState } from "./HeroPriceChart";
 import styles from "./HomeHero.module.css";
@@ -228,7 +230,13 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
                   className={`${styles.outcomePill} ${styles.outcomeYes}`}
                   data-hero-outcome-button="yes"
                 >
-                  <span className={styles.outcomePillLabel}>{primaryOutcome.label}</span>
+                  <OutcomeActionContent
+                    className={styles.outcomePillLabel}
+                    label={primaryOutcome.label}
+                    tokenId={primaryOutcome.tokenId}
+                    fallbackPrice={primaryOutcome.chance}
+                    showPriceOnHover={isYesNoOutcomeLabel(primaryOutcome.label)}
+                  />
                 </Link>
               ) : null}
               {secondaryOutcome ? (
@@ -237,7 +245,13 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
                   className={`${styles.outcomePill} ${styles.outcomeNo}`}
                   data-hero-outcome-button="no"
                 >
-                  <span className={styles.outcomePillLabel}>{secondaryOutcome.label}</span>
+                  <OutcomeActionContent
+                    className={styles.outcomePillLabel}
+                    label={secondaryOutcome.label}
+                    tokenId={secondaryOutcome.tokenId}
+                    fallbackPrice={secondaryOutcome.chance}
+                    showPriceOnHover={isYesNoOutcomeLabel(secondaryOutcome.label)}
+                  />
                 </Link>
               ) : null}
             </div>

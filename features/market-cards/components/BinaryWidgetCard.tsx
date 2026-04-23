@@ -1,12 +1,14 @@
 import Image from "next/image";
 import { ProbabilityArc } from "./ProbabilityArc";
 import { BinarySingleCardFrame } from "./BinarySingleCardFrame";
+import { OutcomeActionContent } from "./OutcomeActionContent";
 import {
   SingleBinaryInfoLine,
   type SingleBinaryInfoItem,
 } from "./SingleBinaryInfoLine";
 import { cn } from "@/shared/lib/cn";
 import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
+import { isYesNoOutcomeLabel } from "@/shared/lib/outcomes";
 import styles from "./BinaryWidgetCard.module.css";
 
 type BinaryWidgetCardProps = {
@@ -20,8 +22,18 @@ type BinaryWidgetCardProps = {
     size?: "sm" | "md";
   };
   actions: [
-    { label: string; tone: "yes" | "no" },
-    { label: string; tone: "yes" | "no" },
+    {
+      label: string;
+      tone: "yes" | "no";
+      tokenId?: string;
+      fallbackPrice?: number;
+    },
+    {
+      label: string;
+      tone: "yes" | "no";
+      tokenId?: string;
+      fallbackPrice?: number;
+    },
   ];
   subtitle?: string | null;
   summaryLeading?: string;
@@ -120,7 +132,12 @@ export function BinaryWidgetCard({
               key={`${action.label}:${index}`}
               className={cn(styles.action, action.tone === "yes" ? styles.actionYes : styles.actionNo)}
             >
-              {action.label}
+              <OutcomeActionContent
+                label={action.label}
+                tokenId={action.tokenId}
+                fallbackPrice={action.fallbackPrice}
+                showPriceOnHover={isYesNoOutcomeLabel(action.label)}
+              />
             </span>
           ))}
         </div>

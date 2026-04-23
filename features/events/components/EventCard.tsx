@@ -24,6 +24,8 @@ function EventCardInner({ event }: EventCardProps) {
           actions: row.actions.map((action) => ({
             label: action.label,
             tone: action.tone,
+            tokenId: action.tokenId,
+            fallbackPrice: action.fallbackPrice,
           })) as [typeof row.actions[number], typeof row.actions[number]],
         }))}
         volumeLabel={model.footerLeading}
@@ -46,6 +48,8 @@ function EventCardInner({ event }: EventCardProps) {
       actions={model.body.actions.map((action) => ({
         label: action.label,
         tone: action.tone,
+        tokenId: action.tokenId,
+        fallbackPrice: action.fallbackPrice,
       })) as [typeof model.body.actions[number], typeof model.body.actions[number]]}
       footerVolume={model.footerLeading}
       footerTrailing={

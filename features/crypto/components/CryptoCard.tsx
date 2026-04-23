@@ -23,8 +23,18 @@ export function CryptoCard({ card, emphasis }: CryptoCardProps) {
           probabilityTokenId: snippet.tokenId ?? undefined,
           probabilityFallback: snippet.fallbackPrice,
           actions: [
-            { label: snippet.primaryOutcomeLabel, tone: "yes" as const },
-            { label: snippet.secondaryOutcomeLabel, tone: "no" as const },
+            {
+              label: snippet.primaryOutcomeLabel,
+              tone: "yes" as const,
+              tokenId: snippet.tokenId ?? undefined,
+              fallbackPrice: snippet.fallbackPrice,
+            },
+            {
+              label: snippet.secondaryOutcomeLabel,
+              tone: "no" as const,
+              tokenId: snippet.secondaryTokenId ?? undefined,
+              fallbackPrice: snippet.secondaryFallbackPrice,
+            },
           ],
         }))}
         volumeLabel={card.volumeLabel}
@@ -53,8 +63,18 @@ export function CryptoCard({ card, emphasis }: CryptoCardProps) {
         tokenId: card.primarySnippet.tokenId ?? undefined,
       }}
       actions={[
-        { label: card.primarySnippet.primaryOutcomeLabel, tone: "yes" },
-        { label: card.primarySnippet.secondaryOutcomeLabel, tone: "no" },
+        {
+          label: card.primarySnippet.primaryOutcomeLabel,
+          tone: "yes",
+          tokenId: card.primarySnippet.tokenId ?? undefined,
+          fallbackPrice: card.primarySnippet.fallbackPrice,
+        },
+        {
+          label: card.primarySnippet.secondaryOutcomeLabel,
+          tone: "no",
+          tokenId: card.primarySnippet.secondaryTokenId ?? undefined,
+          fallbackPrice: card.primarySnippet.secondaryFallbackPrice,
+        },
       ]}
       showLiveDot={card.showLiveDot}
       liveLabel="LIVE"

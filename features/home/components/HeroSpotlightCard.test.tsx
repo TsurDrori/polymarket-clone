@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { HeroSpotlightModel } from "../selectors";
 import { HeroSpotlightCard } from "./HeroSpotlightCard";
@@ -111,8 +111,14 @@ describe("HeroSpotlightCard", () => {
 
     const yesButton = screen.getByRole("link", { name: "Yes" });
     const noButton = screen.getByRole("link", { name: "No" });
+    const yesAction = within(yesButton).getByText("Yes").closest('[data-price-swap="true"]');
+    const noAction = within(noButton).getByText("No").closest('[data-price-swap="true"]');
 
     expect(yesButton.getAttribute("data-hero-outcome-button")).toBe("yes");
     expect(noButton.getAttribute("data-hero-outcome-button")).toBe("no");
+    expect(yesAction).toBeTruthy();
+    expect(noAction).toBeTruthy();
+    expect(within(yesAction as HTMLElement).getByText("49%")).toBeTruthy();
+    expect(within(noAction as HTMLElement).getByText("51%")).toBeTruthy();
   });
 });

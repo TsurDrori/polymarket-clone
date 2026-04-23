@@ -1,0 +1,36 @@
+.root {
+  display: grid;
+  grid-template-areas: "stack";
+  place-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.label,
+.price {
+  grid-area: stack;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    opacity 140ms ease-out,
+    transform 140ms ease-out;
+}
+
+.price {
+  opacity: 0;
+  transform: translateY(2px) scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .root[data-price-swap="true"]:hover .label {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.98);
+  }
+
+  .root[data-price-swap="true"]:hover .price {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

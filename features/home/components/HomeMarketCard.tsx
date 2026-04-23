@@ -36,6 +36,15 @@ const renderPct = (tokenId: string | undefined, fallbackPrice: number) =>
 
 const firstWord = (value: string) => value.trim().split(/\s+/)[0] ?? value;
 
+const getCompactSportsActionLabel = (competitor: HomeSportsLiveCardModel["competitors"][number]) => {
+  const shortLabel = competitor.shortName.trim();
+  if (shortLabel.length > 0 && (shortLabel.length <= 10 || !shortLabel.includes(" "))) {
+    return shortLabel;
+  }
+
+  return firstWord(competitor.name);
+};
+
 const CRYPTO_ASSET_SYMBOLS: Record<string, string> = {
   Bitcoin: "BTC",
   Ethereum: "ETH",
@@ -138,8 +147,18 @@ function HomeGroupedCardBody({ model }: { model: HomeGroupedCardModel }) {
         probabilityTokenId: row.tokenId,
         probabilityFallback: row.price,
         actions: [
-          { label: row.actions[0].label, tone: "yes" as const },
-          { label: row.actions[1].label, tone: "no" as const },
+          {
+            label: row.actions[0].label,
+            tone: "yes" as const,
+            tokenId: row.actions[0].tokenId,
+            fallbackPrice: row.actions[0].price,
+          },
+          {
+            label: row.actions[1].label,
+            tone: "no" as const,
+            tokenId: row.actions[1].tokenId,
+            fallbackPrice: row.actions[1].price,
+          },
         ],
       }))}
       volumeLabel={model.volumeLabel}
@@ -152,6 +171,34 @@ function buildHomeCryptoWidgetModel(
 ) {
   const { headline, detail } = splitEventTitle(model.title);
   const cryptoHeadline = buildCryptoHeadline(headline, detail, model.assetLabel ?? undefined);
+  const actions: [
+    {
+      label: string;
+      tone: "yes";
+      tokenId?: string;
+      fallbackPrice: number;
+    },
+    {
+      label: string;
+      tone: "no";
+      tokenId?: string;
+      fallbackPrice: number;
+    },
+  ] = [
+    {
+      label: model.actions[0].label,
+      tone: "yes",
+      tokenId: model.actions[0].tokenId,
+      fallbackPrice: model.actions[0].price,
+    },
+    {
+      label: model.actions[1].label,
+      tone: "no",
+      tokenId: model.actions[1].tokenId,
+      fallbackPrice: model.actions[1].price,
+    },
+  ];
+
   return {
     title: cryptoHeadline,
     probability: {
@@ -160,10 +207,7 @@ function buildHomeCryptoWidgetModel(
       label: "Up",
       size: "sm" as const,
     },
-    actions: [
-      { label: model.actions[0].label, tone: "yes" as const },
-      { label: model.actions[1].label, tone: "no" as const },
-    ] as const,
+    actions,
     showLiveDot: true,
     liveLabel: "LIVE",
     footerTrailing: model.assetLabel ?? undefined,
@@ -227,7 +271,7 @@ function HomeSportsLiveCardBody({
           {model.competitors.slice(0, 2).map((competitor, index) => (
             <SportsAction
               key={`${competitor.key}:action`}
-              label={firstWord(competitor.name)}
+              label={getCompactSportsActionLabel(competitor)}
               tone={index === 0 ? "primary" : "secondary"}
             />
           ))}
@@ -284,8 +328,18 @@ export function HomeMarketCard({
             label: "chance",
           }}
           actions={[
-            { label: model.actions[0].label, tone: "yes" },
-            { label: model.actions[1].label, tone: "no" },
+            {
+              label: model.actions[0].label,
+              tone: "yes",
+              tokenId: model.actions[0].tokenId,
+              fallbackPrice: model.actions[0].price,
+            },
+            {
+              label: model.actions[1].label,
+              tone: "no",
+              tokenId: model.actions[1].tokenId,
+              fallbackPrice: model.actions[1].price,
+            },
           ]}
           summaryLeading={model.volumeLabel}
           summaryTrailing={formatChanceDelta(model.primaryChange)}
@@ -305,7 +359,7 @@ export function HomeMarketCard({
           href={model.href}
           imageSrc={model.imageSrc}
           probability={cryptoWidget.probability}
-          actions={cryptoWidget.actions as [{ label: string; tone: "yes" | "no" }, { label: string; tone: "yes" | "no" }]}
+          actions={cryptoWidget.actions}
           showLiveDot={cryptoWidget.showLiveDot}
           liveLabel={cryptoWidget.liveLabel}
           footerTrailing={cryptoWidget.footerTrailing}

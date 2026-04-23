@@ -71,6 +71,8 @@ export type CryptoCardSnippet = {
   label: string;
   tokenId: string | null;
   fallbackPrice: number;
+  secondaryTokenId: string | null;
+  secondaryFallbackPrice: number;
   bestBid: number;
   bestAsk: number;
   primaryOutcomeLabel: string;
@@ -364,6 +366,10 @@ const toSnippet = (market: PolymarketMarket): CryptoCardSnippet => ({
   label: getMarketLabel(market),
   tokenId: market.clobTokenIds[0] || null,
   fallbackPrice: getYesPrice(market),
+  secondaryTokenId: market.clobTokenIds[1] || null,
+  secondaryFallbackPrice:
+    market.outcomePrices[1] ??
+    Math.max(0, Math.min(1, 1 - getYesPrice(market))),
   bestBid: market.bestBid,
   bestAsk: market.bestAsk,
   primaryOutcomeLabel: market.outcomes[0] || "Yes",
