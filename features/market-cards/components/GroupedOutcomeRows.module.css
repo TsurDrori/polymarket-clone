@@ -27,6 +27,16 @@
   overflow: hidden;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--text-link-underline-thickness);
+  text-underline-offset: var(--text-link-underline-offset);
+  text-decoration-skip-ink: auto;
+}
+
+.row:hover .label,
+.label:hover {
+  text-decoration-color: currentColor;
 }
 
 .meta {

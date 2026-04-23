@@ -78,6 +78,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--text-link-underline-thickness);
+  text-underline-offset: var(--text-link-underline-offset);
+  text-decoration-skip-ink: auto;
+}
+
+.sportsMatchupRow:hover .sportsMatchupName,
+.sportsMatchupName:hover {
+  text-decoration-color: currentColor;
 }
 
 .sportsMatchupPrice {
