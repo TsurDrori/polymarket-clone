@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { listEvents, listEventsKeyset } from "@/features/events/api/gamma";
 import { HomePage } from "@/features/home/HomePage";
+import { getHomeChipFeedEvents, HOME_CHIP_EVENT_LIMIT } from "@/features/home/chipFeed";
 import {
   buildHomeExploreCardEntries,
 } from "@/features/home/components/homeCardModel";
@@ -19,7 +20,7 @@ import { isEventVisible } from "@/shared/lib/tags";
 import styles from "./page.module.css";
 
 const HOME_TOP_EVENT_SEED_LIMIT = 8;
-const HOME_INITIAL_EXPLORE_LIMIT = 24;
+const HOME_INITIAL_EXPLORE_LIMIT = HOME_CHIP_EVENT_LIMIT;
 const HOME_POLITICS_SEED_TAG = "united-states";
 const HOME_WORLD_SEED_TAG = "world";
 const HOME_SECTOR_SEED_LIMIT = 6;
@@ -31,7 +32,16 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [topFeed, politicsEvents, worldEvents, cryptoEvents, sportsEvents, cryptoCatalog, sportsGameEvents] =
+  const [
+    topFeed,
+    allMarketsFeed,
+    politicsEvents,
+    worldEvents,
+    cryptoEvents,
+    sportsEvents,
+    cryptoCatalog,
+    sportsGameEvents,
+  ] =
     await Promise.all([
     listEventsKeyset({
       limit: HOME_TOP_EVENT_SEED_LIMIT,
@@ -39,6 +49,7 @@ export default async function Home() {
       ascending: false,
       revalidate: 30,
     }),
+    getHomeChipFeedEvents("all"),
     listEvents({
       limit: HOME_SECTOR_SEED_LIMIT,
       order: "volume_24hr",
@@ -96,8 +107,9 @@ export default async function Home() {
   const model = buildHomePageModel(visible, {
     exploreLimit: HOME_INITIAL_EXPLORE_LIMIT,
   });
+  const initialExploreEvents = allMarketsFeed.events.filter(isEventVisible);
   const initialExploreCards = buildHomeExploreCardEntries({
-    events: model.exploreEvents,
+    events: initialExploreEvents,
     cryptoEvents: cryptoCatalog.events,
     sportsEvents: sportsGameEvents.filter((event) => event.teams.length >= 2),
     limit: HOME_INITIAL_EXPLORE_LIMIT,
@@ -120,7 +132,7 @@ export default async function Home() {
       <HomePage
         model={model}
         initialExploreCards={initialExploreCards}
-        initialExploreCursor={topFeed.nextCursor}
+        initialExploreCursor={allMarketsFeed.nextCursor}
       />
     </main>
   );

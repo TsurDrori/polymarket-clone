@@ -201,6 +201,44 @@ describe("homeCardModel", () => {
     ]);
   });
 
+  it("compacts sports live metadata for the home card", () => {
+    const event = buildEvent(
+      "T1 vs Gen.G",
+      [
+        { id: "1", slug: "sports", label: "Sports" },
+        { id: "2", slug: "league-of-legends", label: "League of Legends" },
+      ],
+      {
+        live: true,
+        period: "Map 1",
+        score: "0-0",
+        volume24hr: 13_653_342,
+        eventMetadata: { league: "league-of-legends", tournament: "LCK Spring" },
+        teams: [
+          { name: "T1", abbreviation: "T1" },
+          { name: "Gen.G", abbreviation: "GEN" },
+        ],
+        markets: [
+          buildMarket({
+            id: "t1-geng",
+            question: "T1 vs Gen.G",
+            outcomes: ["T1", "Gen.G"],
+            sportsMarketType: "moneyline",
+          }),
+        ],
+      },
+    );
+
+    const model = buildHomeCardModel(event);
+
+    expect(model.kind).toBe("sports-live");
+    if (model.kind !== "sports-live") return;
+
+    expect(model.volumeLabel).toBe("$13M Vol.");
+    expect(model.metaLabels[0]).toBe("LoL");
+    expect(model.competitors.every((competitor) => competitor.score === undefined)).toBe(true);
+  });
+
   it("curates the first four explore cards around politics, world, crypto, and sports", () => {
     const politics = buildEvent(
       "Politics card",

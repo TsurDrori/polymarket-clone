@@ -55,6 +55,7 @@ type ProjectedSurfaceWindowState<T> = {
 
 type SurfaceWindowState = {
   resetKey: string;
+  itemIds: ReadonlyArray<string>;
   visibleCount: number;
   committedVisibleIds: ReadonlyArray<string>;
   lastReorderAt: number;
@@ -81,11 +82,20 @@ const createSurfaceWindowState = (
   initialVisibleCount: number,
 ): SurfaceWindowState => ({
   resetKey,
+  itemIds: [...itemIds],
   visibleCount: initialVisibleCount,
   committedVisibleIds: itemIds.slice(0, initialVisibleCount),
   lastReorderAt: 0,
   highlightedIds: [],
 });
+
+const isAppendedItemSet = (
+  previousItemIds: ReadonlyArray<string>,
+  nextItemIds: ReadonlyArray<string>,
+): boolean =>
+  previousItemIds.length > 0 &&
+  nextItemIds.length >= previousItemIds.length &&
+  previousItemIds.every((id, index) => nextItemIds[index] === id);
 
 const resolveSurfaceWindowState = (
   state: SurfaceWindowState,
@@ -95,7 +105,15 @@ const resolveSurfaceWindowState = (
 ): SurfaceWindowState =>
   state.resetKey === resetKey
     ? state
-    : createSurfaceWindowState(resetKey, itemIds, initialVisibleCount);
+    : isAppendedItemSet(state.itemIds, itemIds)
+      ? {
+          ...state,
+          resetKey,
+          itemIds: [...itemIds],
+          visibleCount: clampVisibleCount(itemIds.length, state.visibleCount),
+          committedVisibleIds: state.committedVisibleIds.filter((id) => itemIds.includes(id)),
+        }
+      : createSurfaceWindowState(resetKey, itemIds, initialVisibleCount);
 
 const getPrefersReducedMotion = (): boolean =>
   typeof window !== "undefined" &&

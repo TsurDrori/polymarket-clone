@@ -4,8 +4,9 @@
   justify-content: space-between;
   gap: 12px;
   min-height: 20px;
+  min-width: 0;
   width: 100%;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .meta {
@@ -14,11 +15,12 @@
   gap: 6px;
   min-width: 0;
   flex: 1 1 auto;
-  overflow: visible;
+  overflow: hidden;
   white-space: nowrap;
 }
 
 .item {
+  flex: 0 1 auto;
   min-width: 0;
   color: var(--text-muted);
   font-size: 13px;
@@ -27,6 +29,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.meta > .item:last-child {
+  flex: 1 1 auto;
 }
 
 .item[data-tone="live"] {

@@ -54,10 +54,17 @@
 }
 
 .link {
+  width: fit-content;
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.4;
-  transition: color 120ms ease-out;
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--text-link-underline-thickness);
+  text-underline-offset: var(--text-link-underline-offset);
+  text-decoration-color: transparent;
+  transition:
+    color 120ms ease-out,
+    text-decoration-color 120ms ease-out;
 }
 
 .marketLink {
@@ -75,6 +82,7 @@
 
 .link:hover {
   color: var(--text-primary);
+  text-decoration-color: currentColor;
 }
 
 .legal {

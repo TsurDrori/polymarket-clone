@@ -92,6 +92,56 @@ describe("useProjectedSurfaceWindow", () => {
     expect(result.current.hasMore).toBe(true);
   });
 
+  it("preserves expanded visibility when the backing item ids are appended", async () => {
+    const { result, rerender } = renderHook(
+      ({ currentItems, currentReducedMotion = true }) =>
+        useProjectedSurfaceWindow({
+          items: currentItems,
+          getItemId: (item) => item.id,
+          getItemTokenIds: () => [],
+          getItemLiveScore: (item) => item.score,
+          policy: TEST_POLICY,
+          reducedMotion: currentReducedMotion,
+        }),
+      {
+        initialProps: {
+          currentItems: [
+            { id: "a", score: 1 },
+            { id: "b", score: 2 },
+            { id: "c", score: 3 },
+          ],
+          currentReducedMotion: true,
+        },
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.visibleIds).toEqual(["a", "b"]);
+    });
+
+    act(() => {
+      result.current.showMore();
+    });
+
+    await waitFor(() => {
+      expect(result.current.visibleIds).toEqual(["a", "b", "c"]);
+    });
+
+    rerender({
+      currentItems: [
+        { id: "a", score: 1 },
+        { id: "b", score: 2 },
+        { id: "c", score: 3 },
+        { id: "d", score: 4 },
+        { id: "e", score: 5 },
+      ],
+      currentReducedMotion: true,
+    });
+
+    expect(result.current.visibleIds).toEqual(["a", "b", "c"]);
+    expect(result.current.hasMore).toBe(true);
+  });
+
   it("keeps the base order and suppresses highlight churn in reduced motion mode", async () => {
     const { result, rerender } = renderProjectedSurfaceWindow([
       { id: "a", score: 1 },

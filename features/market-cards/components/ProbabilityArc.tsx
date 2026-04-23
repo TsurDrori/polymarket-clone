@@ -56,7 +56,7 @@ export function ProbabilityArc({
         {
           "--arc-width": `${width}px`,
           "--arc-height": `${height}px`,
-          "--arc-copy-offset": size === "sm" ? "-28px" : "-31px",
+          "--arc-copy-offset": size === "sm" ? "-26px" : "-29px",
           "--arc-color": resolvedColor,
           "--arc-value-color": resolvedColor,
         } as CSSProperties

@@ -108,7 +108,8 @@
 
 .languageButton,
 .howItWorks,
-.authLink {
+.authLink,
+.signupButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -144,6 +145,14 @@
   color: var(--accent-brand);
 }
 
+.howItWorks,
+.authLink {
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--text-link-underline-thickness);
+  text-underline-offset: var(--text-link-underline-offset);
+  text-decoration-color: transparent;
+}
+
 .signupButton {
   display: inline-flex;
   align-items: center;
@@ -161,13 +170,18 @@
 .menuButton,
 .iconButton,
 .themeRow,
-.menuLink {
+.menuLink,
+.languageButton,
+.howItWorks,
+.authLink,
+.signupButton {
   transition:
     transform 160ms ease,
     border-color 160ms ease,
     background-color 160ms ease,
     color 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    text-decoration-color 160ms ease;
 }
 
 .menuButton,
@@ -197,6 +211,18 @@
 .iconButton:hover,
 .signupButton:hover {
   transform: translateY(-1px);
+}
+
+.signupButton:hover {
+  background: var(--accent-brand-hover);
+}
+
+.howItWorks:hover,
+.howItWorks:focus-visible,
+.authLink:hover,
+.authLink:focus-visible {
+  color: var(--accent-brand-hover);
+  text-decoration-color: currentColor;
 }
 
 .menuButton:focus-visible,

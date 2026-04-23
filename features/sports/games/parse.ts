@@ -154,7 +154,7 @@ const LEAGUE_LABEL_OVERRIDES: Record<string, string> = {
   epl: "EPL",
   wta: "WTA",
   atp: "ATP",
-  "league-of-legends": "League of Legends",
+  "league-of-legends": "LoL",
   "counter-strike-2": "Counter-Strike 2",
   "dota-2": "Dota 2",
   "premier-league": "EPL",
