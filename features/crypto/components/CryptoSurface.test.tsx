@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { Provider } from "jotai";
 import type { ImgHTMLAttributes } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -146,9 +146,12 @@ describe("CryptoSurface", () => {
 
     expect(screen.getByRole("heading", { name: "Crypto" })).toBeTruthy();
     expect(screen.getByRole("navigation", { name: /crypto market families/i })).toBeTruthy();
-    expect(screen.getByLabelText(/crypto filters/i)).toBeTruthy();
-    expect(screen.getAllByRole("heading", { name: "Markets" })).toHaveLength(1);
-    expect(screen.getAllByRole("heading", { name: "Assets" })).toHaveLength(1);
+    const rail = screen.getByLabelText(/crypto filters/i);
+    expect(rail).toBeTruthy();
+    expect(within(rail).queryByRole("heading", { name: "Markets" })).toBeNull();
+    expect(within(rail).queryByRole("heading", { name: "Assets" })).toBeNull();
+    expect(within(rail).getByRole("link", { name: /Bitcoin/i })).toBeTruthy();
+    expect(within(rail).getByRole("link", { name: /Ethereum/i })).toBeTruthy();
     expect(screen.getAllByRole("article")).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: /price/i }).length).toBeGreaterThan(0);
   });

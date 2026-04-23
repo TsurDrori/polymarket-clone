@@ -1,6 +1,16 @@
-import clsx from "clsx";
+"use client";
+
+import type { CSSProperties } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import type { SportsLeagueChip } from "@/features/sports/games/parse";
+import { cn } from "@/shared/lib/cn";
+import {
+  buildSportsDesktopRailModel,
+  type SportsRailGroup,
+  type SportsRailLeaf,
+} from "./railTaxonomy";
 import styles from "./SportsLeagueRail.module.css";
 
 type SportsLeagueRailProps = {
@@ -9,67 +19,188 @@ type SportsLeagueRailProps = {
   className?: string;
 };
 
-const LEAGUE_MARKS: Record<string, string> = {
-  nba: "NB",
-  ucl: "UC",
-  nhl: "NH",
-  ufc: "UF",
-  nfl: "NF",
-  mlb: "ML",
-  epl: "EP",
-  atp: "AT",
-  wta: "WT",
-  tennis: "TN",
-  cricket: "CR",
-  rugby: "RG",
-  golf: "GF",
-  formula1: "F1",
-  football: "FB",
-  soccer: "SC",
-  baseball: "BS",
-  hockey: "HK",
-  basketball: "BK",
-  valorant: "VL",
-  "counter-strike-2": "CS",
-  "league-of-legends": "LG",
-  "dota-2": "D2",
-};
+function RailMark({
+  label,
+  mark,
+  bg,
+  fg,
+}: {
+  label: string;
+  mark: string;
+  bg: string;
+  fg: string;
+}) {
+  return (
+    <span
+      className={styles.mark}
+      aria-hidden="true"
+      title={label}
+      style={
+        {
+          "--rail-mark-bg": bg,
+          "--rail-mark-fg": fg,
+        } as CSSProperties
+      }
+    >
+      {mark}
+    </span>
+  );
+}
 
-const getLeagueMark = (slug: string, label: string): string =>
-  LEAGUE_MARKS[slug] ??
-  (label.replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "SP");
+function LeafRow({
+  item,
+  className,
+}: {
+  item: SportsRailLeaf;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={item.href}
+      className={cn(styles.row, styles.leafRow, className)}
+      aria-current={item.active ? "page" : undefined}
+      data-active={item.active || undefined}
+    >
+      <span className={styles.rowContent}>
+        <RailMark
+          label={item.label}
+          mark={item.mark}
+          bg={item.tone.bg}
+          fg={item.tone.fg}
+        />
+        <span className={styles.rowLabel}>{item.label}</span>
+      </span>
+      {item.count !== undefined ? <span className={styles.rowCount}>{item.count}</span> : null}
+    </Link>
+  );
+}
+
+function GroupRow({
+  item,
+  open,
+  onToggle,
+}: {
+  item: SportsRailGroup;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const groupId = useId();
+
+  return (
+    <div className={styles.group} data-open={open || undefined} data-active={item.active || undefined}>
+      <button
+        type="button"
+        className={cn(styles.row, styles.groupButton)}
+        aria-expanded={open}
+        aria-controls={groupId}
+        onClick={onToggle}
+      >
+        <span className={styles.rowContent}>
+          <RailMark
+            label={item.label}
+            mark={item.mark}
+            bg={item.tone.bg}
+            fg={item.tone.fg}
+          />
+          <span className={styles.rowLabel}>{item.label}</span>
+        </span>
+        <ChevronDown className={styles.groupChevron} size={16} strokeWidth={2.1} />
+      </button>
+
+      <div id={groupId} className={styles.groupChildren} hidden={!open}>
+        {item.children.map((child) => (
+          <LeafRow key={`${item.slug}:${child.slug}`} item={child} className={styles.childRow} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function SportsLeagueRail({
   chips,
   activeLeagueSlug,
   className,
 }: SportsLeagueRailProps) {
-  return (
-    <nav className={clsx(styles.rail, className)} aria-label="Sports leagues">
-      <Link
-        href="/sports/live"
-        className={styles.chip}
-        data-active={activeLeagueSlug === undefined}
-      >
-        <span>All Sports</span>
-      </Link>
+  const desktopModel = buildSportsDesktopRailModel({
+    chips,
+    activeLeagueSlug,
+  });
 
-      {chips.map((chip) => (
+  const initialOpenGroups = desktopModel.groups
+    .filter((group) => group.active || (!activeLeagueSlug && group.slug === "football"))
+    .map((group) => group.slug);
+
+  const [openGroups, setOpenGroups] = useState<Set<string>>(
+    () => new Set(initialOpenGroups),
+  );
+
+  useEffect(() => {
+    setOpenGroups(new Set(initialOpenGroups));
+  }, [activeLeagueSlug, chips]);
+
+  return (
+    <div className={cn(styles.rail, className)}>
+      <nav className={styles.mobileRail} aria-label="Sports leagues">
         <Link
-          key={chip.slug}
-          href={chip.href}
-          className={styles.chip}
-          data-active={chip.active || chip.slug === activeLeagueSlug}
+          href="/sports/live"
+          className={styles.mobileChip}
+          aria-current={activeLeagueSlug === undefined || activeLeagueSlug === "" ? "page" : undefined}
+          data-active={activeLeagueSlug === undefined || activeLeagueSlug === ""}
         >
-          <span className={styles.labelWrap}>
-            <span className={styles.mark} aria-hidden="true">
-              {getLeagueMark(chip.slug, chip.label)}
-            </span>
-            <span>{chip.label}</span>
-          </span>
-          <span className={styles.count}>{chip.count}</span>
+          <span>All Sports</span>
         </Link>
-      ))}
-    </nav>
+
+        {chips.map((chip) => (
+          <Link
+            key={chip.slug}
+            href={chip.href}
+            className={styles.mobileChip}
+            aria-current={chip.active || chip.slug === activeLeagueSlug ? "page" : undefined}
+            data-active={chip.active || chip.slug === activeLeagueSlug}
+          >
+            <span>{chip.label}</span>
+            <span className={styles.mobileCount}>{chip.count}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <nav className={styles.desktopRail} aria-label="Sports leagues">
+        <div className={styles.desktopSection}>
+          {desktopModel.topLeafs.map((item) => (
+            <LeafRow key={item.slug} item={item} />
+          ))}
+        </div>
+
+        <div className={styles.desktopSection}>
+          {desktopModel.groups.map((item) => (
+            <GroupRow
+              key={item.slug}
+              item={item}
+              open={openGroups.has(item.slug)}
+              onToggle={() => {
+                setOpenGroups((current) => {
+                  const next = new Set(current);
+                  if (next.has(item.slug)) {
+                    next.delete(item.slug);
+                  } else {
+                    next.add(item.slug);
+                  }
+
+                  return next;
+                });
+              }}
+            />
+          ))}
+        </div>
+
+        {desktopModel.trailingLeafs.length > 0 ? (
+          <div className={styles.desktopSection}>
+            {desktopModel.trailingLeafs.map((item) => (
+              <LeafRow key={item.slug} item={item} />
+            ))}
+          </div>
+        ) : null}
+      </nav>
+    </div>
   );
 }

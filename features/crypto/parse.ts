@@ -169,7 +169,7 @@ export const TIME_LABELS: Record<CryptoTimeBucket, string> = {
 };
 
 export const ASSET_LABELS: Record<CryptoAsset, string> = {
-  all: "All assets",
+  all: "All",
   bitcoin: "Bitcoin",
   ethereum: "Ethereum",
   solana: "Solana",

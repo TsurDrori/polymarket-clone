@@ -134,7 +134,7 @@
 
 @media (min-width: 1024px) {
   .layout {
-    grid-template-columns: 176px minmax(0, 1fr);
+    grid-template-columns: 190px minmax(0, 1fr);
     align-items: start;
     gap: 24px;
   }
@@ -155,12 +155,12 @@
 
   .sidebar {
     position: sticky;
-    top: 104px;
+    top: 116px;
   }
 }
 
 @media (min-width: 1360px) {
   .layout {
-    grid-template-columns: 176px minmax(0, 1fr) 292px;
+    grid-template-columns: 190px minmax(0, 1fr) 292px;
   }
 }
