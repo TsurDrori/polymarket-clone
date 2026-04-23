@@ -533,10 +533,10 @@ export const compareCryptoEventsForDisplay = (
 
   return (
     Number(rightScore.isTradable) - Number(leftScore.isTradable) ||
+    rightScore.volume - leftScore.volume ||
     Number(rightScore.isLive) - Number(leftScore.isLive) ||
     Number(rightScore.isOpenPrice) - Number(leftScore.isOpenPrice) ||
     leftScore.timeBucketPriority - rightScore.timeBucketPriority ||
-    rightScore.volume - leftScore.volume ||
     Number(rightScore.isFuture) - Number(leftScore.isFuture) ||
     leftScore.futureDistance - rightScore.futureDistance
   );
@@ -622,7 +622,7 @@ const buildAssetOptions = (
 export const buildCryptoWorkingSet = (
   events: ReadonlyArray<PolymarketEvent>,
 ): CryptoWorkingSet => {
-  const cards = [...events].sort(compareCryptoEventsForDisplay).map(buildCardModel);
+  const cards = events.map(buildCardModel);
 
   return {
     cards,

@@ -127,7 +127,7 @@ describe("crypto parser", () => {
     expect(deriveCryptoTimeBucket(event)).toBe("5m");
   });
 
-  it("surfaces live short-horizon up/down cards ahead of long-dated targets", () => {
+  it("keeps the general crypto working set volume-led instead of forcing all 5 minute cards first", () => {
     const bitcoinYearlyTarget = buildEvent({
       id: "btc-yearly-target",
       slug: "what-price-will-bitcoin-hit-before-2027",
@@ -138,6 +138,7 @@ describe("crypto parser", () => {
         { id: "3", slug: "yearly", label: "Yearly" },
         { id: "4", slug: "hit-price", label: "Hit Price" },
       ],
+      volume24hr: 5_800_000,
       markets: [
         buildMarket("btc-yearly-target-market", {
           groupItemTitle: "↑ 150,000",
@@ -154,6 +155,7 @@ describe("crypto parser", () => {
         { id: "6", slug: "bitcoin", label: "Bitcoin" },
         { id: "7", slug: "up-or-down", label: "Up / Down" },
       ],
+      volume24hr: 220,
       markets: [
         buildMarket("btc-five-minute-market", {
           groupItemTitle: undefined,
@@ -165,8 +167,8 @@ describe("crypto parser", () => {
 
     const workingSet = buildCryptoWorkingSet([bitcoinYearlyTarget, bitcoinFiveMinute]);
 
-    expect(workingSet.cards[0]?.id).toBe("btc-five-minute");
-    expect(workingSet.cards[0]?.timeBucket).toBe("5m");
+    expect(workingSet.cards[0]?.id).toBe("btc-yearly-target");
+    expect(workingSet.cards[1]?.id).toBe("btc-five-minute");
   });
 
   it("omits unsupported controls while keeping unsupported events in the all feed", () => {
