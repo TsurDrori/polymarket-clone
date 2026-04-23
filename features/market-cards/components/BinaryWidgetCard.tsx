@@ -78,6 +78,7 @@ export function BinaryWidgetCard({
   return (
     <BinarySingleCardFrame
       href={href}
+      cardClassName={styles.card}
       primarySpansSecondary
       emphasis={emphasis}
       primarySlot={

@@ -173,6 +173,16 @@
   border-radius: var(--market-card-radius);
   background: var(--bg-surface);
   box-shadow: var(--market-card-shadow);
+  transition:
+    transform 120ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 100ms ease-in-out;
+}
+
+.cardHero:is(:hover, :focus-within),
+.cardList:is(:hover, :focus-within),
+.cardCompactBar:is(:hover, :focus-within) {
+  transform: translateY(-1px);
+  box-shadow: var(--market-card-shadow-hover);
 }
 
 .cardHero,
@@ -372,5 +382,17 @@
 
   .outcomeValueWrap {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardHero,
+  .cardList,
+  .cardCompactBar,
+  .cardHero:is(:hover, :focus-within),
+  .cardList:is(:hover, :focus-within),
+  .cardCompactBar:is(:hover, :focus-within) {
+    transform: none;
+    transition: box-shadow 100ms ease-in-out;
   }
 }

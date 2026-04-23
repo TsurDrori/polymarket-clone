@@ -10,7 +10,7 @@
     transform 180ms ease;
 }
 
-.card:hover {
+.card:is(:hover, :focus-within) {
   box-shadow: var(--market-card-shadow-hover);
   transform: translateY(-1px);
 }
@@ -80,6 +80,15 @@
   overflow: hidden;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--text-link-underline-thickness);
+  text-underline-offset: var(--text-link-underline-offset);
+  text-decoration-skip-ink: auto;
+}
+
+.link:is(:hover, :focus-visible) .title {
+  text-decoration-color: currentColor;
 }
 
 .body {
@@ -182,7 +191,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .card:hover,
+  .card:is(:hover, :focus-within),
   .cardPromoted,
   .liveDot,
   .liveDot::after {

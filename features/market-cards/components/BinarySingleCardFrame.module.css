@@ -12,7 +12,7 @@
     transform 180ms ease;
 }
 
-.card:hover {
+.card:is(:hover, :focus-within) {
   box-shadow: var(--market-card-shadow-hover);
   transform: translateY(-1px);
 }
@@ -78,7 +78,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .card:hover,
+  .card:is(:hover, :focus-within),
   .cardPromoted {
     animation: none;
     transform: none;

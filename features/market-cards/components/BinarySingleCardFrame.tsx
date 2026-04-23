@@ -9,6 +9,7 @@ type BinarySingleCardFrameProps = {
   actionsSlot: React.ReactNode;
   footerSlot: React.ReactNode;
   primarySpansSecondary?: boolean;
+  cardClassName?: string;
   emphasis?: {
     isLiveLeader?: boolean;
     isPromoted?: boolean;
@@ -22,12 +23,14 @@ export function BinarySingleCardFrame({
   actionsSlot,
   footerSlot,
   primarySpansSecondary = false,
+  cardClassName,
   emphasis,
 }: BinarySingleCardFrameProps) {
   return (
     <article
       className={cn(
         styles.card,
+        cardClassName,
         emphasis?.isLiveLeader && styles.cardLeader,
         emphasis?.isPromoted && styles.cardPromoted,
       )}
