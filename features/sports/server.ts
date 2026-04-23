@@ -1,4 +1,8 @@
 import { notFound } from "next/navigation";
+import {
+  buildHomeEventCardEntries,
+  type HomeCardEntry,
+} from "@/features/home/components/homeCardModel";
 import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import { getSportsCardWorkingSet } from "./futures/api";
 import { getSportsLeagueDashboardPayload, type SportsFuturesLeagueDashboardPayload } from "./futures/dashboardModels";
@@ -7,10 +11,12 @@ import {
   buildHydrationEvents,
   buildSportsCards,
   buildSportsLeagueChips as buildSportsCardLeagueChips,
+  getSportsCardLeague,
   selectCardsByLeague,
   type SportsCardModel,
   type SportsLeagueChip as SportsCardLeagueChip,
 } from "./futures/parse";
+import type { PolymarketEvent } from "@/features/events/types";
 import {
   buildLeagueRouteSections,
   buildLiveRouteSections,
@@ -53,6 +59,17 @@ export type SportsLeagueCardsPayload = {
   leagueChips?: ReadonlyArray<SportsCardLeagueChip>;
 };
 
+export type SportsLeaguePropsPayload = {
+  initialItems: ReadonlyArray<HomeCardEntry>;
+  items: ReadonlyArray<HomeCardEntry>;
+  hasMoreItems: boolean;
+  hydrationSeeds: ReadonlyArray<PriceHydrationSeed>;
+  normalizedLeague: string;
+  title: string;
+  gamesHref: string;
+  propsHref: string;
+};
+
 export type SportsFuturesIndexPagePayload = {
   dashboard: SportsFuturesLeagueDashboardPayload;
 };
@@ -67,6 +84,12 @@ type SportsLeagueCardsCatalog = {
   allCards: ReadonlyArray<SportsCardModel>;
   leagueCards: ReadonlyArray<SportsCardModel>;
   normalizedLeague: string;
+};
+
+type SportsLeaguePropsCatalog = {
+  leagueEvents: ReadonlyArray<PolymarketEvent>;
+  normalizedLeague: string;
+  title: string;
 };
 
 async function getSportsLeagueGamesCatalog(league: string): Promise<SportsLeagueGamesCatalog> {
@@ -110,6 +133,33 @@ async function getSportsLeagueCardsCatalog({
     allCards,
     leagueCards,
     normalizedLeague: leagueCards[0]!.league.slug,
+  };
+}
+
+const isSportsTaggedEvent = (event: PolymarketEvent): boolean =>
+  event.tags.some((tag) => tag.slug.trim().toLowerCase() === "sports");
+
+async function getSportsLeaguePropsCatalog(
+  league: string,
+): Promise<SportsLeaguePropsCatalog> {
+  const events = await getSportsCardWorkingSet({
+    desiredLeagueSlug: league,
+  });
+  const leagueEvents = events.filter((event) => {
+    if (!isSportsTaggedEvent(event)) return false;
+    return getSportsCardLeague(event).slug === league;
+  });
+
+  if (leagueEvents.length === 0) {
+    notFound();
+  }
+
+  const resolvedLeague = getSportsCardLeague(leagueEvents[0]!);
+
+  return {
+    leagueEvents,
+    normalizedLeague: resolvedLeague.slug,
+    title: resolvedLeague.label,
   };
 }
 
@@ -195,5 +245,25 @@ export async function getSportsLeagueCardCatalogPayload({
             activeLeagueSlug: normalizedLeague,
           })
         : undefined,
+  };
+}
+
+export async function getSportsLeaguePropsPayload(
+  league: string,
+): Promise<SportsLeaguePropsPayload> {
+  const { leagueEvents, normalizedLeague, title } =
+    await getSportsLeaguePropsCatalog(league);
+  const items = buildHomeEventCardEntries(leagueEvents);
+  const initialItems = items.slice(0, SPORTS_INITIAL_CARD_LIMIT);
+
+  return {
+    initialItems,
+    items,
+    hasMoreItems: items.length > SPORTS_INITIAL_CARD_LIMIT,
+    hydrationSeeds: initialItems.flatMap((item) => item.hydrationSeeds),
+    normalizedLeague,
+    title,
+    gamesHref: `/sports/${normalizedLeague}/games`,
+    propsHref: `/sports/${normalizedLeague}/props`,
   };
 }

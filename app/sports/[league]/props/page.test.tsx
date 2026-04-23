@@ -145,6 +145,34 @@ describe("SportsLeaguePropsPage", () => {
     expect(screen.getByText("2026 NBA Champion")).toBeTruthy();
   });
 
+  it("uses the shared home card resolver so props can render widget-style sports cards", async () => {
+    getSportsCardWorkingSet.mockResolvedValueOnce([
+      buildEvent({
+        id: "wemby",
+        slug: "victor-wembanyama-quadruple-double",
+        title: "Will Victor Wembanyama record a quadruple double this season?",
+        tags: [
+          { id: "1", slug: "sports", label: "Sports" },
+          { id: "2", slug: "nba", label: "NBA" },
+        ],
+      }),
+    ]);
+
+    const ui = await SportsLeaguePropsPage({
+      params: Promise.resolve({ league: "nba" }),
+    } as PageProps<"/sports/[league]/props">);
+
+    render(ui);
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Will Victor Wembanyama record a quadruple double this season?",
+      }),
+    ).toBeTruthy();
+    expect(screen.getAllByText("Yes").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("No").length).toBeGreaterThan(0);
+  });
+
   it("maps an empty props league working set to notFound()", async () => {
     getSportsCardWorkingSet.mockResolvedValueOnce([]);
 

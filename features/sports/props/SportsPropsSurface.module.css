@@ -38,11 +38,6 @@
   line-height: 1.5;
 }
 
-.grid {
-  display: grid;
-  gap: 14px;
-}
-
 .emptyState {
   display: grid;
   gap: 10px;
@@ -66,20 +61,10 @@
   line-height: 1.5;
 }
 
-@media (min-width: 800px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (min-width: 1200px) {
   .header {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
     gap: 20px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

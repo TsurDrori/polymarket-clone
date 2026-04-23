@@ -1,7 +1,7 @@
 import { SportsModeSwitch } from "@/features/sports/live/SportsModeSwitch";
-import type { SportsCardModel } from "@/features/sports/futures/parse";
+import { HomeMarketGrid } from "@/features/home/components/HomeMarketGrid";
+import type { HomeCardEntry } from "@/features/home/components/homeCardModel";
 import { SportsGamesPropsSwitch } from "./SportsGamesPropsSwitch";
-import { SportsPropsCard } from "./SportsPropsCard";
 import styles from "./SportsPropsSurface.module.css";
 
 type SportsPropsSurfaceProps = {
@@ -9,7 +9,7 @@ type SportsPropsSurfaceProps = {
   description: string;
   gamesHref: string;
   propsHref: string;
-  cards: ReadonlyArray<SportsCardModel>;
+  items: ReadonlyArray<HomeCardEntry>;
 };
 
 export function SportsPropsSurface({
@@ -17,7 +17,7 @@ export function SportsPropsSurface({
   description,
   gamesHref,
   propsHref,
-  cards,
+  items,
 }: SportsPropsSurfaceProps) {
   return (
     <section className={styles.surface}>
@@ -37,12 +37,8 @@ export function SportsPropsSurface({
         />
       </header>
 
-      {cards.length > 0 ? (
-        <div className={styles.grid}>
-          {cards.map((card) => (
-            <SportsPropsCard key={card.id} card={card} />
-          ))}
-        </div>
+      {items.length > 0 ? (
+        <HomeMarketGrid items={items} />
       ) : (
         <div className={styles.emptyState}>
           <h2 className={styles.emptyTitle}>No props markets are available right now.</h2>

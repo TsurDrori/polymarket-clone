@@ -1,6 +1,6 @@
 "use client";
 
-import type { SportsCardModel } from "@/features/sports/futures/parse";
+import type { HomeCardEntry } from "@/features/home/components/homeCardModel";
 import { useDeferredCollection } from "@/shared/lib/useDeferredCollection";
 import { SportsPropsSurface } from "./SportsPropsSurface";
 
@@ -9,7 +9,7 @@ type SportsLeaguePropsRouteProps = {
   description: string;
   gamesHref: string;
   propsHref: string;
-  initialCards: ReadonlyArray<SportsCardModel>;
+  initialItems: ReadonlyArray<HomeCardEntry>;
   catalogEndpoint?: string;
 };
 
@@ -18,17 +18,17 @@ export function SportsLeaguePropsRoute({
   description,
   gamesHref,
   propsHref,
-  initialCards,
+  initialItems,
   catalogEndpoint,
 }: SportsLeaguePropsRouteProps) {
-  const { items: cards } = useDeferredCollection<SportsCardModel>({
+  const { items } = useDeferredCollection<HomeCardEntry>({
     endpoint: catalogEndpoint,
-    initialItems: initialCards,
+    initialItems,
     selectItems: (payload) =>
-      payload && typeof payload === "object" && "cards" in payload
-        ? (((payload as { cards?: ReadonlyArray<SportsCardModel> }).cards ??
-            initialCards) as ReadonlyArray<SportsCardModel>)
-        : initialCards,
+      payload && typeof payload === "object" && "items" in payload
+        ? (((payload as { items?: ReadonlyArray<HomeCardEntry> }).items ??
+            initialItems) as ReadonlyArray<HomeCardEntry>)
+        : initialItems,
   });
 
   return (
@@ -37,7 +37,7 @@ export function SportsLeaguePropsRoute({
       description={description}
       gamesHref={gamesHref}
       propsHref={propsHref}
-      cards={cards}
+      items={items}
     />
   );
 }

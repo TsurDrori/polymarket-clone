@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSportsLeagueCardCatalogPayload } from "@/features/sports/server";
+import {
+  getSportsLeagueCardCatalogPayload,
+  getSportsLeaguePropsPayload,
+} from "@/features/sports/server";
 
 const SURFACE_SET = new Set(["props", "futures"]);
 
@@ -11,9 +14,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid sports catalog request" }, { status: 400 });
   }
 
+  if (surface === "props") {
+    const payload = await getSportsLeaguePropsPayload(league);
+    return NextResponse.json({ items: payload.items });
+  }
+
   const payload = await getSportsLeagueCardCatalogPayload({
     league,
-    surface: surface as "props" | "futures",
+    surface: "futures",
   });
 
   return NextResponse.json({ cards: payload.cards });
