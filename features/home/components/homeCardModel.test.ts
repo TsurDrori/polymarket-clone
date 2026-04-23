@@ -89,6 +89,33 @@ describe("homeCardModel", () => {
     expect(buildHomeCardModel(event).kind).toBe("binary");
   });
 
+  it("keeps non-matchup sports yes/no markets on the binary widget manifestation", () => {
+    const event = buildEvent(
+      "Will Victor Wembanyama record a quadruple double this season?",
+      [
+        { id: "1", slug: "sports", label: "Sports" },
+        { id: "2", slug: "nba", label: "NBA" },
+      ],
+      {
+        eventMetadata: { league: "NBA" },
+        markets: [
+          buildMarket({
+            id: "wemby-prop",
+            question: "Will Victor Wembanyama record a quadruple double this season?",
+            outcomes: ["Yes", "No"],
+            lastTradePrice: 0.03,
+            outcomePrices: [0.03, 0.97],
+          }),
+        ],
+      },
+    );
+
+    const model = buildHomeCardModel(event);
+    expect(resolveHomeCardFamily(event)).toBe("binary");
+    expect(model.kind).toBe("binary");
+    expect(model.kind === "binary" ? model.theme : "general").toBe("sports");
+  });
+
   it("resolves grouped cards for multi-market homepage events", () => {
     const event = buildEvent(
       "What will happen before GTA VI?",
@@ -137,14 +164,17 @@ describe("homeCardModel", () => {
     expect(model.kind === "crypto-up-down" ? model.actions[0].label : "").toBe("Up");
   });
 
-  it("resolves sports cards for matchup events even before tipoff", () => {
+  it("resolves sports live cards only for matchup/game semantics", () => {
     const teams: PolymarketTeam[] = [
       { name: "Hawks", abbreviation: "Hawks", record: "31-20" },
       { name: "Knicks", abbreviation: "Knicks", record: "40-11" },
     ];
     const event = buildEvent(
       "Hawks vs Knicks",
-      [{ id: "1", slug: "nba", label: "NBA" }],
+      [
+        { id: "1", slug: "sports", label: "Sports" },
+        { id: "2", slug: "nba", label: "NBA" },
+      ],
       {
         live: false,
         period: "3:00 AM",

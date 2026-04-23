@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { getMarketPriceHistory } from "@/features/events/api/clob";
 import { listEvents, listEventsKeyset } from "@/features/events/api/gamma";
 import { HomePage } from "@/features/home/HomePage";
 import {
@@ -7,10 +6,6 @@ import {
 } from "@/features/home/components/homeCardModel";
 import {
   buildHomePageModel,
-  HOME_HERO_SPOTLIGHT_LIMIT,
-  selectSpotlightEvents,
-  selectSpotlightMarket,
-  type HeroChartModel,
 } from "@/features/home/selectors";
 import {
   Hydrator,
@@ -98,46 +93,7 @@ export default async function Home() {
     );
   }
 
-  const spotlightChartsEntries = await Promise.all(
-    selectSpotlightEvents(visible, HOME_HERO_SPOTLIGHT_LIMIT).map(async (event) => {
-      const market = selectSpotlightMarket(event);
-      const tokenId = market?.clobTokenIds[0];
-
-      if (!market || !tokenId) {
-        return null;
-      }
-
-      try {
-        const points = await getMarketPriceHistory({
-          tokenId,
-          interval: "1w",
-          fidelity: 60,
-        });
-
-        return [
-          market.id,
-          points.length >= 5
-            ? {
-                points,
-                intervalLabel: "Monthly",
-                sourceLabel: "Polymarket",
-              }
-            : null,
-        ] as const;
-      } catch {
-        return [market.id, null] as const;
-      }
-    }),
-  );
-
-  const spotlightCharts = Object.fromEntries(
-    spotlightChartsEntries.filter(
-      (entry): entry is readonly [string, HeroChartModel | null] => Boolean(entry),
-    ),
-  );
-
   const model = buildHomePageModel(visible, {
-    spotlightCharts,
     exploreLimit: HOME_INITIAL_EXPLORE_LIMIT,
   });
   const initialExploreCards = buildHomeExploreCardEntries({

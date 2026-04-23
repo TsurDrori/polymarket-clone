@@ -2,27 +2,23 @@
   display: grid;
   gap: 18px;
   padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: 22px;
+  border: 1px solid var(--market-card-border);
+  border-radius: var(--market-card-radius);
   background: var(--bg-surface);
-  box-shadow: var(--surface-shadow-soft);
+  box-shadow: var(--market-card-shadow);
   transition:
-    border-color 180ms ease,
     box-shadow 180ms ease,
     transform 180ms ease;
 }
 
 .card:hover {
-  border-color: color-mix(in srgb, var(--accent-brand) 24%, var(--border));
-  box-shadow: 0 16px 32px rgba(15, 23, 32, 0.08);
-  transform: translateY(-2px);
+  box-shadow: var(--market-card-shadow-hover);
+  transform: translateY(-1px);
 }
 
 .cardLeader {
-  border-color: color-mix(in srgb, var(--accent-yes) 30%, var(--border));
-  box-shadow:
-    0 18px 34px color-mix(in srgb, var(--accent-yes) 10%, transparent),
-    var(--surface-shadow-soft);
+  border-color: var(--market-card-border);
+  box-shadow: var(--market-card-shadow);
 }
 
 .cardPromoted {
@@ -151,18 +147,17 @@
 @keyframes futures-card-promote {
   0% {
     transform: translateY(0);
+    box-shadow: var(--market-card-shadow);
   }
 
   30% {
-    transform: translateY(-3px);
-    box-shadow:
-      0 0 0 12px color-mix(in srgb, var(--accent-brand) 0%, transparent),
-      0 18px 34px color-mix(in srgb, var(--accent-brand) 12%, transparent),
-      var(--surface-shadow-soft);
+    transform: translateY(-1px);
+    box-shadow: var(--market-card-shadow-hover);
   }
 
   100% {
     transform: translateY(0);
+    box-shadow: var(--market-card-shadow);
   }
 }
 

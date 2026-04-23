@@ -1,0 +1,84 @@
+.root {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.labelWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.label {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 440;
+  line-height: 20px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.value {
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22.5px;
+  white-space: nowrap;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 32px;
+  border-radius: 10px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.actionYes {
+  background: var(--accent-yes-soft);
+  color: var(--accent-yes);
+}
+
+.actionNo {
+  background: var(--accent-no-soft);
+  color: var(--accent-no);
+}
+
+@media (max-width: 599px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .labelWrap {
+    gap: 8px;
+  }
+}

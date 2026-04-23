@@ -40,6 +40,7 @@ export type HomeCardRowModel = {
 
 export type HomeBinaryCardModel = {
   kind: "binary";
+  theme: "general" | "sports";
   title: string;
   href: string;
   imageSrc: string;
@@ -93,6 +94,7 @@ export type HomeSportsLiveCardModel = {
     key: string;
     name: string;
     shortName: string;
+    logo?: string;
     score?: string;
     subtitle?: string;
     tokenId?: string;
@@ -178,6 +180,20 @@ const buildMetaLabels = (event: PolymarketEvent): string[] => {
   );
 };
 
+const normalizeTagSlug = (value: string): string => value.trim().toLowerCase();
+
+const isSportsTaggedEvent = (event: PolymarketEvent): boolean =>
+  event.tags.some((tag) => normalizeTagSlug(tag.slug) === "sports");
+
+const hasSportsIdentity = (event: PolymarketEvent): boolean =>
+  isSportsTaggedEvent(event) || typeof event.eventMetadata?.league === "string";
+
+const isSportsMatchupMarket = (market: PolymarketMarket): boolean =>
+  market.sportsMarketType === "moneyline" ||
+  market.sportsMarketType === "spreads" ||
+  market.sportsMarketType === "totals" ||
+  market.sportsMarketType === "map_handicap";
+
 const buildActionPair = (
   market: PolymarketMarket,
   labels?: [string, string],
@@ -212,8 +228,9 @@ const buildGroupedRows = (event: PolymarketEvent): HomeCardRowModel[] =>
     }));
 
 const isSportsLiveEvent = (event: PolymarketEvent): boolean =>
+  hasSportsIdentity(event) &&
   (event.teams?.length ?? 0) >= 2 &&
-  event.markets.some((market) => typeof market.sportsMarketType === "string");
+  event.markets.some(isSportsMatchupMarket);
 
 export const resolveHomeCardFamily = (event: PolymarketEvent): HomeCardFamily => {
   if (isSportsLiveEvent(event)) {
@@ -237,6 +254,7 @@ const buildBinaryModel = (event: PolymarketEvent): HomeBinaryCardModel => {
 
   return {
     kind: "binary",
+    theme: hasSportsIdentity(event) ? "sports" : "general",
     title: event.title,
     href: `/event/${event.slug}`,
     imageSrc: getEventImage(event) ?? "/placeholder.svg",
@@ -355,12 +373,13 @@ const buildSportsLiveModel = (event: PolymarketEvent): HomeSportsLiveCardModel =
     metaLabels: row ? [row.league.label] : buildMetaLabels(event),
     volumeLabel: row?.volumeLabel ?? `${formatVolume(event.volume24hr || event.volume)} Vol.`,
     statusLabel: row?.statusLabel ?? (event.live ? "Live" : "Upcoming"),
-    statusDetail: row?.statusDetail ?? event.period ?? event.score,
+    statusDetail: row?.statusDetail ?? event.period,
     competitors:
       row?.competitors.slice(0, 2).map((competitor, index) => ({
         key: competitor.key,
         name: competitor.name,
         shortName: competitor.abbreviation || competitor.name,
+        logo: competitor.logo,
         score: scoreParts[index],
         subtitle: competitor.record,
         tokenId: row.moneyline[index]?.tokenId,
@@ -370,6 +389,7 @@ const buildSportsLiveModel = (event: PolymarketEvent): HomeSportsLiveCardModel =
         key: `${event.id}:${team.name}`,
         name: team.name,
         shortName: team.abbreviation || team.name,
+        logo: team.logo,
         score: scoreParts[index],
         subtitle: team.record,
         tokenId: event.markets[index]?.clobTokenIds[0],

@@ -1,0 +1,64 @@
+.root {
+  width: var(--arc-width, 64px);
+  min-width: var(--arc-width, 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.chart {
+  display: flex;
+}
+
+.svg {
+  width: var(--arc-width, 64px);
+  max-width: var(--arc-width, 64px);
+  height: var(--arc-height, 38px);
+  overflow: visible;
+}
+
+.track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--border-soft) 88%, transparent);
+  stroke-width: var(--arc-stroke, 4);
+  stroke-linecap: round;
+}
+
+.value {
+  fill: none;
+  stroke: var(--arc-color, rgb(61 180 104));
+  stroke-width: var(--arc-stroke, 4);
+  stroke-linecap: round;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  transform: translateY(var(--arc-copy-offset, -31px));
+}
+
+.valueText {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.18px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.label {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: -0.1px;
+  text-align: center;
+  width: 100%;
+}

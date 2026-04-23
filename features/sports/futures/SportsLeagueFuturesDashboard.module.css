@@ -169,9 +169,10 @@
 .cardHero,
 .cardList,
 .cardCompactBar {
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  border: 1px solid var(--market-card-border);
+  border-radius: var(--market-card-radius);
   background: var(--bg-surface);
+  box-shadow: var(--market-card-shadow);
 }
 
 .cardHero,

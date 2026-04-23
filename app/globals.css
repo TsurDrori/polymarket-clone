@@ -24,9 +24,13 @@
   --hero-outcome-focus-ring: rgb(255 255 255 / 92%);
 
   --radius-card: 15px;
+  --market-card-radius: 15px;
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --surface-shadow: 0 20px 44px rgba(0, 0, 0, 0.18);
   --surface-shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.16);
+  --market-card-border: var(--border);
+  --market-card-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+  --market-card-shadow-hover: 0 16px 30px rgba(0, 0, 0, 0.2);
   --page-glow: rgba(61, 180, 104, 0.08);
   --overlay-backdrop: rgba(9, 12, 15, 0.56);
 
@@ -67,6 +71,9 @@ html[data-theme="light"] {
   --hero-outcome-focus-ring: rgb(3 7 18);
   --surface-shadow: 0 18px 40px rgba(16, 22, 28, 0.06);
   --surface-shadow-soft: 0 16px 30px rgba(16, 22, 28, 0.06);
+  --market-card-border: #E6E8EA;
+  --market-card-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+  --market-card-shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.08);
   --page-glow: rgba(47, 108, 246, 0.08);
   --overlay-backdrop: rgba(235, 241, 247, 0.78);
 }
@@ -99,6 +106,9 @@ html[data-theme="light"] {
     --hero-outcome-focus-ring: rgb(3 7 18);
     --surface-shadow: 0 18px 40px rgba(16, 22, 28, 0.06);
     --surface-shadow-soft: 0 16px 30px rgba(16, 22, 28, 0.06);
+    --market-card-border: #E6E8EA;
+    --market-card-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+    --market-card-shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.08);
     --page-glow: rgba(47, 108, 246, 0.08);
     --overlay-backdrop: rgba(235, 241, 247, 0.78);
   }

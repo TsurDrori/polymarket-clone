@@ -204,10 +204,14 @@ describe("HomeMarketGrid", () => {
   it("renders sports cards as scoreboard rows with final status and team actions", () => {
     const event = buildEvent(
       "Timberwolves vs. Nuggets",
-      [{ id: "1", slug: "nba", label: "NBA" }],
+      [
+        { id: "1", slug: "sports", label: "Sports" },
+        { id: "2", slug: "nba", label: "NBA" },
+      ],
       {
         ended: true,
         score: "119-114",
+        eventMetadata: { league: "NBA" },
         teams: [
           { name: "Timberwolves", abbreviation: "MIN", record: "49-33" },
           { name: "Nuggets", abbreviation: "DEN", record: "54-28" },
@@ -228,12 +232,14 @@ describe("HomeMarketGrid", () => {
 
     render(<HomeMarketGrid items={buildHomeEventCardEntries([event])} />);
 
-    expect(screen.getByText("Final 119-114")).toBeTruthy();
+    expect(screen.getByText("Final")).toBeTruthy();
+    expect(screen.getByText("$500K Vol.")).toBeTruthy();
+    expect(screen.getByText("NBA")).toBeTruthy();
     expect(screen.getAllByText("Timberwolves").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Nuggets").length).toBeGreaterThan(0);
     expect(screen.getAllByText("100%").length).toBeGreaterThan(0);
     expect(screen.getAllByText("0%").length).toBeGreaterThan(0);
-    expect(screen.getByText("49-33")).toBeTruthy();
-    expect(screen.getByText("54-28")).toBeTruthy();
+    expect(screen.getByText("119")).toBeTruthy();
+    expect(screen.getByText("114")).toBeTruthy();
   });
 });

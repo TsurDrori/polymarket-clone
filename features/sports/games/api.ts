@@ -1,6 +1,12 @@
 import { unstable_cache } from "next/cache";
 import { GammaError } from "@/features/events/api/gamma";
-import type { SportsGameEvent } from "./parse";
+import {
+  isMoneylineMarket,
+  pickSpreadMarket,
+  pickTotalMarket,
+  type SportsGameEvent,
+  type SportsGameMarket,
+} from "./parse";
 
 const GAMMA_BASE = "https://gamma-api.polymarket.com";
 const PAGE_LIMIT = 250;
@@ -9,6 +15,7 @@ const ALL_LEAGUE_MAX_PAGES = 4;
 const LEAGUE_MAX_PAGES = 4;
 const TARGET_LEAGUE_ROWS = 8;
 const SPORTS_LIVE_INITIAL_REVALIDATE_SECONDS = 30;
+const HOME_SPORTS_PREVIEW_REVALIDATE_SECONDS = 30;
 
 type RawTag = {
   id?: unknown;
@@ -248,8 +255,106 @@ const buildPreviewKeysetUrl = ({
 export async function getHomeSportsGamePreviewEvents(
   limit = 40,
 ): Promise<SportsGameEvent[]> {
+  return getCachedHomeSportsGamePreviewEvents(limit);
+}
+
+const trimHomePreviewMarket = (
+  market: SportsGameMarket,
+): SportsGameEvent["markets"][number] => ({
+  id: market.id,
+  question: market.question,
+  groupItemTitle: market.groupItemTitle,
+  sportsMarketType: market.sportsMarketType,
+  line: market.line,
+  outcomes: [...market.outcomes],
+  outcomePrices: [...market.outcomePrices],
+  clobTokenIds: [...market.clobTokenIds],
+  lastTradePrice: market.lastTradePrice,
+  bestBid: market.bestBid,
+  bestAsk: market.bestAsk,
+  volumeNum: market.volumeNum,
+  volume24hr: market.volume24hr,
+  acceptingOrders: market.acceptingOrders,
+  closed: market.closed,
+});
+
+const appendUniquePreviewMarket = (
+  target: SportsGameEvent["markets"],
+  seen: Set<string>,
+  market: SportsGameMarket | undefined,
+): void => {
+  if (!market || seen.has(market.id)) {
+    return;
+  }
+
+  seen.add(market.id);
+  target.push(trimHomePreviewMarket(market));
+};
+
+const trimHomePreviewEvent = (event: SportsGameEvent): SportsGameEvent => {
+  const previewMarkets: SportsGameEvent["markets"] = [];
+  const seenMarketIds = new Set<string>();
+
+  for (const market of event.markets.filter(isMoneylineMarket)) {
+    appendUniquePreviewMarket(previewMarkets, seenMarketIds, market);
+  }
+
+  // Preserve the current home chooser behavior by keeping representative
+  // typed markets when present, even though the home card only renders the
+  // moneyline path today.
+  appendUniquePreviewMarket(
+    previewMarkets,
+    seenMarketIds,
+    pickSpreadMarket(event),
+  );
+  appendUniquePreviewMarket(
+    previewMarkets,
+    seenMarketIds,
+    pickTotalMarket(event),
+  );
+
+  return {
+    id: event.id,
+    slug: event.slug,
+    title: event.title,
+    startTime: event.startTime,
+    endDate: event.endDate,
+    volume: event.volume,
+    volume24hr: event.volume24hr,
+    live: event.live,
+    ended: event.ended,
+    period: event.period,
+    score: event.score,
+    eventWeek: event.eventWeek,
+    image: event.image,
+    icon: event.icon,
+    tags: event.tags.map((tag) => ({
+      id: tag.id,
+      slug: tag.slug,
+      label: tag.label,
+    })),
+    teams: event.teams.slice(0, 2).map((team) => ({
+      name: team.name,
+      abbreviation: team.abbreviation,
+      record: team.record,
+      logo: team.logo,
+    })),
+    eventMetadata: event.eventMetadata
+      ? {
+          league: event.eventMetadata.league,
+          tournament: event.eventMetadata.tournament,
+        }
+      : undefined,
+    markets: previewMarkets,
+  };
+};
+
+const fetchHomeSportsGamePreviewEventsSource = async (
+  limit: number,
+): Promise<SportsGameEvent[]> => {
   const res = await fetch(buildPreviewKeysetUrl({ limit }), {
-    next: { revalidate: 30 },
+    // Cache the tiny derived preview instead of the oversized raw Gamma response.
+    cache: "no-store",
   });
 
   if (!res.ok) {
@@ -260,8 +365,18 @@ export async function getHomeSportsGamePreviewEvents(
   }
 
   const payload = (await res.json()) as SportsGameKeysetPayload;
-  return parseSportsGameEvents(payload.events);
-}
+
+  return parseSportsGameEvents(payload.events).map(trimHomePreviewEvent);
+};
+
+const getCachedHomeSportsGamePreviewEvents = unstable_cache(
+  async (limit: number): Promise<SportsGameEvent[]> =>
+    fetchHomeSportsGamePreviewEventsSource(limit),
+  ["home-sports-game-preview-events"],
+  {
+    revalidate: HOME_SPORTS_PREVIEW_REVALIDATE_SECONDS,
+  },
+);
 
 const fetchSportsGamePage = async (
   afterCursor?: string,

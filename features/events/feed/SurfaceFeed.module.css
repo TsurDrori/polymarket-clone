@@ -11,7 +11,7 @@
 }
 
 .slot {
-  min-width: 0;
+  min-width: 195px;
   grid-column: span var(--surface-feed-span-base, 12);
   animation: surface-feed-enter 260ms ease both;
   transition:

@@ -1,12 +1,6 @@
-import Image from "next/image";
-import Link from "next/link";
-import { PriceCell } from "@/features/events/components/PriceCell";
-import { cn } from "@/shared/lib/cn";
-import { formatPct } from "@/shared/lib/format";
-import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
+import { BinaryGroupCard } from "@/features/market-cards/components/BinaryGroupCard";
+import { BinaryWidgetCard } from "@/features/market-cards/components/BinaryWidgetCard";
 import { type CryptoCardModel } from "../parse";
-import { CryptoSingleGauge } from "./CryptoSingleGauge";
-import styles from "./CryptoCard.module.css";
 
 type CryptoCardProps = {
   card: CryptoCardModel;
@@ -16,14 +10,31 @@ type CryptoCardProps = {
   };
 };
 
-const renderSnippetPrice = (tokenId: string | null, fallbackPrice: number) =>
-  tokenId ? (
-    <PriceCell tokenId={tokenId} formatKind="pct" fallbackValue={fallbackPrice} />
-  ) : (
-    formatPct(fallbackPrice)
-  );
-
 export function CryptoCard({ card, emphasis }: CryptoCardProps) {
+  if (card.variant === "list") {
+    return (
+      <BinaryGroupCard
+        title={card.title}
+        href={`/event/${card.slug}`}
+        imageSrc={card.imageSrc}
+        rows={card.snippets.map((snippet) => ({
+          id: snippet.id,
+          label: snippet.label,
+          probabilityTokenId: snippet.tokenId ?? undefined,
+          probabilityFallback: snippet.fallbackPrice,
+          actions: [
+            { label: snippet.primaryOutcomeLabel, tone: "yes" as const },
+            { label: snippet.secondaryOutcomeLabel, tone: "no" as const },
+          ],
+        }))}
+        volumeLabel={card.volumeLabel}
+        metaLabel={card.metaLabel}
+        showLiveDot={card.showLiveDot}
+        emphasis={emphasis}
+      />
+    );
+  }
+
   const singleLabel =
     card.family === "up-down"
       ? card.primarySnippet.primaryOutcomeLabel
@@ -32,87 +43,23 @@ export function CryptoCard({ card, emphasis }: CryptoCardProps) {
         : card.primarySnippet.primaryOutcomeLabel;
 
   return (
-    <article
-      className={cn(
-        styles.card,
-        emphasis?.isLiveLeader && styles.cardLeader,
-        emphasis?.isPromoted && styles.cardPromoted,
-      )}
-      data-live-leader={emphasis?.isLiveLeader ? "true" : "false"}
-      data-promoted={emphasis?.isPromoted ? "true" : "false"}
-    >
-      <Link href={`/event/${card.slug}`} className={styles.link}>
-        <header className={styles.header}>
-          <div className={styles.titleRow}>
-            <div className={styles.iconWrap}>
-              {card.imageSrc ? (
-                <Image
-                  src={card.imageSrc}
-                  alt=""
-                  fill
-                  sizes="48px"
-                  unoptimized={shouldBypassNextImageOptimization(card.imageSrc)}
-                  className={styles.icon}
-                />
-              ) : (
-                <span className={styles.iconFallback}>
-                  {card.title.slice(0, 1)}
-                </span>
-              )}
-            </div>
-            <h2 className={styles.title}>{card.title}</h2>
-          </div>
-
-          {card.variant === "single" ? (
-            <CryptoSingleGauge
-              label={singleLabel}
-              fallbackPrice={card.primarySnippet.fallbackPrice}
-              tokenId={card.primarySnippet.tokenId}
-            />
-          ) : null}
-        </header>
-
-        {card.variant === "single" ? (
-          <div className={styles.singleBody}>
-            <div className={styles.outcomeRow}>
-              <span className={cn(styles.outcomePill, styles.outcomeYes)}>
-                {card.primarySnippet.primaryOutcomeLabel}
-              </span>
-              <span className={cn(styles.outcomePill, styles.outcomeNo)}>
-                {card.primarySnippet.secondaryOutcomeLabel}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className={styles.listBody}>
-            {card.snippets.map((snippet) => (
-              <div key={snippet.id} className={styles.snippetRow}>
-                <span className={styles.snippetLabel}>{snippet.label}</span>
-                <strong className={styles.snippetPrice}>
-                  {renderSnippetPrice(snippet.tokenId, snippet.fallbackPrice)}
-                </strong>
-                <div className={styles.snippetActions} aria-hidden="true">
-                  <span className={cn(styles.actionBadge, styles.actionYes)}>
-                    {snippet.primaryOutcomeLabel}
-                  </span>
-                  <span className={cn(styles.actionBadge, styles.actionNo)}>
-                    {snippet.secondaryOutcomeLabel}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <footer className={styles.meta}>
-          <div className={styles.metaLead}>
-            {card.showLiveDot ? <span className={styles.liveDot} aria-hidden="true" /> : null}
-            {card.showLiveDot ? <span className={styles.liveLabel}>Live</span> : null}
-            <span>{card.volumeLabel}</span>
-          </div>
-          {card.metaLabel ? <span>{card.metaLabel}</span> : null}
-        </footer>
-      </Link>
-    </article>
+    <BinaryWidgetCard
+      title={card.title}
+      href={`/event/${card.slug}`}
+      imageSrc={card.imageSrc}
+      probability={{
+        label: singleLabel,
+        price: card.primarySnippet.fallbackPrice,
+        tokenId: card.primarySnippet.tokenId ?? undefined,
+      }}
+      actions={[
+        { label: card.primarySnippet.primaryOutcomeLabel, tone: "yes" },
+        { label: card.primarySnippet.secondaryOutcomeLabel, tone: "no" },
+      ]}
+      showLiveDot={card.showLiveDot}
+      liveLabel="LIVE"
+      footerTrailing={card.metaLabel ?? undefined}
+      emphasis={emphasis}
+    />
   );
 }

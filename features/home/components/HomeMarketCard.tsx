@@ -2,14 +2,16 @@
 
 import { Bookmark, Gift } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { PriceCell } from "@/features/events/components/PriceCell";
+import { BinaryGroupCard } from "@/features/market-cards/components/BinaryGroupCard";
+import { BinarySingleCardFrame } from "@/features/market-cards/components/BinarySingleCardFrame";
+import { BinaryWidgetCard } from "@/features/market-cards/components/BinaryWidgetCard";
+import { SingleBinaryInfoLine } from "@/features/market-cards/components/SingleBinaryInfoLine";
 import { cn } from "@/shared/lib/cn";
 import { formatPct } from "@/shared/lib/format";
 import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
 import type { SurfaceFeedLayoutVariant } from "@/features/events/feed/types";
 import type {
-  HomeBinaryCardModel,
   HomeCardModel,
   HomeGroupedCardModel,
   HomeSportsLiveCardModel,
@@ -32,6 +34,8 @@ const renderPct = (tokenId: string | undefined, fallbackPrice: number) =>
     formatPct(fallbackPrice)
   );
 
+const firstWord = (value: string) => value.trim().split(/\s+/)[0] ?? value;
+
 const CRYPTO_ASSET_SYMBOLS: Record<string, string> = {
   Bitcoin: "BTC",
   Ethereum: "ETH",
@@ -41,77 +45,6 @@ const CRYPTO_ASSET_SYMBOLS: Record<string, string> = {
   XRP: "XRP",
   Microstrategy: "MSTR",
 };
-
-const describeArc = (value: number): string => {
-  const radius = 24;
-  const clamped = Math.max(0, Math.min(1, value));
-  const startAngle = Math.PI;
-  const endAngle = Math.PI * (1 - clamped);
-  const startX = radius * Math.cos(startAngle);
-  const startY = radius * Math.sin(startAngle);
-  const endX = radius * Math.cos(endAngle);
-  const endY = radius * Math.sin(endAngle);
-  const largeArcFlag = clamped > 0.5 ? 1 : 0;
-
-  return `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
-};
-
-function CardLink({
-  href,
-  kind,
-  emphasis,
-  layoutVariant,
-  children,
-}: {
-  href: string;
-  kind: HomeCardModel["kind"];
-  emphasis?: HomeMarketCardProps["emphasis"];
-  layoutVariant: SurfaceFeedLayoutVariant;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        styles.card,
-        kind === "grouped" && styles.cardGrouped,
-        kind === "binary" && styles.cardBinary,
-        kind === "crypto-up-down" && styles.cardCrypto,
-        kind === "sports-live" && styles.cardSports,
-        emphasis?.isLiveLeader && styles.cardLeader,
-        emphasis?.isPromoted && styles.cardPromoted,
-        layoutVariant === "wide" && styles.cardWide,
-        layoutVariant === "compact" && styles.cardCompact,
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
-
-function CardThumb({
-  imageSrc,
-  title,
-  className,
-}: {
-  imageSrc: string;
-  title: string;
-  className?: string;
-}) {
-  return (
-    <div className={cn(styles.mediaWrap, className)}>
-      <Image
-        src={imageSrc}
-        alt=""
-        fill
-        sizes="38px"
-        unoptimized={shouldBypassNextImageOptimization(imageSrc)}
-        className={styles.media}
-      />
-      <span className="sr-only">{title}</span>
-    </div>
-  );
-}
 
 const splitEventTitle = (
   title: string,
@@ -173,109 +106,12 @@ const buildCryptoHeadline = (
   return `${assetSymbol} ${intervalMinutes} Minute Up or Down`;
 };
 
-function CryptoProbabilityWidget({
-  price,
-  label,
-  tokenId,
-}: {
-  price: number;
-  label: string;
-  tokenId?: string;
-}) {
-  const clamped = Math.max(0, Math.min(1, price));
-
-  return (
-    <div className={styles.cryptoWidget} aria-hidden="true">
-      <div className={styles.cryptoWidgetChart}>
-        <svg
-          width="58"
-          height="34.03579715234098"
-          viewBox="-29 -29 58 34.03579715234098"
-          className={styles.cryptoWidgetSvg}
-        >
-          <path
-            d="M -24 0 A 24 24 0 0 1 24 0"
-            className={styles.cryptoWidgetTrack}
-          />
-          <path
-            d={describeArc(clamped)}
-            className={styles.cryptoWidgetValue}
-            pathLength={100}
-            strokeDasharray={`${clamped * 100} 100`}
-          />
-        </svg>
-      </div>
-      <div className={styles.cryptoWidgetCopy}>
-        <p className={styles.cryptoWidgetValueText}>{renderPct(tokenId, clamped)}</p>
-        <p className={styles.cryptoWidgetLabel}>{label}</p>
-      </div>
-    </div>
-  );
-}
-
-function CardTitleHeader({
-  imageSrc,
-  title,
-  subtitle,
-  imageClassName,
-  aside,
-}: {
-  imageSrc: string;
-  title: string;
-  subtitle?: React.ReactNode;
-  imageClassName?: string;
-  aside?: React.ReactNode;
-}) {
-  return (
-    <div className={styles.header}>
-      <div className={styles.titleRow}>
-        <CardThumb imageSrc={imageSrc} title={title} className={imageClassName} />
-        <div className={styles.titleStack}>
-          <h3 className={styles.title}>{title}</h3>
-          {subtitle ? <div className={styles.titleSubline}>{subtitle}</div> : null}
-        </div>
-      </div>
-      {aside ? <div className={styles.headerAside}>{aside}</div> : null}
-    </div>
-  );
-}
-
-function SmallAction({
-  label,
-  positive,
-}: {
-  label: string;
-  positive: boolean;
-}) {
-  return (
-    <span className={cn(styles.actionPill, positive ? styles.actionYes : styles.actionNo)}>
-      {label}
-    </span>
-  );
-}
-
-function LargeAction({
-  label,
-  positive,
-}: {
-  label: string;
-  positive: boolean;
-}) {
-  return (
-    <span
-      className={cn(styles.binaryActionPill, positive ? styles.actionYesLarge : styles.actionNoLarge)}
-    >
-      {label}
-    </span>
-  );
-}
-
 function SportsAction({
   label,
   tone,
 }: {
   label: string;
-  tone: "primary" | "secondary" | "success" | "danger";
+  tone: "primary" | "secondary";
 }) {
   return (
     <span
@@ -283,8 +119,6 @@ function SportsAction({
         styles.sportsActionPill,
         tone === "primary" && styles.sportsActionPrimary,
         tone === "secondary" && styles.sportsActionSecondary,
-        tone === "success" && styles.sportsActionSuccess,
-        tone === "danger" && styles.sportsActionDanger,
       )}
     >
       {label}
@@ -292,198 +126,141 @@ function SportsAction({
   );
 }
 
-function HomeBinaryCardBody({ model }: { model: HomeBinaryCardModel }) {
-  return (
-    <>
-      <CardTitleHeader
-        imageSrc={model.imageSrc}
-        title={model.title}
-        subtitle={model.metaLabels.join(" · ")}
-        imageClassName={styles.featuredThumb}
-      />
-
-      <div className={styles.binaryChanceRow}>
-        <span className={styles.binaryChanceValue}>{renderPct(model.primaryTokenId, model.primaryPrice)}</span>
-        <span className={styles.binaryChanceLabel}>chance</span>
-        <span
-          className={cn(
-            styles.binaryChange,
-            model.primaryChange > 0 && styles.binaryChangeUp,
-            model.primaryChange < 0 && styles.binaryChangeDown,
-          )}
-        >
-          {formatChanceDelta(model.primaryChange)}
-        </span>
-      </div>
-
-      <div className={styles.binarySummary}>
-        <span className={styles.volumeMeta}>{model.volumeLabel}</span>
-      </div>
-
-      <div className={styles.binaryActions}>
-        {model.actions.map((action, index) => (
-          <LargeAction
-            key={`${action.label}:${index}`}
-            label={action.label}
-            positive={index === 0}
-          />
-        ))}
-      </div>
-    </>
-  );
-}
-
 function HomeGroupedCardBody({ model }: { model: HomeGroupedCardModel }) {
   return (
-    <>
-      <CardTitleHeader imageSrc={model.imageSrc} title={model.title} />
-
-      <div className={styles.rows}>
-        {model.rows.map((row) => (
-          <div key={row.id} className={styles.row}>
-            <span className={styles.rowLabel}>{row.label}</span>
-            <div className={styles.rowMeta}>
-              <span className={styles.rowValue}>{renderPct(row.tokenId, row.price)}</span>
-              <div className={styles.rowActions}>
-                {row.actions.map((action, index) => (
-                  <SmallAction
-                    key={`${row.id}:${action.label}`}
-                    label={action.label}
-                    positive={index === 0}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className={styles.footerMeta}>
-        <span className={styles.volumeMeta}>{model.volumeLabel}</span>
-      </div>
-    </>
+    <BinaryGroupCard
+      title={model.title}
+      href={model.href}
+      imageSrc={model.imageSrc}
+      rows={model.rows.map((row) => ({
+        id: row.id,
+        label: row.label,
+        probabilityTokenId: row.tokenId,
+        probabilityFallback: row.price,
+        actions: [
+          { label: row.actions[0].label, tone: "yes" as const },
+          { label: row.actions[1].label, tone: "no" as const },
+        ],
+      }))}
+      volumeLabel={model.volumeLabel}
+    />
   );
 }
 
-function HomeCryptoCardBody({
-  model,
-}: {
-  model: Extract<HomeCardModel, { kind: "crypto-up-down" }>;
-}) {
+function buildHomeCryptoWidgetModel(
+  model: Extract<HomeCardModel, { kind: "crypto-up-down" }>,
+) {
   const { headline, detail } = splitEventTitle(model.title);
   const cryptoHeadline = buildCryptoHeadline(headline, detail, model.assetLabel ?? undefined);
-
-  return (
-    <>
-      <CardTitleHeader
-        imageSrc={model.imageSrc}
-        title={cryptoHeadline}
-        imageClassName={styles.cryptoThumb}
-        aside={<CryptoProbabilityWidget price={model.price} label="Up" tokenId={model.tokenId} />}
-      />
-
-      <div className={styles.cryptoSpacer} />
-
-      <div className={styles.cryptoActions}>
-        {model.actions.map((action, index) => (
-          <LargeAction
-            key={`${action.label}:${index}`}
-            label={action.label}
-            positive={index === 0}
-          />
-        ))}
-      </div>
-
-      <div className={styles.cryptoFooter}>
-        <div className={styles.cryptoFooterMeta}>
-          <span className={styles.cryptoLiveDot} aria-hidden="true" />
-          <span className={styles.cryptoLiveLabel}>LIVE</span>
-          <span className={styles.cryptoFooterDivider} aria-hidden="true">·</span>
-          {model.assetLabel ? <span className={styles.cryptoFooterAsset}>{model.assetLabel}</span> : null}
-        </div>
-        <span className={styles.cryptoBookmark} aria-hidden="true">
-          <Bookmark size={18} strokeWidth={2.1} />
-        </span>
-      </div>
-    </>
-  );
+  return {
+    title: cryptoHeadline,
+    probability: {
+      price: model.price,
+      tokenId: model.tokenId,
+      label: "Up",
+      size: "sm" as const,
+    },
+    actions: [
+      { label: model.actions[0].label, tone: "yes" as const },
+      { label: model.actions[1].label, tone: "no" as const },
+    ] as const,
+    showLiveDot: true,
+    liveLabel: "LIVE",
+    footerTrailing: model.assetLabel ?? undefined,
+  };
 }
 
-function HomeSportsLiveCardBody({ model }: { model: HomeSportsLiveCardModel }) {
-  const isFinal = model.statusLabel === "Final";
-  const statusSummary = [model.statusLabel, model.statusDetail].filter(Boolean).join(" ");
-  const footerLead = isFinal ? null : (model.statusDetail ?? model.statusLabel);
+function HomeSportsLiveCardBody({
+  model,
+  emphasis,
+}: {
+  model: HomeSportsLiveCardModel;
+  emphasis?: HomeMarketCardProps["emphasis"];
+}) {
   const leagueLabel = model.metaLabels[0] ?? "";
-  const actionTones = isFinal
-    ? (["success", "danger"] as const)
-    : (["primary", "secondary"] as const);
+  const isLive = model.statusLabel === "Live";
+  const compactStatusDetail =
+    model.statusLabel === "Final" && model.statusDetail?.match(/^\d+\s*[-:]\s*\d+$/)
+      ? null
+      : model.statusDetail;
+  const statusLead = isLive ? compactStatusDetail : model.statusLabel;
+
+  const rows = model.competitors.slice(0, 2).map((competitor) => (
+    <div key={competitor.key} className={styles.sportsMatchupRow}>
+      <div className={styles.sportsMatchupIdentity}>
+        <div className={styles.sportsMatchupLogoWrap}>
+          {competitor.logo ? (
+            <Image
+              src={competitor.logo}
+              alt=""
+              fill
+              sizes="32px"
+              unoptimized={shouldBypassNextImageOptimization(competitor.logo)}
+              className={styles.sportsMatchupLogo}
+            />
+          ) : (
+            <span className={styles.sportsMatchupFallback}>{competitor.shortName}</span>
+          )}
+        </div>
+        {competitor.score ? <span className={styles.sportsMatchupScore}>{competitor.score}</span> : null}
+        {competitor.score ? (
+          <span className={styles.sportsMatchupDivider} aria-hidden="true">
+            |
+          </span>
+        ) : null}
+        <span className={styles.sportsMatchupName}>{competitor.name}</span>
+      </div>
+      <span className={styles.sportsMatchupPrice}>
+        {renderPct(competitor.tokenId, competitor.price)}
+      </span>
+    </div>
+  ));
 
   return (
-    <>
-      <div className={styles.sportsHeader}>
-        {isFinal ? <span className={styles.sportsFinalHeader}>{statusSummary}</span> : null}
-      </div>
-
-      <div className={styles.sportsRows}>
-        {model.competitors.map((competitor) => (
-          <div
-            key={competitor.key}
-            className={cn(styles.sportsRow, isFinal && styles.sportsRowFinal)}
-          >
-            <div className={styles.sportsLeftRail}>
-              {!isFinal ? <span className={styles.sportsBadge}>{competitor.shortName}</span> : null}
-              <span className={cn(styles.sportsScore, isFinal && styles.sportsScoreFinal)}>
-                {competitor.score ?? "--"}
-              </span>
-            </div>
-            <div className={styles.sportsTeam}>
-              <span className={cn(styles.sportsTeamName, isFinal && styles.sportsTeamNameFinal)}>
-                {competitor.name}
-              </span>
-              {competitor.subtitle ? (
-                <span className={styles.sportsTeamMeta}>{competitor.subtitle}</span>
-              ) : null}
-            </div>
-            <span className={cn(styles.sportsPrice, isFinal && styles.sportsPriceFinal)}>
-              {renderPct(competitor.tokenId, competitor.price)}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className={cn(styles.sportsActions, isFinal && styles.sportsActionsFinal)}>
-        {model.competitors.slice(0, 2).map((competitor, index) => (
-          <SportsAction
-            key={`${competitor.key}:action`}
-            label={competitor.name}
-            tone={actionTones[index]}
-          />
-        ))}
-      </div>
-
-      <div className={cn(styles.sportsFooter, isFinal && styles.sportsFooterFinal)}>
-        <div className={cn(styles.sportsFooterMeta, isFinal && styles.sportsFooterMetaFinal)}>
-          {!isFinal ? <span className={styles.sportsFooterLiveDot} aria-hidden="true" /> : null}
-          {footerLead ? (
-            <span className={cn(styles.sportsFooterStatus, !isFinal && styles.sportsFooterStatusLive)}>
-              {footerLead}
-            </span>
-          ) : null}
-          <span className={styles.sportsFooterText}>{model.volumeLabel}</span>
-          {leagueLabel ? <span className={styles.sportsFooterText}>{leagueLabel}</span> : null}
+    <BinarySingleCardFrame
+      href={model.href}
+      emphasis={emphasis}
+      primarySlot={rows[0]}
+      secondarySlot={rows[1] ?? null}
+      actionsSlot={
+        <div className={styles.sportsActions}>
+          {model.competitors.slice(0, 2).map((competitor, index) => (
+            <SportsAction
+              key={`${competitor.key}:action`}
+              label={firstWord(competitor.name)}
+              tone={index === 0 ? "primary" : "secondary"}
+            />
+          ))}
         </div>
-        <div className={styles.sportsFooterActions}>
-          {!isFinal ? (
-            <span className={styles.sportsFooterIcon} aria-hidden="true">
-              <Gift size={18} strokeWidth={2.1} />
-            </span>
-          ) : null}
-          <span className={styles.sportsFooterIcon} aria-hidden="true">
-            <Bookmark size={18} strokeWidth={2.1} />
-          </span>
-        </div>
-      </div>
-    </>
+      }
+      footerSlot={
+        <SingleBinaryInfoLine
+          items={[
+            ...(isLive ? ([{ kind: "live-dot" as const }] as const) : []),
+            ...(statusLead
+              ? ([{ kind: "text" as const, text: statusLead }] as const)
+              : []),
+            ...(statusLead
+              ? ([{ kind: "divider" as const }] as const)
+              : []),
+            { kind: "text" as const, text: model.volumeLabel },
+            ...(leagueLabel
+              ? ([{ kind: "divider" as const }, { kind: "text" as const, text: leagueLabel }] as const)
+              : []),
+          ]}
+          trailingActions={
+            <>
+              <span className={styles.sportsFooterIcon} aria-hidden="true">
+                <Gift size={18} strokeWidth={2.1} />
+              </span>
+              <span className={styles.sportsFooterIcon} aria-hidden="true">
+                <Bookmark size={18} strokeWidth={2.1} />
+              </span>
+            </>
+          }
+        />
+      }
+    />
   );
 }
 
@@ -492,35 +269,51 @@ export function HomeMarketCard({
   emphasis,
   layoutVariant,
 }: HomeMarketCardProps) {
-  const sharedFrameProps = {
-    emphasis,
-    layoutVariant,
-  };
+  void layoutVariant;
 
   switch (model.kind) {
     case "binary":
       return (
-        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
-          <HomeBinaryCardBody model={model} />
-        </CardLink>
+        <BinaryWidgetCard
+          title={model.title}
+          href={model.href}
+          imageSrc={model.imageSrc}
+          probability={{
+            price: model.primaryPrice,
+            tokenId: model.primaryTokenId,
+            label: "chance",
+          }}
+          actions={[
+            { label: model.actions[0].label, tone: "yes" },
+            { label: model.actions[1].label, tone: "no" },
+          ]}
+          summaryLeading={model.volumeLabel}
+          summaryTrailing={formatChanceDelta(model.primaryChange)}
+          summaryTrailingTone={
+            model.primaryChange > 0 ? "up" : model.primaryChange < 0 ? "down" : "default"
+          }
+          emphasis={emphasis}
+        />
       );
     case "grouped":
+      return <HomeGroupedCardBody model={model} />;
+    case "crypto-up-down": {
+      const cryptoWidget = buildHomeCryptoWidgetModel(model);
       return (
-        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
-          <HomeGroupedCardBody model={model} />
-        </CardLink>
+        <BinaryWidgetCard
+          title={cryptoWidget.title}
+          href={model.href}
+          imageSrc={model.imageSrc}
+          probability={cryptoWidget.probability}
+          actions={cryptoWidget.actions as [{ label: string; tone: "yes" | "no" }, { label: string; tone: "yes" | "no" }]}
+          showLiveDot={cryptoWidget.showLiveDot}
+          liveLabel={cryptoWidget.liveLabel}
+          footerTrailing={cryptoWidget.footerTrailing}
+          emphasis={emphasis}
+        />
       );
-    case "crypto-up-down":
-      return (
-        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
-          <HomeCryptoCardBody model={model} />
-        </CardLink>
-      );
+    }
     case "sports-live":
-      return (
-        <CardLink href={model.href} kind={model.kind} {...sharedFrameProps}>
-          <HomeSportsLiveCardBody model={model} />
-        </CardLink>
-      );
+      return <HomeSportsLiveCardBody model={model} emphasis={emphasis} />;
   }
 }

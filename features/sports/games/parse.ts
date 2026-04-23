@@ -298,7 +298,7 @@ export const getEventLeague = (event: SportsGameEvent): SportsLeague => {
   };
 };
 
-const isMoneylineMarket = (market: SportsGameMarket): boolean => {
+export const isMoneylineMarket = (market: SportsGameMarket): boolean => {
   if (market.sportsMarketType === "moneyline") return true;
   return (
     market.outcomes.length >= 2 &&

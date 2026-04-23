@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, Link2 } from "lucide-react";
 import { getEventImage } from "@/features/events/api/parse";
 import { formatPct } from "@/shared/lib/format";
 import { shouldBypassNextImageOptimization } from "@/shared/lib/images";
-import type { HeroSpotlightModel } from "../selectors";
+import type { HeroChartModel, HeroSpotlightModel } from "../selectors";
 import { HeroPriceChart, type HeroChartHoverState } from "./HeroPriceChart";
 import styles from "./HomeHero.module.css";
 
@@ -18,14 +18,66 @@ type HeroSpotlightCardProps = {
 const formatChangeLabel = (change: number): string =>
   `${change >= 0 ? "+" : "-"}${Math.round(Math.abs(change) * 100)}%`;
 
+const spotlightChartCache = new Map<string, HeroChartModel | null>();
+const spotlightChartRequestCache = new Map<string, Promise<HeroChartModel | null>>();
+
+const fetchSpotlightChart = async (
+  tokenId: string,
+): Promise<HeroChartModel | null> => {
+  const cachedChart = spotlightChartCache.get(tokenId);
+
+  if (cachedChart !== undefined) {
+    return cachedChart;
+  }
+
+  const existingRequest = spotlightChartRequestCache.get(tokenId);
+
+  if (existingRequest) {
+    return existingRequest;
+  }
+
+  const nextRequest = fetch(
+    `/api/market-price-history?tokenId=${encodeURIComponent(tokenId)}`,
+    {
+      method: "GET",
+    },
+  )
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to load chart for token ${tokenId}`);
+      }
+
+      const payload = (await response.json()) as {
+        chart?: HeroChartModel | null;
+      };
+
+      return payload.chart ?? null;
+    })
+    .then((chart) => {
+      spotlightChartCache.set(tokenId, chart);
+      return chart;
+    })
+    .finally(() => {
+      spotlightChartRequestCache.delete(tokenId);
+    });
+
+  spotlightChartRequestCache.set(tokenId, nextRequest);
+
+  return nextRequest;
+};
+
 export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
   const [hoveredPoint, setHoveredPoint] = useState<HeroChartHoverState | null>(null);
+  const [chart, setChart] = useState<HeroChartModel | null>(
+    spotlight.chart ??
+      (spotlight.tokenId ? spotlightChartCache.get(spotlight.tokenId) ?? null : null),
+  );
   const imageSrc = getEventImage(spotlight.event) ?? "/placeholder.svg";
   const sourceRows =
     spotlight.sourceRows.length > 1
       ? [...spotlight.sourceRows, ...spotlight.sourceRows]
       : spotlight.sourceRows;
-  const chartStartPoint = spotlight.chart?.points[0]?.p ?? null;
+  const chartStartPoint = chart?.points[0]?.p ?? null;
   const displayChance = spotlight.chance;
   const displayDelta = useMemo(() => {
     if (chartStartPoint === null) {
@@ -37,6 +89,37 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
   }, [chartStartPoint, hoveredPoint?.p, spotlight.chance, spotlight.dayChange]);
   const primaryOutcome = spotlight.outcomeItems[0];
   const secondaryOutcome = spotlight.outcomeItems[1];
+
+  useEffect(() => {
+    setChart(
+      spotlight.chart ??
+        (spotlight.tokenId ? spotlightChartCache.get(spotlight.tokenId) ?? null : null),
+    );
+  }, [spotlight.chart, spotlight.market.id, spotlight.tokenId]);
+
+  useEffect(() => {
+    if (spotlight.chart || !spotlight.tokenId) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void fetchSpotlightChart(spotlight.tokenId)
+      .then((nextChart) => {
+        if (!isCancelled) {
+          setChart(nextChart);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setChart(null);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [spotlight.chart, spotlight.tokenId]);
 
   return (
     <article className={styles.spotlightCard} data-spotlight-card>
@@ -182,7 +265,7 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
         </div>
 
         <HeroPriceChart
-          chart={spotlight.chart}
+          chart={chart}
           currentChance={spotlight.chance}
           onHoverChange={setHoveredPoint}
         />
@@ -191,8 +274,8 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
       <footer className={styles.spotlightFooter}>
         <span>{spotlight.volumeLabel} Vol.</span>
         <span>
-          {spotlight.chart?.intervalLabel ?? "Latest snapshot"} ·{" "}
-          {spotlight.chart?.sourceLabel ?? "Polymarket"}
+          {chart?.intervalLabel ?? "Latest snapshot"} ·{" "}
+          {chart?.sourceLabel ?? "Polymarket"}
         </span>
       </footer>
     </article>
