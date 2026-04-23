@@ -169,7 +169,9 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
             </p>
             <h1 className={styles.spotlightTitle} data-hero-title>
               <Link href={spotlight.href} className={styles.spotlightTitleLink}>
-                {spotlight.market.question}
+                <span className={styles.spotlightTitleText}>
+                  {spotlight.market.question}
+                </span>
               </Link>
             </h1>
           </div>
@@ -209,7 +211,9 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
                   href={outcome.href}
                   className={styles.marketOutcomeRow}
                 >
-                  <span className={styles.marketOutcomeLabel}>{outcome.label}</span>
+                  <span className={styles.marketOutcomeLabel}>
+                    <span className={styles.marketOutcomeLabelText}>{outcome.label}</span>
+                  </span>
                   <span className={styles.marketOutcomeValue}>
                     {formatPct(outcome.chance)}
                   </span>
@@ -259,22 +263,9 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
                           {row.meta ? ` · ${row.meta}` : ""}
                         </span>
                         <span className={styles.sourceValue} data-source-value>
-                          {row.value}
+                          <span className={styles.sourceValueText}>{row.value}</span>
                         </span>
                       </span>
-                      {row.stat ? (
-                        <span
-                          className={`${styles.sourceStat} ${
-                            row.statTone === "down"
-                              ? styles.sourceStatDown
-                              : row.statTone === "up"
-                                ? styles.sourceStatUp
-                                : styles.sourceStatNeutral
-                          }`.trim()}
-                        >
-                          {row.stat}
-                        </span>
-                      ) : null}
                     </Link>
                   </li>
                 ))}
@@ -286,6 +277,10 @@ export function HeroSpotlightCard({ spotlight }: HeroSpotlightCardProps) {
         <HeroPriceChart
           chart={chart}
           currentChance={spotlight.chance}
+          tokenId={spotlight.tokenId}
+          bestBid={spotlight.market.bestBid}
+          bestAsk={spotlight.market.bestAsk}
+          dayChange={spotlight.dayChange}
           onHoverChange={setHoveredPoint}
         />
       </div>
