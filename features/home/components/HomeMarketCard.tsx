@@ -46,16 +46,6 @@ const getCompactSportsActionLabel = (competitor: HomeSportsLiveCardModel["compet
   return firstWord(competitor.name);
 };
 
-const CRYPTO_ASSET_SYMBOLS: Record<string, string> = {
-  Bitcoin: "BTC",
-  Ethereum: "ETH",
-  Solana: "SOL",
-  Dogecoin: "DOGE",
-  BNB: "BNB",
-  XRP: "XRP",
-  Microstrategy: "MSTR",
-};
-
 const splitEventTitle = (
   title: string,
 ): {
@@ -94,17 +84,36 @@ const buildCryptoHeadline = (
   detail: string | null,
   assetLabel?: string,
 ): string => {
-  if (!assetLabel || headline !== `${assetLabel} Up or Down`) {
+  if (!assetLabel) {
+    return headline;
+  }
+
+  const normalizedHeadline = headline.trim().toLowerCase();
+  const normalizedAssetLabel = assetLabel.trim().toLowerCase();
+  const assetAliases = new Set([normalizedAssetLabel]);
+
+  if (normalizedAssetLabel === "bitcoin") {
+    assetAliases.add("btc");
+  }
+
+  const isUpDownHeadline = Array.from(assetAliases).some(
+    (alias) =>
+      normalizedHeadline === `${alias} up or down` ||
+      normalizedHeadline.endsWith(` ${alias} up or down`) ||
+      normalizedHeadline.startsWith(`${alias} `),
+  );
+
+  if (!isUpDownHeadline) {
     return headline;
   }
 
   const intervalMinutes = parseIntervalMinutes(detail);
   if (!intervalMinutes) {
-    return headline.replace(assetLabel, CRYPTO_ASSET_SYMBOLS[assetLabel] ?? assetLabel);
+    return headline.replace(/^\s*btc\b/i, assetLabel);
   }
 
-  const assetSymbol = CRYPTO_ASSET_SYMBOLS[assetLabel] ?? assetLabel;
-  return `${assetSymbol} ${intervalMinutes} Minute Up or Down`;
+  const minuteLabel = intervalMinutes === 1 ? "Minute" : "Minutes";
+  return `${assetLabel} ${intervalMinutes} ${minuteLabel} Up or Down`;
 };
 
 function SportsAction({
@@ -186,6 +195,9 @@ function HomeGroupedCardBody({ model }: { model: HomeGroupedCardModel }) {
         ],
       }))}
       volumeLabel={model.volumeLabel}
+      overlayNode={
+        model.primaryTokenId ? <LivePriceDelta tokenId={model.primaryTokenId} /> : undefined
+      }
     />
   );
 }
@@ -370,7 +382,7 @@ export function HomeMarketCard({
             },
           ]}
           summaryLeading={model.volumeLabel}
-          summaryTrailingNode={
+          overlayNode={
             model.primaryTokenId ? <LivePriceDelta tokenId={model.primaryTokenId} /> : undefined
           }
           emphasis={emphasis}
@@ -390,6 +402,9 @@ export function HomeMarketCard({
           showLiveDot={cryptoWidget.showLiveDot}
           liveLabel={cryptoWidget.liveLabel}
           footerTrailing={cryptoWidget.footerTrailing}
+          overlayNode={
+            model.tokenId ? <LivePriceDelta tokenId={model.tokenId} /> : undefined
+          }
           emphasis={emphasis}
         />
       );

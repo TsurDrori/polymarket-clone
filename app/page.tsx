@@ -75,7 +75,7 @@ export default async function Home() {
       tagSlug: "sports",
     }),
     listEventsKeyset({
-      limit: 20,
+      limit: 120,
       order: "volume24hr",
       ascending: false,
       tagSlug: "up-or-down",

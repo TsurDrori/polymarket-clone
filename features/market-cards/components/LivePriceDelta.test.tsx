@@ -73,12 +73,12 @@ describe("LivePriceDelta", () => {
       });
     });
 
-    expect(screen.getAllByText("+4%")).toHaveLength(2);
+    expect(screen.getByText("+4%")).toBeTruthy();
 
     act(() => {
-      vi.advanceTimersByTime(1_000);
+      vi.advanceTimersByTime(2800);
     });
 
-    expect(screen.getByText("+4%")).toBeTruthy();
+    expect(screen.queryByText("+4%")).toBeNull();
   });
 });

@@ -389,6 +389,37 @@ export const deriveCryptoTimeBucket = (
   if (tags.has("monthly")) return "monthly";
   if (tags.has("yearly")) return "yearly";
   if (tags.has("pre-market")) return "pre-market";
+
+  const fallbackSource = `${event.title} ${event.slug}`.toLowerCase();
+  if (
+    fallbackSource.includes("5 minute") ||
+    fallbackSource.includes("5 min") ||
+    fallbackSource.includes("-5m-")
+  ) {
+    return "5m";
+  }
+  if (
+    fallbackSource.includes("15 minute") ||
+    fallbackSource.includes("15 min") ||
+    fallbackSource.includes("-15m-")
+  ) {
+    return "15m";
+  }
+  if (
+    fallbackSource.includes("1 hour") ||
+    fallbackSource.includes("1 hr") ||
+    fallbackSource.includes("-1h-")
+  ) {
+    return "1h";
+  }
+  if (
+    fallbackSource.includes("4 hour") ||
+    fallbackSource.includes("4 hr") ||
+    fallbackSource.includes("-4h-")
+  ) {
+    return "4h";
+  }
+
   return "other";
 };
 

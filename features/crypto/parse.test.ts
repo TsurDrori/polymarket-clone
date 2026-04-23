@@ -112,6 +112,21 @@ describe("crypto parser", () => {
     expect(deriveCryptoAsset(event)).toBe("bitcoin");
   });
 
+  it("falls back to slug and title hints when the 5 minute tags are missing", () => {
+    const event = buildEvent({
+      id: "btc-updown-slug-fallback",
+      slug: "btc-updown-5m-1776966600",
+      title: "Bitcoin Up or Down - April 23, 1:50PM-1:55PM ET",
+      tags: [
+        { id: "1", slug: "crypto", label: "Crypto" },
+        { id: "2", slug: "bitcoin", label: "Bitcoin" },
+        { id: "3", slug: "up-or-down", label: "Up / Down" },
+      ],
+    });
+
+    expect(deriveCryptoTimeBucket(event)).toBe("5m");
+  });
+
   it("omits unsupported controls while keeping unsupported events in the all feed", () => {
     const supported = buildEvent({
       id: "eth-above",

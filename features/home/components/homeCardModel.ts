@@ -10,7 +10,9 @@ import { parseDisplayedSportsScoreParts } from "@/features/sports/scoreDisplay";
 import {
   buildCryptoWorkingSet,
   compareCryptoEventsForDisplay,
+  deriveCryptoAsset,
   deriveCryptoFamily,
+  deriveCryptoTimeBucket,
 } from "@/features/crypto/parse";
 import { formatVolume } from "@/shared/lib/format";
 import { getVisibleTags } from "@/shared/lib/tags";
@@ -341,12 +343,96 @@ const buildCryptoUpDownModel = (event: PolymarketEvent): HomeCryptoUpDownCardMod
   };
 };
 
+const getEventEndTimestamp = (event: PolymarketEvent): number | null => {
+  if (!event.endDate) {
+    return null;
+  }
+
+  const parsed = Date.parse(event.endDate);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const isTradableEvent = (event: PolymarketEvent): boolean =>
+  event.active &&
+  !event.closed &&
+  !event.archived &&
+  event.markets.some((market) => !market.closed && market.acceptingOrders);
+
+const isBitcoinFiveMinuteUpDownEvent = (event: PolymarketEvent): boolean =>
+  deriveCryptoFamily(event) === "up-down" &&
+  deriveCryptoAsset(event) === "bitcoin" &&
+  deriveCryptoTimeBucket(event) === "5m";
+
+const compareRollingBitcoinFiveMinuteEvents = (
+  left: PolymarketEvent,
+  right: PolymarketEvent,
+): number => {
+  const leftTradable = isTradableEvent(left);
+  const rightTradable = isTradableEvent(right);
+
+  if (leftTradable !== rightTradable) {
+    return leftTradable ? -1 : 1;
+  }
+
+  const now = Date.now();
+  const leftEnd = getEventEndTimestamp(left);
+  const rightEnd = getEventEndTimestamp(right);
+  const leftHasEnd = leftEnd !== null;
+  const rightHasEnd = rightEnd !== null;
+
+  if (leftHasEnd !== rightHasEnd) {
+    return leftHasEnd ? -1 : 1;
+  }
+
+  if (leftEnd !== null && rightEnd !== null) {
+    const leftIsUpcoming = leftEnd >= now;
+    const rightIsUpcoming = rightEnd >= now;
+
+    if (leftIsUpcoming !== rightIsUpcoming) {
+      return leftIsUpcoming ? -1 : 1;
+    }
+
+    if (leftIsUpcoming && rightIsUpcoming) {
+      if (leftEnd !== rightEnd) {
+        return leftEnd - rightEnd;
+      }
+    } else if (!leftIsUpcoming && !rightIsUpcoming) {
+      if (leftEnd !== rightEnd) {
+        return rightEnd - leftEnd;
+      }
+    }
+  }
+
+  return compareCryptoEventsForDisplay(left, right);
+};
+
 const selectHomeCryptoEntry = (
   cryptoEvents: ReadonlyArray<PolymarketEvent>,
 ): HomeCardEntry | undefined => {
-  const [bestEvent] = [...cryptoEvents]
-    .filter((event) => deriveCryptoFamily(event) === "up-down")
-    .sort(compareCryptoEventsForDisplay);
+  const exactBitcoinFiveMinuteEvents = cryptoEvents.filter(isBitcoinFiveMinuteUpDownEvent);
+
+  const [bestEvent] =
+    exactBitcoinFiveMinuteEvents.length > 0
+      ? [...exactBitcoinFiveMinuteEvents].sort(compareRollingBitcoinFiveMinuteEvents)
+      : [...cryptoEvents]
+          .filter((event) => deriveCryptoFamily(event) === "up-down")
+          .sort((left, right) => {
+            const leftIsBitcoin = deriveCryptoAsset(left) === "bitcoin";
+            const rightIsBitcoin = deriveCryptoAsset(right) === "bitcoin";
+
+            if (leftIsBitcoin !== rightIsBitcoin) {
+              return leftIsBitcoin ? -1 : 1;
+            }
+
+            const leftIsFiveMinute = deriveCryptoTimeBucket(left) === "5m";
+            const rightIsFiveMinute = deriveCryptoTimeBucket(right) === "5m";
+
+            if (leftIsFiveMinute !== rightIsFiveMinute) {
+              return leftIsFiveMinute ? -1 : 1;
+            }
+
+            return compareCryptoEventsForDisplay(left, right);
+          });
 
   return bestEvent ? buildHomeCardEntry(bestEvent) : undefined;
 };

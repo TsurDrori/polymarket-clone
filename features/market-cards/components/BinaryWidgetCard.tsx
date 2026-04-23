@@ -40,6 +40,7 @@ type BinaryWidgetCardProps = {
   summaryTrailing?: string;
   summaryTrailingTone?: "up" | "down" | "default";
   summaryTrailingNode?: React.ReactNode;
+  overlayNode?: React.ReactNode;
   showLiveDot?: boolean;
   liveLabel?: string;
   footerVolume?: string;
@@ -61,6 +62,7 @@ export function BinaryWidgetCard({
   summaryTrailing,
   summaryTrailingTone = "default",
   summaryTrailingNode,
+  overlayNode,
   showLiveDot = false,
   liveLabel = "LIVE",
   footerVolume,
@@ -92,6 +94,7 @@ export function BinaryWidgetCard({
   return (
     <BinarySingleCardFrame
       href={href}
+      overlaySlot={overlayNode}
       cardClassName={styles.card}
       primarySpansSecondary
       emphasis={emphasis}

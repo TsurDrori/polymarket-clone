@@ -4,6 +4,7 @@ import styles from "./BinarySingleCardFrame.module.css";
 
 type BinarySingleCardFrameProps = {
   href: string;
+  overlaySlot?: React.ReactNode;
   primarySlot: React.ReactNode;
   secondarySlot?: React.ReactNode;
   actionsSlot: React.ReactNode;
@@ -18,6 +19,7 @@ type BinarySingleCardFrameProps = {
 
 export function BinarySingleCardFrame({
   href,
+  overlaySlot,
   primarySlot,
   secondarySlot,
   actionsSlot,
@@ -37,6 +39,7 @@ export function BinarySingleCardFrame({
       data-live-leader={emphasis?.isLiveLeader ? "true" : "false"}
       data-promoted={emphasis?.isPromoted ? "true" : "false"}
     >
+      {overlaySlot ? <div className={styles.overlay}>{overlaySlot}</div> : null}
       <Link href={href} className={styles.link}>
         <div
           className={cn(

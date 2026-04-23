@@ -165,7 +165,17 @@ describe("Home route", () => {
     expect(buildHomeExploreCardEntries).toHaveBeenCalledWith(
       expect.objectContaining({
         events: allFeedEvents,
+        cryptoEvents: expect.any(Array),
         limit: 20,
+      }),
+    );
+    expect(listEventsKeyset).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        limit: 120,
+        order: "volume24hr",
+        ascending: false,
+        tagSlug: "up-or-down",
       }),
     );
     expect(HomePage).toHaveBeenCalledWith(

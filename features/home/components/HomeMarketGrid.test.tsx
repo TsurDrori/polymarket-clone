@@ -504,4 +504,108 @@ describe("HomeMarketGrid", () => {
     expect(screen.getByText("LIVE-DELTA")).toBeTruthy();
     expect(screen.queryByText("-4%")).toBeNull();
   });
+
+  it("uses the live websocket delta slot on grouped cards too", () => {
+    const event = buildEvent(
+      "What happens before GTA VI?",
+      [{ id: "1", slug: "culture", label: "Culture" }],
+      {
+        showAllOutcomes: true,
+        markets: [
+          buildMarket({
+            id: "first",
+            groupItemTitle: "July 31",
+            clobTokenIds: ["token-a", "token-b"],
+          }),
+          buildMarket({
+            id: "second",
+            groupItemTitle: "June 30",
+            clobTokenIds: ["token-c", "token-d"],
+          }),
+        ],
+      },
+    );
+
+    const [entry] = buildHomeEventCardEntries([event]);
+
+    render(
+      <HomeMarketGrid
+        items={entry ? [entry] : []}
+        initialCount={1}
+        incrementCount={1}
+        continuation={{ hasMore: false, onContinue: vi.fn() }}
+      />,
+    );
+
+    expect(screen.getByText("LIVE-DELTA")).toBeTruthy();
+  });
+
+  it("uses the live websocket delta slot on crypto cards too", () => {
+    const event = buildEvent(
+      "Bitcoin Up or Down - April 23, 12:40PM-12:45PM ET",
+      [
+        { id: "1", slug: "crypto", label: "Crypto" },
+        { id: "2", slug: "bitcoin", label: "Bitcoin" },
+        { id: "3", slug: "up-or-down", label: "Up / Down" },
+      ],
+      {
+        markets: [
+          buildMarket({
+            clobTokenIds: ["btc-up", "btc-down"],
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.51,
+            outcomePrices: [0.51, 0.49],
+          }),
+        ],
+      },
+    );
+
+    const [entry] = buildHomeEventCardEntries([event]);
+
+    render(
+      <HomeMarketGrid
+        items={entry ? [entry] : []}
+        initialCount={1}
+        incrementCount={1}
+        continuation={{ hasMore: false, onContinue: vi.fn() }}
+      />,
+    );
+
+    expect(screen.getByText("LIVE-DELTA")).toBeTruthy();
+  });
+
+  it("expands the BTC shorthand to the full bitcoin title on the home crypto card", () => {
+    const event = buildEvent(
+      "BTC 5 Minute Up or Down - April 23, 12:40PM-12:45PM ET",
+      [
+        { id: "1", slug: "crypto", label: "Crypto" },
+        { id: "2", slug: "bitcoin", label: "Bitcoin" },
+        { id: "3", slug: "up-or-down", label: "Up / Down" },
+        { id: "4", slug: "5m", label: "5M" },
+      ],
+      {
+        markets: [
+          buildMarket({
+            clobTokenIds: ["btc-up", "btc-down"],
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.51,
+            outcomePrices: [0.51, 0.49],
+          }),
+        ],
+      },
+    );
+
+    const [entry] = buildHomeEventCardEntries([event]);
+
+    render(
+      <HomeMarketGrid
+        items={entry ? [entry] : []}
+        initialCount={1}
+        incrementCount={1}
+        continuation={{ hasMore: false, onContinue: vi.fn() }}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Bitcoin 5 Minutes Up or Down" })).toBeTruthy();
+  });
 });

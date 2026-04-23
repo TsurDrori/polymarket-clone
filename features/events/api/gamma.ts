@@ -35,9 +35,6 @@ export type ListEventsKeysetResult = {
   nextCursor: string | null;
 };
 
-const normalizeKeysetOrder = (order: string): string =>
-  order === "volume_24hr" ? "volume24hr" : order;
-
 const buildListUrl = ({
   limit,
   offset,
@@ -67,7 +64,7 @@ const buildListKeysetUrl = ({
   params.set("active", "true");
   params.set("closed", "false");
   params.set("limit", String(limit));
-  if (order !== undefined) params.set("order", normalizeKeysetOrder(order));
+  if (order !== undefined) params.set("order", order);
   if (ascending !== undefined) params.set("ascending", String(ascending));
   if (tagSlug !== undefined) params.set("tag_slug", tagSlug);
   if (afterCursor !== undefined) params.set("after_cursor", afterCursor);

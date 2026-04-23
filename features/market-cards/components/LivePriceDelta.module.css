@@ -1,72 +1,76 @@
 .root {
-  position: relative;
-  display: inline-grid;
-  align-items: center;
-  justify-items: end;
-  min-width: 4ch;
-  height: 16px;
-  flex: 0 0 auto;
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.layer,
-.static {
-  grid-area: 1 / 1;
-  color: var(--text-muted);
+.badge {
+  display: inline-block;
   font-size: 13px;
-  font-weight: 590;
+  font-weight: 700;
   line-height: 16px;
+  letter-spacing: -0.02em;
   white-space: nowrap;
+  animation-duration: 2800ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  animation-fill-mode: both;
 }
 
-.layer[data-tone="up"],
-.static[data-tone="up"] {
+.badge[data-tone="up"] {
   color: var(--accent-yes);
 }
 
-.layer[data-tone="down"],
-.static[data-tone="down"] {
+.badge[data-tone="down"] {
   color: var(--accent-no);
 }
 
-.outgoing {
-  animation: live-delta-out 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+.root[data-direction="up"] .badge {
+  animation-name: live-delta-up;
 }
 
-.incoming {
-  animation: live-delta-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+.root[data-direction="down"] .badge {
+  animation-name: live-delta-down;
 }
 
-@keyframes live-delta-out {
+@keyframes live-delta-up {
   0% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(2px) scale(0.985);
+  }
+
+  55% {
+    opacity: 1;
+    transform: translateY(-2px) scale(0.995);
   }
 
   100% {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-8px) scale(1);
   }
 }
 
-@keyframes live-delta-in {
+@keyframes live-delta-down {
   0% {
-    opacity: 0;
-    transform: translateY(6px);
+    opacity: 1;
+    transform: translateY(-2px) scale(0.985);
+  }
+
+  55% {
+    opacity: 1;
+    transform: translateY(2px) scale(0.995);
   }
 
   100% {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: 0;
+    transform: translateY(8px) scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .outgoing,
-  .incoming {
+  .badge {
     animation: none;
-  }
-
-  .outgoing {
-    display: none;
+    opacity: 0;
   }
 }

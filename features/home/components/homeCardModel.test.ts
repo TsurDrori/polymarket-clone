@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   PolymarketEvent,
   PolymarketMarket,
@@ -82,6 +82,10 @@ const buildEvent = (
 });
 
 describe("homeCardModel", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("resolves binary cards for standard yes/no events", () => {
     const event = buildEvent("Will this happen?", [{ id: "1", slug: "tech", label: "Tech" }]);
 
@@ -435,6 +439,165 @@ describe("homeCardModel", () => {
     });
 
     expect(entries[0]?.id).toBe("btc-high-volume");
+  });
+
+  it("prefers the bitcoin 5 minute up/down card over hotter non-5m crypto picks", () => {
+    const bitcoinFiveMinute = buildEvent(
+      "Bitcoin Up or Down - April 21, 1:05AM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up / Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+        { id: "5m", slug: "5m", label: "5M" },
+      ],
+      {
+        id: "btc-5m",
+        volume24hr: 80_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.55,
+            bestBid: 0.54,
+            bestAsk: 0.56,
+          }),
+        ],
+      },
+    );
+    const higherVolumeEthereum = buildEvent(
+      "Ethereum Up or Down - April 21, 1:05AM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up / Down" },
+        { id: "ethereum", slug: "ethereum", label: "Ethereum" },
+        { id: "5m", slug: "5m", label: "5M" },
+      ],
+      {
+        id: "eth-5m-hotter",
+        volume24hr: 480_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.61,
+            bestBid: 0.6,
+            bestAsk: 0.62,
+          }),
+        ],
+      },
+    );
+    const higherVolumeBitcoinFifteenMinute = buildEvent(
+      "Bitcoin Up or Down - April 21, 1:15AM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up / Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+        { id: "15m", slug: "15m", label: "15M" },
+      ],
+      {
+        id: "btc-15m-hotter",
+        volume24hr: 520_000,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.58,
+            bestBid: 0.57,
+            bestAsk: 0.59,
+          }),
+        ],
+      },
+    );
+
+    const entries = buildHomeExploreCardEntries({
+      events: [],
+      cryptoEvents: [higherVolumeEthereum, higherVolumeBitcoinFifteenMinute, bitcoinFiveMinute],
+      sportsEvents: [],
+      limit: 2,
+    });
+
+    expect(entries[0]?.id).toBe("btc-5m");
+    expect(entries[0]?.model.kind).toBe("crypto-up-down");
+  });
+
+  it("prefers the nearest upcoming bitcoin 5 minute contract over broader bitcoin up/down events", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-23T17:52:00.000Z"));
+
+    const currentBitcoinFiveMinute = buildEvent(
+      "Bitcoin Up or Down - April 23, 1:50PM-1:55PM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up / Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+        { id: "5m", slug: "5M", label: "5M" },
+      ],
+      {
+        id: "btc-5m-current",
+        slug: "btc-updown-5m-1776966600",
+        endDate: "2026-04-23T17:55:00.000Z",
+        volume24hr: 222,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.52,
+            bestBid: 0.51,
+            bestAsk: 0.53,
+          }),
+        ],
+      },
+    );
+    const broaderBitcoinHour = buildEvent(
+      "Bitcoin Up or Down - April 23, 2PM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up / Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+      ],
+      {
+        id: "btc-hourly-broader",
+        volume24hr: 90_000,
+        endDate: "2026-04-23T18:00:00.000Z",
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.61,
+            bestBid: 0.6,
+            bestAsk: 0.62,
+          }),
+        ],
+      },
+    );
+    const laterBitcoinFiveMinute = buildEvent(
+      "Bitcoin Up or Down - April 23, 4:40PM-4:45PM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up / Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+        { id: "later-5m", slug: "5M", label: "5M" },
+      ],
+      {
+        id: "btc-5m-later",
+        slug: "btc-updown-5m-1776976800",
+        endDate: "2026-04-23T20:45:00.000Z",
+        volume24hr: 214,
+        markets: [
+          buildMarket({
+            outcomes: ["Up", "Down"],
+            lastTradePrice: 0.49,
+            bestBid: 0.48,
+            bestAsk: 0.5,
+          }),
+        ],
+      },
+    );
+
+    const entries = buildHomeExploreCardEntries({
+      events: [],
+      cryptoEvents: [broaderBitcoinHour, laterBitcoinFiveMinute, currentBitcoinFiveMinute],
+      sportsEvents: [],
+      limit: 2,
+    });
+
+    expect(entries[0]?.id).toBe("btc-5m-current");
+    expect(entries[0]?.model.kind).toBe("crypto-up-down");
   });
 
   it("replaces stale homepage crypto cards in the initial curated mix", () => {

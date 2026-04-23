@@ -1,5 +1,6 @@
 import { BinaryGroupCard } from "@/features/market-cards/components/BinaryGroupCard";
 import { BinaryWidgetCard } from "@/features/market-cards/components/BinaryWidgetCard";
+import { LivePriceDelta } from "@/features/market-cards/components/LivePriceDelta";
 import { type CryptoCardModel } from "../parse";
 
 type CryptoCardProps = {
@@ -39,6 +40,9 @@ export function CryptoCard({ card, emphasis }: CryptoCardProps) {
         }))}
         volumeLabel={card.volumeLabel}
         metaLabel={card.metaLabel}
+        overlayNode={
+          card.primarySnippet.tokenId ? <LivePriceDelta tokenId={card.primarySnippet.tokenId} /> : undefined
+        }
         showLiveDot={card.showLiveDot}
         emphasis={emphasis}
       />
@@ -79,6 +83,9 @@ export function CryptoCard({ card, emphasis }: CryptoCardProps) {
       showLiveDot={card.showLiveDot}
       liveLabel="LIVE"
       footerTrailing={card.metaLabel ?? undefined}
+      overlayNode={
+        card.primarySnippet.tokenId ? <LivePriceDelta tokenId={card.primarySnippet.tokenId} /> : undefined
+      }
       emphasis={emphasis}
     />
   );

@@ -45,7 +45,7 @@ const getCachedCryptoCatalogPayload = unstable_cache(
   const { events } = await listEventsKeyset({
     tagSlug: "crypto",
     limit: 120,
-    order: "volume24hr",
+    order: "volume_24hr",
     ascending: false,
   });
 

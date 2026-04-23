@@ -21,6 +21,10 @@ vi.mock("@/features/realtime/subscriptions", () => ({
   unsubscribe: vi.fn(),
 }));
 
+vi.mock("@/features/market-cards/components/LivePriceDelta", () => ({
+  LivePriceDelta: () => <span>LIVE-DELTA</span>,
+}));
+
 vi.mock("next/image", () => ({
   default: (props: ImgHTMLAttributes<HTMLImageElement>) => (
     // eslint-disable-next-line @next/next/no-img-element
@@ -137,5 +141,34 @@ describe("CryptoCard", () => {
 
     expect(screen.getByText("61%")).toBeTruthy();
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("0.61");
+  });
+
+  it("renders the live delta footer on single crypto cards", () => {
+    const event = buildEvent({
+      id: "btc-up",
+      slug: "btc-5-minute-up-or-down",
+      title: "BTC 5 Minute Up or Down",
+      tags: [
+        { id: "1", slug: "crypto", label: "Crypto" },
+        { id: "2", slug: "bitcoin", label: "Bitcoin" },
+        { id: "3", slug: "5M", label: "5M" },
+        { id: "4", slug: "up-or-down", label: "Up / Down" },
+      ],
+    });
+    const workingSet = buildCryptoWorkingSet([event]);
+    const card = workingSet.cards[0];
+
+    if (!card) {
+      throw new Error("Expected a crypto card to be built for the test event.");
+    }
+
+    render(
+      <Provider store={getRealtimeStore()}>
+        <Hydrator events={[event]} />
+        <CryptoCard card={card} />
+      </Provider>,
+    );
+
+    expect(screen.getByText("LIVE-DELTA")).toBeTruthy();
   });
 });

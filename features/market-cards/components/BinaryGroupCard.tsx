@@ -12,6 +12,8 @@ type BinaryGroupCardProps = {
   rows: ReadonlyArray<GroupedOutcomeRow>;
   volumeLabel: string;
   metaLabel?: string | null;
+  trailingNode?: React.ReactNode;
+  overlayNode?: React.ReactNode;
   showLiveDot?: boolean;
   liveLabel?: string;
   emphasis?: {
@@ -27,10 +29,15 @@ export function BinaryGroupCard({
   rows,
   volumeLabel,
   metaLabel,
+  trailingNode,
+  overlayNode,
   showLiveDot = false,
   liveLabel = "Live",
   emphasis,
 }: BinaryGroupCardProps) {
+  const inlineMetaLabel = trailingNode ? metaLabel : null;
+  const trailingMetaLabel = trailingNode ? null : metaLabel;
+
   return (
     <article
       className={cn(
@@ -41,6 +48,7 @@ export function BinaryGroupCard({
       data-live-leader={emphasis?.isLiveLeader ? "true" : "false"}
       data-promoted={emphasis?.isPromoted ? "true" : "false"}
     >
+      {overlayNode ? <div className={styles.overlay}>{overlayNode}</div> : null}
       <Link href={href} className={styles.link}>
         <header className={styles.header}>
           <div className={styles.titleRow}>
@@ -71,8 +79,10 @@ export function BinaryGroupCard({
             {showLiveDot ? <span className={styles.liveDot} aria-hidden="true" /> : null}
             {showLiveDot ? <span className={styles.liveLabel}>{liveLabel}</span> : null}
             <span>{volumeLabel}</span>
+            {inlineMetaLabel ? <span>{inlineMetaLabel}</span> : null}
           </div>
-          {metaLabel ? <span>{metaLabel}</span> : null}
+          {trailingNode ? <span className={styles.trailingNode}>{trailingNode}</span> : null}
+          {trailingMetaLabel ? <span>{trailingMetaLabel}</span> : null}
         </footer>
       </Link>
     </article>

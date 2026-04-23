@@ -5,7 +5,7 @@ import { useRetainedLivePrice } from "@/features/realtime/hooks";
 import { formatPct } from "@/shared/lib/format";
 import styles from "./LivePriceDelta.module.css";
 
-const TRANSITION_MS = 1_000;
+const TRANSITION_MS = 2800;
 
 type DeltaTone = "up" | "down";
 
@@ -16,8 +16,7 @@ type DeltaSnapshot = {
 
 type TransitionState = {
   key: number;
-  incoming: DeltaSnapshot;
-  outgoing: DeltaSnapshot | null;
+  snapshot: DeltaSnapshot;
 };
 
 const formatDelta = (value: number): string =>
@@ -33,9 +32,14 @@ const buildSnapshot = (
   }
 
   const delta = price - prevPrice;
+  const formattedText = formatDelta(delta);
+
+  if (formattedText === "+0%" || formattedText === "-0%") {
+    return null;
+  }
 
   return {
-    text: formatDelta(delta),
+    text: formattedText,
     tone: delta > 0 ? "up" : "down",
   };
 };
@@ -49,22 +53,20 @@ export function LivePriceDelta({ tokenId }: { tokenId: string }) {
     () => buildSnapshot(tick.price, tick.prevPrice, tick.ts),
     [tick.prevPrice, tick.price, tick.ts],
   );
-  const displayRef = useRef<DeltaSnapshot | null>(null);
-  const [display, setDisplay] = useState<DeltaSnapshot | null>(null);
+  const seenSeqRef = useRef(seq);
   const [transition, setTransition] = useState<TransitionState | null>(null);
 
   useEffect(() => {
-    if (seq <= 0 || !nextSnapshot) {
+    if (seq <= seenSeqRef.current || !nextSnapshot) {
       return;
     }
 
-    setTransition((current) => ({
+    seenSeqRef.current = seq;
+
+    setTransition({
       key: seq,
-      incoming: nextSnapshot,
-      outgoing: current?.incoming ?? displayRef.current,
-    }));
-    setDisplay(nextSnapshot);
-    displayRef.current = nextSnapshot;
+      snapshot: nextSnapshot,
+    });
 
     const timeoutId = window.setTimeout(() => {
       setTransition((current) => (current?.key === seq ? null : current));
@@ -75,35 +77,22 @@ export function LivePriceDelta({ tokenId }: { tokenId: string }) {
     };
   }, [nextSnapshot, seq]);
 
-  if (!display) {
+  if (!transition) {
     return null;
   }
 
-  if (!transition) {
-    return (
-      <span className={styles.static} data-tone={display.tone} aria-hidden="true">
-        {display.text}
-      </span>
-    );
-  }
-
   return (
-    <span className={styles.root} aria-hidden="true">
-      {transition.outgoing ? (
-        <span
-          key={`outgoing-${transition.key}`}
-          className={`${styles.layer} ${styles.outgoing}`}
-          data-tone={transition.outgoing.tone}
-        >
-          {transition.outgoing.text}
-        </span>
-      ) : null}
+    <span
+      className={styles.root}
+      data-direction={transition.snapshot.tone}
+      aria-hidden="true"
+    >
       <span
-        key={`incoming-${transition.key}`}
-        className={`${styles.layer} ${styles.incoming}`}
-        data-tone={transition.incoming.tone}
+        key={`delta-${transition.key}`}
+        className={styles.badge}
+        data-tone={transition.snapshot.tone}
       >
-        {transition.incoming.text}
+        {transition.snapshot.text}
       </span>
     </span>
   );
