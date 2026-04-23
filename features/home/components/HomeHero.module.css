@@ -686,13 +686,13 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 799px) {
   .compactDiscovery {
     display: grid;
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 800px) {
   .desktopHero {
     display: grid;
     gap: 16px;
@@ -703,7 +703,7 @@
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1279px) {
+@media (min-width: 800px) and (max-width: 1279px) {
   .heroRow {
     grid-template-columns: minmax(0, 1fr) 270px;
     gap: 24px;

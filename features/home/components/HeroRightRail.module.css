@@ -175,7 +175,7 @@
   color: var(--text-secondary);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 800px) {
   .rail {
     align-self: start;
     padding-top: 4px;

@@ -114,11 +114,13 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 800px) {
   .featuredLayout {
     grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.9fr);
   }
+}
 
+@media (min-width: 1024px) {
   .panelRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
