@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurfaceFeed } from "@/features/events/feed/SurfaceFeed";
 import type {
   SurfaceFeedItem,
@@ -44,6 +44,8 @@ export function HomeMarketGrid({
   incrementCount = 12,
   continuation,
 }: HomeMarketGridProps) {
+  const [pendingRemoteExpansion, setPendingRemoteExpansion] = useState(false);
+  const previousItemCountRef = useRef(items.length);
   const feedItems = useMemo<SurfaceFeedItem<HomeCardEntry>[]>(
     () =>
       items.map((item) => ({
@@ -92,13 +94,57 @@ export function HomeMarketGrid({
     policy: projectionPolicy,
   });
   const liveLeaderIds = useMemo(() => leaderIds.slice(0, HOME_LEADER_COUNT), [leaderIds]);
+  const handleContinue = useCallback(() => {
+    if (hasMore) {
+      showMore();
+      return;
+    }
+
+    if (!continuation?.hasMore) {
+      return;
+    }
+
+    setPendingRemoteExpansion(true);
+    continuation.onContinue();
+  }, [continuation, hasMore, showMore]);
+
+  useEffect(() => {
+    if (
+      pendingRemoteExpansion &&
+      items.length > previousItemCountRef.current &&
+      !continuation?.disabled
+    ) {
+      setPendingRemoteExpansion(false);
+      showMore();
+    }
+
+    if (pendingRemoteExpansion && !continuation?.disabled && !continuation?.hasMore) {
+      setPendingRemoteExpansion(false);
+    }
+
+    previousItemCountRef.current = items.length;
+  }, [continuation?.disabled, continuation?.hasMore, items.length, pendingRemoteExpansion, showMore]);
+
+  const continuationDisabled = continuation?.disabled || pendingRemoteExpansion;
+  const continuationLabel =
+    continuation?.disabled || pendingRemoteExpansion
+      ? "Loading markets…"
+      : continuation?.label;
+
   const resolvedContinuation = hasMore
     ? {
-        hasMore,
-        onContinue: showMore,
+        hasMore: true,
+        disabled: continuationDisabled,
+        label: continuationLabel,
+        onContinue: handleContinue,
       }
     : continuation?.hasMore
-      ? continuation
+      ? {
+          ...continuation,
+          disabled: continuationDisabled,
+          label: continuationLabel,
+          onContinue: handleContinue,
+        }
       : undefined;
 
   return (

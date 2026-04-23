@@ -37,6 +37,7 @@ type LoadingState = {
   mode: "initial" | "append";
 };
 const CHIP_RAIL_SCROLL_STEP = 240;
+const HOME_MARKET_BATCH_SIZE = 20;
 
 const appendUniqueEntries = (
   current: ReadonlyArray<HomeCardEntry>,
@@ -175,6 +176,10 @@ export function HomePage({
               },
             };
           });
+
+          setLoadingState((current) =>
+            current?.chipSlug === chipSlug && current.mode === mode ? null : current,
+          );
         });
       })
       .catch((error: unknown) => {
@@ -183,9 +188,6 @@ export function HomePage({
         setFeedError(
           error instanceof Error ? error.message : "Unable to load this market feed.",
         );
-      })
-      .finally(() => {
-        if (controller.signal.aborted) return;
         setLoadingState((current) =>
           current?.chipSlug === chipSlug && current.mode === mode ? null : current,
         );
@@ -311,8 +313,8 @@ export function HomePage({
         <HomeMarketGrid
           key={activeChipSlug}
           items={activeCards}
-          initialCount={16}
-          incrementCount={16}
+          initialCount={HOME_MARKET_BATCH_SIZE}
+          incrementCount={HOME_MARKET_BATCH_SIZE}
           continuation={{
             hasMore: activeFeedState.nextCursor !== null,
             disabled:

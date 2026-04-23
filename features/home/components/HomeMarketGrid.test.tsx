@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ImgHTMLAttributes } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   PolymarketEvent,
   PolymarketMarket,
@@ -9,6 +9,16 @@ import type {
 import { formatPct } from "@/shared/lib/format";
 import { HomeMarketGrid } from "./HomeMarketGrid";
 import { buildHomeEventCardEntries } from "./homeCardModel";
+
+const { useProjectedSurfaceWindow } = vi.hoisted(() => ({
+  useProjectedSurfaceWindow: vi.fn(({ items }: { items: unknown[] }) => ({
+    visibleItems: items,
+    leaderIds: [],
+    highlightedIds: [],
+    hasMore: false,
+    showMore: vi.fn(),
+  })),
+}));
 
 vi.mock("next/image", () => ({
   default: (
@@ -31,13 +41,7 @@ vi.mock("@/features/events/components/PriceCell", () => ({
 }));
 
 vi.mock("@/features/realtime/surfaces/hooks", () => ({
-  useProjectedSurfaceWindow: ({ items }: { items: unknown[] }) => ({
-    visibleItems: items,
-    leaderIds: [],
-    highlightedIds: [],
-    hasMore: false,
-    showMore: vi.fn(),
-  }),
+  useProjectedSurfaceWindow,
 }));
 
 const buildMarket = (
@@ -111,6 +115,187 @@ const buildEvent = (
 });
 
 describe("HomeMarketGrid", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useProjectedSurfaceWindow.mockImplementation(({ items }: { items: unknown[] }) => ({
+      visibleItems: items,
+      leaderIds: [],
+      highlightedIds: [],
+      hasMore: false,
+      showMore: vi.fn(),
+    }));
+  });
+
+  it("auto-expands the next batch once a remote continuation append completes", () => {
+    const events = Array.from({ length: 40 }, (_, index) =>
+      buildEvent(
+        `Market ${index + 1}`,
+        [{ id: "1", slug: "politics", label: "Politics" }],
+        { id: `event-${index + 1}` },
+      ),
+    );
+    const cardEntries = buildHomeEventCardEntries(events);
+    const showMore = vi.fn();
+    const onContinue = vi.fn();
+
+    useProjectedSurfaceWindow.mockImplementation(({ items }: { items: unknown[] }) =>
+      items.length >= 40
+        ? {
+            visibleItems: items.slice(0, 20),
+            leaderIds: [],
+            highlightedIds: [],
+            hasMore: true,
+            showMore,
+          }
+        : {
+            visibleItems: items.slice(0, 20),
+            leaderIds: [],
+            highlightedIds: [],
+            hasMore: false,
+            showMore,
+          },
+    );
+
+    const { rerender } = render(
+      <HomeMarketGrid
+        items={cardEntries.slice(0, 20)}
+        initialCount={20}
+        incrementCount={20}
+        continuation={{
+          hasMore: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Show more markets" }));
+
+    expect(onContinue).toHaveBeenCalledTimes(1);
+    expect(showMore).not.toHaveBeenCalled();
+
+    rerender(
+      <HomeMarketGrid
+        items={cardEntries.slice(0, 20)}
+        initialCount={20}
+        incrementCount={20}
+        continuation={{
+          hasMore: true,
+          disabled: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Loading markets…" })).toBeTruthy();
+
+    rerender(
+      <HomeMarketGrid
+        items={cardEntries}
+        initialCount={20}
+        incrementCount={20}
+        continuation={{
+          hasMore: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    expect(showMore).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Show more markets" })).toBeTruthy();
+  });
+
+  it("keeps the loading label while the append request has finished but new cards have not committed yet", () => {
+    const events = Array.from({ length: 40 }, (_, index) =>
+      buildEvent(
+        `Market ${index + 1}`,
+        [{ id: "1", slug: "politics", label: "Politics" }],
+        { id: `event-${index + 1}` },
+      ),
+    );
+    const cardEntries = buildHomeEventCardEntries(events);
+    const showMore = vi.fn();
+    const onContinue = vi.fn();
+
+    useProjectedSurfaceWindow.mockImplementation(({ items }: { items: unknown[] }) =>
+      items.length >= 40
+        ? {
+            visibleItems: items.slice(0, 20),
+            leaderIds: [],
+            highlightedIds: [],
+            hasMore: true,
+            showMore,
+          }
+        : {
+            visibleItems: items.slice(0, 20),
+            leaderIds: [],
+            highlightedIds: [],
+            hasMore: false,
+            showMore,
+          },
+    );
+
+    const { rerender } = render(
+      <HomeMarketGrid
+        items={cardEntries.slice(0, 20)}
+        initialCount={20}
+        incrementCount={20}
+        continuation={{
+          hasMore: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Show more markets" }));
+
+    rerender(
+      <HomeMarketGrid
+        items={cardEntries.slice(0, 20)}
+        initialCount={20}
+        incrementCount={20}
+        continuation={{
+          hasMore: true,
+          disabled: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    rerender(
+      <HomeMarketGrid
+        items={cardEntries.slice(0, 20)}
+        initialCount={20}
+        incrementCount={20}
+        continuation={{
+          hasMore: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Loading markets…" })).toBeTruthy();
+    expect(showMore).not.toHaveBeenCalled();
+
+    rerender(
+      <HomeMarketGrid
+        items={cardEntries}
+        initialCount={20}
+        incrementCount={20}
+        continuation={{
+          hasMore: true,
+          onContinue,
+        }}
+      />,
+    );
+
+    expect(showMore).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Show more markets" })).toBeTruthy();
+  });
+
   it("renders binary cards with the headline chance and complementary yes/no actions", () => {
     const event = buildEvent(
       "Will OpenAI launch a consumer hardware product by...?",
@@ -185,6 +370,13 @@ describe("HomeMarketGrid", () => {
       [{ id: "1", slug: "politics", label: "Politics" }],
     );
     const onContinue = vi.fn();
+    useProjectedSurfaceWindow.mockImplementation(({ items }: { items: unknown[] }) => ({
+      visibleItems: items,
+      leaderIds: [],
+      highlightedIds: [],
+      hasMore: false,
+      showMore: vi.fn(),
+    }));
 
     render(
       <HomeMarketGrid
@@ -241,5 +433,40 @@ describe("HomeMarketGrid", () => {
     expect(screen.getAllByText("0%").length).toBeGreaterThan(0);
     expect(screen.getByText("119")).toBeTruthy();
     expect(screen.getByText("114")).toBeTruthy();
+  });
+
+  it("uses compact sports action labels and hides placeholder zero scores", () => {
+    const event = buildEvent(
+      "El Mokawloon El Arab SC vs. El Ittihad SC El Iskandary",
+      [
+        { id: "1", slug: "sports", label: "Sports" },
+        { id: "2", slug: "egy-1", label: "EGY 1" },
+      ],
+      {
+        live: true,
+        period: "HT",
+        score: "0-0",
+        teams: [
+          { name: "El Mokawloon El Arab SC", abbreviation: "EME" },
+          { name: "El Ittihad SC El Iskandary", abbreviation: "EIS" },
+        ],
+        markets: [
+          buildMarket({
+            id: "egy-1-live",
+            question: "El Mokawloon El Arab SC vs. El Ittihad SC El Iskandary",
+            sportsMarketType: "moneyline",
+            outcomes: ["El Mokawloon El Arab SC", "El Ittihad SC El Iskandary"],
+            outcomePrices: [0.33, 0.67],
+            lastTradePrice: 0.33,
+          }),
+        ],
+      },
+    );
+
+    const { container } = render(<HomeMarketGrid items={buildHomeEventCardEntries([event])} />);
+
+    expect(screen.getAllByText("EME").length).toBeGreaterThan(1);
+    expect(screen.getAllByText("EIS").length).toBeGreaterThan(1);
+    expect(container.textContent?.includes("0|")).toBe(false);
   });
 });
