@@ -35,7 +35,7 @@ describe("GenericEventFeed", () => {
     expect(screen.getByText("Event 3")).toBeTruthy();
   });
 
-  it("resets the visible slice when a new event batch arrives", () => {
+  it("preserves the visible slice when a new event batch is appended", () => {
     const { rerender } = render(
       <GenericEventFeed
         events={[buildEvent("1"), buildEvent("2"), buildEvent("3"), buildEvent("4")]}
@@ -61,8 +61,9 @@ describe("GenericEventFeed", () => {
       />,
     );
 
-    expect(screen.queryByText("Event 3")).toBeNull();
+    expect(screen.getByText("Event 3")).toBeTruthy();
     expect(screen.getByText("Event 1")).toBeTruthy();
     expect(screen.getByText("Event 2")).toBeTruthy();
+    expect(screen.queryByText("Event 4")).toBeNull();
   });
 });
