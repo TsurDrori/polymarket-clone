@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SportsRowsHydrator } from "@/features/sports/games/SportsRowsHydrator";
 import { formatSportsLeagueLabel } from "@/features/sports/leagueLabel";
-import { SportsLiveRoute } from "@/features/sports/live/SportsLiveRoute";
 import { SportsLiveSurface } from "@/features/sports/live/SportsLiveSurface";
 import { getSportsLeagueGamesPagePayload } from "@/features/sports/server";
 import styles from "./page.module.css";
@@ -49,34 +48,17 @@ export default async function SportsLeagueGamesPage({
   return (
     <main className={styles.main}>
       <SportsRowsHydrator seeds={payload.hydrationSeeds} />
-      {payload.hasMoreSections ? (
-        <SportsLiveRoute
-          title={payload.title}
-          description="League-specific games feed with live sportsbook rows."
-          leagueChips={payload.leagueChips}
-          initialSections={payload.initialSections}
-          activeLeagueSlug={payload.normalizedLeague}
-          leagueTabs={{
-            gamesHref: `/sports/${payload.normalizedLeague}/games`,
-            propsHref: `/sports/${payload.normalizedLeague}/props`,
-          }}
-          catalogEndpoint={`/api/sports-sections?league=${encodeURIComponent(payload.normalizedLeague)}`}
-        />
-      ) : (
-        <>
-          <SportsLiveSurface
-            title={payload.title}
-            description="League-specific games feed with live sportsbook rows."
-            leagueChips={payload.leagueChips}
-            sections={payload.initialSections}
-            activeLeagueSlug={payload.normalizedLeague}
-            leagueTabs={{
-              gamesHref: `/sports/${payload.normalizedLeague}/games`,
-              propsHref: `/sports/${payload.normalizedLeague}/props`,
-            }}
-          />
-        </>
-      )}
+      <SportsLiveSurface
+        title={payload.title}
+        description="League-specific games feed with live sportsbook rows."
+        leagueChips={payload.leagueChips}
+        sections={payload.initialSections}
+        activeLeagueSlug={payload.normalizedLeague}
+        leagueTabs={{
+          gamesHref: `/sports/${payload.normalizedLeague}/games`,
+          propsHref: `/sports/${payload.normalizedLeague}/props`,
+        }}
+      />
     </main>
   );
 }

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { SportsRowsHydrator } from "@/features/sports/games/SportsRowsHydrator";
 import { SportsLiveSurface } from "@/features/sports/live/SportsLiveSurface";
 import { getSportsLivePagePayload } from "@/features/sports/server";
-import { SportsLiveRoute } from "@/features/sports/live/SportsLiveRoute";
 import styles from "./page.module.css";
 
 export const revalidate = 30;
@@ -19,24 +18,12 @@ export default async function SportsLivePage() {
   return (
     <main className={styles.main}>
       <SportsRowsHydrator seeds={payload.hydrationSeeds} />
-      {payload.hasMoreSections ? (
-        <SportsLiveRoute
-          title="Sports Live"
-          description="Public games markets grouped into sportsbook-style live sections."
-          leagueChips={payload.leagueChips}
-          initialSections={payload.initialSections}
-          catalogEndpoint="/api/sports-sections"
-        />
-      ) : (
-        <>
-          <SportsLiveSurface
-            title="Sports Live"
-            description="Public games markets grouped into sportsbook-style live sections."
-            leagueChips={payload.leagueChips}
-            sections={payload.initialSections}
-          />
-        </>
-      )}
+      <SportsLiveSurface
+        title="Sports Live"
+        description="Public games markets grouped into sportsbook-style live sections."
+        leagueChips={payload.leagueChips}
+        sections={payload.initialSections}
+      />
     </main>
   );
 }

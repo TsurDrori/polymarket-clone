@@ -2,10 +2,7 @@ import { notFound } from "next/navigation";
 import type { PriceHydrationSeed } from "@/features/realtime/Hydrator";
 import { getSportsCardWorkingSet } from "./futures/api";
 import { getSportsLeagueDashboardPayload, type SportsFuturesLeagueDashboardPayload } from "./futures/dashboardModels";
-import {
-  getSportsGamesWorkingSet,
-  getSportsLiveInitialPageEvents,
-} from "./games/api";
+import { getSportsGamesWorkingSet, getSportsLiveInitialPageEvents } from "./games/api";
 import {
   buildHydrationEvents,
   buildSportsCards,
@@ -30,20 +27,14 @@ const SPORTS_LEAGUE_INITIAL_SECTION_LIMIT = 6;
 const SPORTS_LIVE_INITIAL_HYDRATION_ROW_LIMIT = 8;
 const SPORTS_INITIAL_CARD_LIMIT = 12;
 
-export type SportsSectionsPayload = {
-  sections: ReadonlyArray<SportsbookSectionModel>;
-};
-
 export type SportsLivePagePayload = {
   initialSections: ReadonlyArray<SportsbookSectionModel>;
-  hasMoreSections: boolean;
   leagueChips: ReadonlyArray<SportsGamesLeagueChip>;
   hydrationSeeds: ReadonlyArray<PriceHydrationSeed>;
 };
 
 export type SportsLeagueGamesPagePayload = {
   initialSections: ReadonlyArray<SportsbookSectionModel>;
-  hasMoreSections: boolean;
   leagueChips: ReadonlyArray<SportsGamesLeagueChip>;
   hydrationSeeds: ReadonlyArray<PriceHydrationSeed>;
   normalizedLeague: string;
@@ -66,11 +57,6 @@ export type SportsFuturesIndexPagePayload = {
   dashboard: SportsFuturesLeagueDashboardPayload;
 };
 
-type SportsGamesCatalog = {
-  rows: ReturnType<typeof buildSportsGameRows>;
-  sections: ReadonlyArray<SportsbookSectionModel>;
-};
-
 type SportsLeagueGamesCatalog = {
   allRows: ReturnType<typeof buildSportsGameRows>;
   leagueRows: ReturnType<typeof selectRowsByLeague>;
@@ -82,16 +68,6 @@ type SportsLeagueCardsCatalog = {
   leagueCards: ReadonlyArray<SportsCardModel>;
   normalizedLeague: string;
 };
-
-async function getSportsGamesCatalog(): Promise<SportsGamesCatalog> {
-  const events = await getSportsGamesWorkingSet();
-  const rows = buildSportsGameRows(events);
-
-  return {
-    rows,
-    sections: buildLiveRouteSections(rows),
-  };
-}
 
 async function getSportsLeagueGamesCatalog(league: string): Promise<SportsLeagueGamesCatalog> {
   const events = await getSportsGamesWorkingSet({
@@ -155,34 +131,20 @@ export async function getSportsLeagueFuturesDashboardPayload(
   return payload;
 }
 
-export async function getSportsLiveSectionsPayload(): Promise<SportsSectionsPayload> {
-  const { sections } = await getSportsGamesCatalog();
-  return { sections };
-}
-
 export async function getSportsLivePagePayload(): Promise<SportsLivePagePayload> {
-  const { events, hasMorePages } = await getSportsLiveInitialPageEvents();
+  const { events } = await getSportsLiveInitialPageEvents();
   const rows = buildSportsGameRows(events);
   const sections = buildLiveRouteSections(rows);
   const initialSections = sections.slice(0, SPORTS_LIVE_INITIAL_SECTION_LIMIT);
 
   return {
     initialSections,
-    hasMoreSections:
-      hasMorePages || sections.length > initialSections.length,
     leagueChips: buildSportsGamesLeagueChips(rows),
     hydrationSeeds: buildSportsPreviewHydrationSeeds(
       initialSections.flatMap((section) => section.rows),
       { rowLimit: SPORTS_LIVE_INITIAL_HYDRATION_ROW_LIMIT },
     ),
   };
-}
-
-export async function getSportsLeagueGamesSectionsPayload(
-  league: string,
-): Promise<SportsSectionsPayload> {
-  const { sections } = await getSportsLeagueGamesCatalog(league);
-  return { sections };
 }
 
 export async function getSportsLeagueGamesPagePayload(
@@ -193,7 +155,6 @@ export async function getSportsLeagueGamesPagePayload(
 
   return {
     initialSections,
-    hasMoreSections: sections.length > initialSections.length,
     leagueChips: buildSportsGamesLeagueChips(allRows, league),
     hydrationSeeds: buildSportsPreviewHydrationSeeds(
       initialSections.flatMap((section) => section.rows),
