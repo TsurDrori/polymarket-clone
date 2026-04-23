@@ -2,145 +2,86 @@
 
 A high-fidelity Polymarket frontend clone built with `Next.js 16`, `React 19`, `TypeScript`, and `Jotai`.
 
-The goal of this project is to reproduce the feel of the real Polymarket product as closely as possible: route structure, shell chrome, density, card treatment, live prices, loading behavior, and engineering quality.
+This project is focused on reproducing what makes Polymarket feel like Polymarket: dense market discovery, strong shared chrome, realtime price movement, route parity across key surfaces, and a codebase that still feels deliberate under review.
 
-## general spec
+## Goals
 
-priorities: 
+1. Match Polymarket's product feel as closely as possible.
+2. Keep realtime market updates responsive and localized.
+3. Ship recruiter-facing code quality, not just visual mimicry.
 
-1. UI/UX fidelity to Polymarket
-2. Realtime price updates
-3. Clean, performant state management
+## Shipped Surfaces
 
-including :
-- Polymarket-style home feed with a hero, topic chips, and mixed market cards
-- Dedicated `Crypto` surface with client-local filtering and bounded catalog rendering
-- Dedicated `Sports Live` and `Sports Futures` surfaces, plus league-specific sports routes
-- Dynamic event detail route backed by live Gamma data
-- Realtime CLOB WebSocket hydration using token-level Jotai atoms
-- Shared market-card primitives reused across home, crypto, sports props, and event feeds
-- Loading states, route contracts, and a substantial test suite
+- `/` home feed with hero spotlight, category chips, mixed market cards, and client feed expansion
+- `/crypto` crypto market surface with family, asset, and time filters
+- `/sports/live` live sports dashboard
+- `/sports/futures` futures discovery surface
+- `/sports/futures/[league]` league-specific futures dashboards
+- `/sports/[league]/games` league game-market views
+- `/sports/[league]/props` league props views
+- `/event/[slug]` event detail route with live market rows
 
-## What’s Shipped
+## What It Does
 
-### Product surfaces
-
-- `/` — Polymarket-style home page with hero spotlight, chip-driven feed switching, and mixed market cards
-- `/crypto` — crypto-specific surface with family, time, and asset filters
-- `/sports/live` — live sports dashboard surface
-- `/sports/futures` — futures overview surface
-- `/sports/futures/[league]` — league futures dashboards
-- `/sports/[league]/games` — league game-market views
-- `/sports/[league]/props` — league props-market views
-- `/event/[slug]` — event detail page with market rows and realtime hydration
-
-### Data and realtime
-
-- Live event and market data from Polymarket Gamma REST endpoints
-- Live price updates from the public Polymarket CLOB WebSocket
-- Bounded home-hero price history served through `/api/market-price-history`
-- Support for both array-wrapped `book` messages and object `price_change` messages
-- Token-level hydration seeds generated server-side and mounted client-side
-- Batched update dispatch to avoid broad rerenders on rapid market activity
-
-### UX and implementation details
-
-- Shared Polymarket-cloned shell with sticky header, market nav, footer, and mobile controls
-- Shared Polymarket-aligned side rails across crypto and sports surfaces
-- Dark/light theme support with bootstrap script to avoid theme flicker on first paint
-- Server-first route composition with targeted client interactivity where it pays off
-- Thin internal API routes for client-side pagination/filter expansion
-- Event-route not-found protection via request proxy middleware
-- Modular feature organization instead of page-level sprawl
+- Pulls live market and event data from Polymarket's public Gamma endpoints
+- Hydrates live price updates from the public CLOB WebSocket
+- Uses shared market-card primitives across home, crypto, sports, and event surfaces
+- Keeps realtime updates scoped to token-level leaves with Jotai atom families
+- Uses server-first route composition with focused client interactivity
+- Includes loading states, route tests, parser tests, and realtime behavior coverage
 
 ## Architecture
 
-The codebase is organized around product domains:
+The codebase is organized by product domain instead of page-local sprawl:
 
 ```text
-app/                   Next.js App Router routes and route-level loading/error states
-features/home/         Home hero, card feed, chip rail, selectors, client feed expansion
-features/market-cards/ Shared Polymarket card primitives reused across surfaces
-features/crypto/       Crypto parsing, facets, server payload assembly, surface components
-features/sports/       Live, futures, games, props, and league-specific sports surfaces
-features/events/       Gamma parsing, event-card modeling, shared event feeds
-features/detail/       Event header and market-list detail UI
-features/realtime/     WebSocket client, dispatcher, raf batching, Jotai atoms, hydration
-shared/                Formatting, theme, UI primitives, tag utilities
+app/                   App Router routes, route loading states, and thin API handlers
+features/home/         Hero, chip feed, home card modeling, and feed rendering
+features/market-cards/ Shared Polymarket-style card primitives
+features/crypto/       Crypto parsing, filters, server payload assembly, and UI
+features/sports/       Live, futures, games, props, and league surfaces
+features/events/       Shared event feed infrastructure and event-card modeling
+features/detail/       Event detail header, rows, and list rendering
+features/realtime/     WebSocket client, hydration, batching, subscriptions, atoms
+shared/                UI primitives, formatting, theme, and generic utilities
 ```
 
 ### Data Flow
 
 ```mermaid
 flowchart LR
-  A["Polymarket Gamma API"] --> B["Next.js server routes<br/>app/ + features/*/api"]
-  G["Polymarket CLOB API"] --> B
-  B --> C["Server-rendered route payloads"]
-  C --> D["Hydration seeds"]
-  D --> E["Client surfaces"]
-  H["CLOB WebSocket"] --> I["features/realtime/ws.ts"]
-  I --> J["dispatcher + raf batcher"]
-  J --> K["Jotai atom families"]
-  K --> E
-  E --> L["Cards, market rows, odds cells"]
+  A["Polymarket Gamma API"] --> B["Next.js server routes"]
+  C["Polymarket CLOB API"] --> B
+  B --> D["Server-rendered payloads"]
+  D --> E["Hydration seeds"]
+  E --> F["Client surfaces"]
+  G["CLOB WebSocket"] --> H["features/realtime/ws.ts"]
+  H --> I["dispatcher + raf batcher"]
+  I --> J["Jotai atom families"]
+  J --> F
 ```
-
-### Project Structure
-
-```mermaid
-flowchart TD
-  A["app/"] --> A1["Routes"]
-  A["app/"] --> A2["loading.tsx / error.tsx"]
-  A["app/"] --> A3["API route handlers"]
-
-  B["features/"] --> B1["home"]
-  B["features/"] --> B2["market-cards"]
-  B["features/"] --> B3["crypto"]
-  B["features/"] --> B4["sports"]
-  B["features/"] --> B5["events"]
-  B["features/"] --> B6["detail"]
-  B["features/"] --> B7["realtime"]
-
-  C["shared/"] --> C1["theme"]
-  C["shared/"] --> C2["lib"]
-  C["shared/"] --> C3["ui"]
-```
-
-A few architecture choices worth calling out:
-
-- `Next.js App Router` is used in a server-first way for initial data fetches and route composition.
-- `Jotai` stores live prices at the token level via atom families, which keeps updates local to the smallest UI leaves possible.
-- Shared `features/market-cards` primitives let parity work land once and flow into home, crypto, sports props, and event feeds.
-- `unstable_cache` and route-level `revalidate` windows are used to balance freshness and page responsiveness.
-- The app fetches from live Polymarket APIs directly, then normalizes payload quirks in parser modules instead of leaking raw API shapes through the UI.
-- CSS Modules are used throughout to keep styling local, predictable, and easy to audit.
 
 ## Realtime Strategy
 
-Realtime behavior is a first-class part of the assignment.
+Realtime behavior is a core part of the clone rather than an afterthought.
 
-- Initial route renders are seeded from REST data.
-- Relevant token IDs are extracted into hydration seeds on the server.
-- A shared WebSocket client subscribes to those token IDs on the client.
-- Incoming CLOB messages are normalized and pushed through a requestAnimationFrame batcher.
-- Jotai atom families update only the affected token state, which reduces broad rerenders during bursts of price activity.
+- Initial route payloads come from REST data on the server.
+- Relevant token IDs are extracted into client hydration seeds.
+- A shared WebSocket client subscribes only to the token IDs the rendered UI needs.
+- Incoming messages are normalized and batched through `requestAnimationFrame`.
+- Token-scoped Jotai atoms update the smallest UI leaves possible.
 
-This keeps the app responsive while still feeling live in the places a grader will notice immediately: cards, market rows, odds cells, and sports price surfaces.
+That keeps cards, odds cells, and market rows feeling live without broad rerenders across the page.
 
-## Quality Bar
+## Quality Snapshot
 
-This repo already goes beyond a “one-weekend assignment” baseline:
+Current repo snapshot:
 
-- `254` source files under `app/`, `features/`, and `shared/`
-- `50` passing test files
-- `199` passing tests
-- Green production build on `Next.js 16.2.4`
-
-Verified locally on `2026-04-23`:
-
-- `pnpm exec vitest run`
-- `pnpm build`
-- `pnpm lint`
+- `250` source files under `app/`, `features/`, and `shared/`
+- `51` test files
+- `205` individual tests
+- `Next.js 16.2.4`
+- `React 19.2.4`
 
 ## Running Locally
 
@@ -161,27 +102,36 @@ pnpm start
 ## Scripts
 
 ```bash
-pnpm dev                 # local development
-pnpm build               # production build
-pnpm start               # run the production build
-pnpm lint                # eslint
-pnpm exec vitest run     # one-shot test run
+pnpm dev
+pnpm build
+pnpm start
+pnpm lint
+pnpm test
+pnpm exec vitest run
 ```
 
 ## External Dependencies
 
-This app currently relies on public Polymarket endpoints and does not require local secrets:
+This project currently relies on public Polymarket endpoints and does not require local secrets.
 
-- Gamma API for event and market payloads
+- Gamma API for market and event payloads
 - CLOB API for market history
-- CLOB WebSocket for live market updates
+- CLOB WebSocket for live price updates
 
-Because this is a clone project, the project intentionally focuses on read-only market discovery and realtime display rather than trading, auth, wallets, or order placement.
+## Intentional Scope Limits
 
-## Scope Decisions
+This clone is intentionally focused on read-only market discovery and realtime display.
 
-Some omissions are deliberate because they are outside the brief or poor time tradeoffs for assignment scoring:
+- No trading flow or order entry
+- No wallet connection or authentication
+- No positions, comments, or holder views
+- No attempt to fully mirror every Polymarket route or tab on the live site
 
-- No trading flow, wallet connection, or order entry
-- No comments, positions, holders, or rules/context tabs on event detail
-- No attempt to reproduce every Polymarket header tab/category from the live site
+## Why This Repo Exists
+
+This is a greenfield clone built to show product taste and engineering discipline together:
+
+- UI fidelity work instead of generic dashboard styling
+- clear feature boundaries instead of flat route files
+- live data integration instead of static mock screens
+- meaningful tests around parsing, routing, and realtime behavior
