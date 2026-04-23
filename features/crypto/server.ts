@@ -35,6 +35,7 @@ const CRYPTO_INITIAL_ROUTE_CARD_LIMIT =
   CRYPTO_INITIAL_VISIBLE_COUNT + CRYPTO_VISIBLE_INCREMENT + CRYPTO_OVERSCAN_COUNT;
 
 const CRYPTO_ROUTE_REVALIDATE_SECONDS = 30;
+const CRYPTO_ROUTE_CATALOG_LIMIT = 500;
 
 type CryptoCatalogPayload = {
   cards: ReadonlyArray<CryptoCardModel>;
@@ -44,8 +45,8 @@ const getCachedCryptoCatalogPayload = unstable_cache(
   async (): Promise<CryptoCatalogPayload> => {
   const { events } = await listEventsKeyset({
     tagSlug: "crypto",
-    limit: 120,
-    order: "volume_24hr",
+    limit: CRYPTO_ROUTE_CATALOG_LIMIT,
+    order: "volume24hr",
     ascending: false,
   });
 

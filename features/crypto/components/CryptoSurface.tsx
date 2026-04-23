@@ -44,8 +44,7 @@ export function CryptoSurface({
             <div className={styles.titleWrap}>
               <h1 className={styles.title}>Crypto</h1>
               <p className={styles.summary}>
-                Public Gamma working set of {totalCount} crypto events sorted by
-                24-hour volume.
+                Live crypto markets across short-term moves, ranges, and price targets.
               </p>
             </div>
 

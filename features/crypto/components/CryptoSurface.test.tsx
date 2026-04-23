@@ -145,6 +145,9 @@ describe("CryptoSurface", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Crypto" })).toBeTruthy();
+    expect(
+      screen.getByText("Live crypto markets across short-term moves, ranges, and price targets."),
+    ).toBeTruthy();
     expect(screen.getByRole("navigation", { name: /crypto market families/i })).toBeTruthy();
     const rail = screen.getByLabelText(/crypto filters/i);
     expect(rail).toBeTruthy();

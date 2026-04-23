@@ -127,6 +127,48 @@ describe("crypto parser", () => {
     expect(deriveCryptoTimeBucket(event)).toBe("5m");
   });
 
+  it("surfaces live short-horizon up/down cards ahead of long-dated targets", () => {
+    const bitcoinYearlyTarget = buildEvent({
+      id: "btc-yearly-target",
+      slug: "what-price-will-bitcoin-hit-before-2027",
+      title: "What price will Bitcoin hit in 2026?",
+      tags: [
+        { id: "1", slug: "crypto", label: "Crypto" },
+        { id: "2", slug: "bitcoin", label: "Bitcoin" },
+        { id: "3", slug: "yearly", label: "Yearly" },
+        { id: "4", slug: "hit-price", label: "Hit Price" },
+      ],
+      markets: [
+        buildMarket("btc-yearly-target-market", {
+          groupItemTitle: "↑ 150,000",
+          lastTradePrice: 0.94,
+        }),
+      ],
+    });
+    const bitcoinFiveMinute = buildEvent({
+      id: "btc-five-minute",
+      slug: "btc-updown-5m-1776966600",
+      title: "Bitcoin Up or Down - April 23, 1:50PM-1:55PM ET",
+      tags: [
+        { id: "5", slug: "crypto", label: "Crypto" },
+        { id: "6", slug: "bitcoin", label: "Bitcoin" },
+        { id: "7", slug: "up-or-down", label: "Up / Down" },
+      ],
+      markets: [
+        buildMarket("btc-five-minute-market", {
+          groupItemTitle: undefined,
+          outcomes: ["Up", "Down"],
+          lastTradePrice: 0.52,
+        }),
+      ],
+    });
+
+    const workingSet = buildCryptoWorkingSet([bitcoinYearlyTarget, bitcoinFiveMinute]);
+
+    expect(workingSet.cards[0]?.id).toBe("btc-five-minute");
+    expect(workingSet.cards[0]?.timeBucket).toBe("5m");
+  });
+
   it("omits unsupported controls while keeping unsupported events in the all feed", () => {
     const supported = buildEvent({
       id: "eth-above",

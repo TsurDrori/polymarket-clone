@@ -101,8 +101,8 @@ describe("CryptoPage", () => {
 
     expect(listEventsKeyset).toHaveBeenCalledWith({
       tagSlug: "crypto",
-      limit: 120,
-      order: "volume_24hr",
+      limit: 500,
+      order: "volume24hr",
       ascending: false,
     });
     expect(CryptoSurfaceRoute).toHaveBeenCalledWith(
