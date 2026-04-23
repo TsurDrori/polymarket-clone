@@ -43,7 +43,7 @@
 
 .valueText {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--arc-value-color, var(--text-secondary));
   font-size: 16px;
   font-weight: 500;
   line-height: 20px;

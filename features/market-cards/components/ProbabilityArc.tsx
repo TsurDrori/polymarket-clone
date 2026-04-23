@@ -4,13 +4,12 @@ import type { CSSProperties } from "react";
 import { useRetainedLivePrice } from "@/features/realtime/hooks";
 import { PriceCell } from "@/features/events/components/PriceCell";
 import { formatPct } from "@/shared/lib/format";
+import { clampProbability, getProbabilityColor } from "@/shared/lib/probabilityColor";
 import styles from "./ProbabilityArc.module.css";
-
-const clamp = (value: number) => Math.max(0, Math.min(1, value));
 
 const describeArc = (value: number): string => {
   const radius = 24;
-  const clamped = clamp(value);
+  const clamped = clampProbability(value);
   const startAngle = Math.PI;
   const endAngle = Math.PI * (1 - clamped);
   const startX = radius * Math.cos(startAngle);
@@ -40,7 +39,8 @@ export function ProbabilityArc({
   const { tick } = useRetainedLivePrice(tokenId ?? "");
   const livePrice =
     tokenId && tick.ts > 0 ? tick.price : price;
-  const clamped = clamp(livePrice);
+  const clamped = clampProbability(livePrice);
+  const resolvedColor = color ?? getProbabilityColor(clamped);
   const width = size === "sm" ? 58 : 64;
   const height = size === "sm" ? 34.03579715234098 : 38;
 
@@ -57,7 +57,8 @@ export function ProbabilityArc({
           "--arc-width": `${width}px`,
           "--arc-height": `${height}px`,
           "--arc-copy-offset": size === "sm" ? "-28px" : "-31px",
-          "--arc-color": color,
+          "--arc-color": resolvedColor,
+          "--arc-value-color": resolvedColor,
         } as CSSProperties
       }
     >
