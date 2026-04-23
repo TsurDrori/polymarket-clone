@@ -7,11 +7,13 @@ import { formatPct } from "@/shared/lib/format";
 import { clampProbability, getProbabilityColor } from "@/shared/lib/probabilityColor";
 import styles from "./ProbabilityArc.module.css";
 
-const describeArc = (value: number): string => {
+const describeProbabilityArc = (value: number): string => {
   const radius = 24;
   const clamped = clampProbability(value);
   const startAngle = Math.PI;
-  const endAngle = Math.PI * (1 - clamped);
+  // SVG uses a y-down coordinate system, so the top semicircle runs from PI to 2 * PI.
+  // Advancing toward 0 via the lower half makes low probabilities bend in the wrong direction.
+  const endAngle = startAngle + clamped * Math.PI;
   const startX = radius * Math.cos(startAngle);
   const startY = radius * Math.sin(startAngle);
   const endX = radius * Math.cos(endAngle);
@@ -71,7 +73,7 @@ export function ProbabilityArc({
         >
           <path d="M -24 0 A 24 24 0 0 1 24 0" className={styles.track} />
           <path
-            d={describeArc(clamped)}
+            d={describeProbabilityArc(clamped)}
             className={styles.value}
             pathLength={100}
             strokeDasharray={`${clamped * 100} 100`}
