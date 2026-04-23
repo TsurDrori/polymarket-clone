@@ -309,16 +309,68 @@ const buildGroupedModel = (event: PolymarketEvent): HomeGroupedCardModel => {
   };
 };
 
+const normalizeCryptoUpDownSnippet = (
+  snippet:
+    | {
+        tokenId?: string | null;
+        fallbackPrice: number;
+        primaryOutcomeLabel: string;
+        secondaryOutcomeLabel: string;
+        secondaryTokenId?: string | null;
+        secondaryFallbackPrice: number;
+      }
+    | undefined,
+) => {
+  if (!snippet) {
+    return undefined;
+  }
+
+  const primaryLabel = snippet.primaryOutcomeLabel.trim().toLowerCase();
+  const secondaryLabel = snippet.secondaryOutcomeLabel.trim().toLowerCase();
+
+  if (primaryLabel === "up" || secondaryLabel === "down") {
+    return {
+      upLabel: snippet.primaryOutcomeLabel,
+      upPrice: snippet.fallbackPrice,
+      upTokenId: snippet.tokenId ?? undefined,
+      downLabel: snippet.secondaryOutcomeLabel,
+      downPrice: snippet.secondaryFallbackPrice,
+      downTokenId: snippet.secondaryTokenId ?? undefined,
+    };
+  }
+
+  if (secondaryLabel === "up" || primaryLabel === "down") {
+    return {
+      upLabel: snippet.secondaryOutcomeLabel,
+      upPrice: snippet.secondaryFallbackPrice,
+      upTokenId: snippet.secondaryTokenId ?? undefined,
+      downLabel: snippet.primaryOutcomeLabel,
+      downPrice: snippet.fallbackPrice,
+      downTokenId: snippet.tokenId ?? undefined,
+    };
+  }
+
+  return {
+    upLabel: snippet.primaryOutcomeLabel,
+    upPrice: snippet.fallbackPrice,
+    upTokenId: snippet.tokenId ?? undefined,
+    downLabel: snippet.secondaryOutcomeLabel,
+    downPrice: snippet.secondaryFallbackPrice,
+    downTokenId: snippet.secondaryTokenId ?? undefined,
+  };
+};
+
 const buildCryptoUpDownModel = (event: PolymarketEvent): HomeCryptoUpDownCardModel => {
   const primaryMarket = getPrimaryHomeMarket(event) ?? getVisibleMarkets(event)[0];
   const cryptoCard = buildCryptoWorkingSet([event]).cards[0];
   const primarySnippet = cryptoCard?.primarySnippet;
-  const [upLabel, downLabel] = primarySnippet
-    ? [primarySnippet.primaryOutcomeLabel, primarySnippet.secondaryOutcomeLabel]
+  const normalizedSnippet = normalizeCryptoUpDownSnippet(primarySnippet);
+  const [upLabel, downLabel] = normalizedSnippet
+    ? [normalizedSnippet.upLabel, normalizedSnippet.downLabel]
     : primaryMarket
       ? getOutcomeLabels(primaryMarket)
       : (["Up", "Down"] as [string, string]);
-  const price = primarySnippet?.fallbackPrice ?? (primaryMarket ? getDisplayPrice(primaryMarket) : 0);
+  const price = normalizedSnippet?.upPrice ?? (primaryMarket ? getDisplayPrice(primaryMarket) : 0);
 
   return {
     kind: "crypto-up-down",
@@ -329,12 +381,20 @@ const buildCryptoUpDownModel = (event: PolymarketEvent): HomeCryptoUpDownCardMod
     assetLabel: cryptoCard?.metaLabel ?? undefined,
     volumeLabel: `${formatVolume(event.volume24hr || event.volume)} Vol.`,
     liveLabel: cryptoCard?.showLiveDot ? "Live" : "Crypto",
-    tokenId: primarySnippet?.tokenId ?? primaryMarket?.clobTokenIds[0],
+    tokenId: normalizedSnippet?.upTokenId ?? primaryMarket?.clobTokenIds[0],
     price,
     actions: primaryMarket || primarySnippet
       ? [
-          { label: upLabel, price },
-          { label: downLabel, price: clampPrice(1 - price) },
+          {
+            label: upLabel,
+            price,
+            tokenId: normalizedSnippet?.upTokenId,
+          },
+          {
+            label: downLabel,
+            price: normalizedSnippet?.downPrice ?? clampPrice(1 - price),
+            tokenId: normalizedSnippet?.downTokenId,
+          },
         ]
       : [
           { label: upLabel, price: 0.5 },

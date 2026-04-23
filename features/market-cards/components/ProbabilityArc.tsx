@@ -7,21 +7,7 @@ import { formatPct } from "@/shared/lib/format";
 import { clampProbability, getProbabilityColor } from "@/shared/lib/probabilityColor";
 import styles from "./ProbabilityArc.module.css";
 
-const describeProbabilityArc = (value: number): string => {
-  const radius = 24;
-  const clamped = clampProbability(value);
-  const startAngle = Math.PI;
-  // SVG uses a y-down coordinate system, so the top semicircle runs from PI to 2 * PI.
-  // Advancing toward 0 via the lower half makes low probabilities bend in the wrong direction.
-  const endAngle = startAngle + clamped * Math.PI;
-  const startX = radius * Math.cos(startAngle);
-  const startY = radius * Math.sin(startAngle);
-  const endX = radius * Math.cos(endAngle);
-  const endY = radius * Math.sin(endAngle);
-  const largeArcFlag = clamped > 0.5 ? 1 : 0;
-
-  return `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
-};
+const SEMICIRCLE_PATH = "M -24 0 A 24 24 0 0 1 24 0";
 
 type ProbabilityArcProps = {
   price: number;
@@ -71,9 +57,9 @@ export function ProbabilityArc({
           viewBox="-29 -29 58 34.03579715234098"
           className={styles.svg}
         >
-          <path d="M -24 0 A 24 24 0 0 1 24 0" className={styles.track} />
+          <path d={SEMICIRCLE_PATH} className={styles.track} />
           <path
-            d={describeProbabilityArc(clamped)}
+            d={SEMICIRCLE_PATH}
             className={styles.value}
             pathLength={100}
             strokeDasharray={`${clamped * 100} 100`}

@@ -2,26 +2,31 @@ import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { ProbabilityArc } from "./ProbabilityArc";
 
-const renderValuePath = (price: number): string | null => {
+const renderValueArc = (price: number): {
+  path: string | null;
+  dasharray: string | null;
+} => {
   const { container } = render(<ProbabilityArc price={price} label="Chance" />);
-  return container.querySelectorAll("path")[1]?.getAttribute("d") ?? null;
+  const valuePath = container.querySelectorAll("path")[1];
+
+  return {
+    path: valuePath?.getAttribute("d") ?? null,
+    dasharray: valuePath?.getAttribute("stroke-dasharray") ?? null,
+  };
 };
 
 describe("ProbabilityArc", () => {
-  it("keeps low probabilities on the top half of the semicircle", () => {
-    expect(renderValuePath(0.25)).toBe(
-      "M -24 2.9391523179536475e-15 A 24 24 0 0 1 -16.970562748477143 -16.97056274847714",
-    );
+  it("uses the same stable semicircle geometry for every probability", () => {
+    expect(renderValueArc(0.25).path).toBe("M -24 0 A 24 24 0 0 1 24 0");
+    expect(renderValueArc(0.75).path).toBe("M -24 0 A 24 24 0 0 1 24 0");
   });
 
-  it("uses the large-arc path for values above 50 percent without flipping direction", () => {
-    expect(renderValuePath(0.75)).toBe(
-      "M -24 2.9391523179536475e-15 A 24 24 0 1 1 16.970562748477136 -16.970562748477143",
-    );
+  it("reveals the expected share of the semicircle for midpoint values", () => {
+    expect(renderValueArc(0.5).dasharray).toBe("50 100");
   });
 
   it("clamps out-of-range values to the valid semicircle endpoints", () => {
-    expect(renderValuePath(-1)).toBe("M -24 2.9391523179536475e-15 A 24 24 0 0 1 -24 2.9391523179536475e-15");
-    expect(renderValuePath(2)).toBe("M -24 2.9391523179536475e-15 A 24 24 0 1 1 24 -5.878304635907295e-15");
+    expect(renderValueArc(-1).dasharray).toBe("0 100");
+    expect(renderValueArc(2).dasharray).toBe("100 100");
   });
 });

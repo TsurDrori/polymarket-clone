@@ -517,6 +517,57 @@ describe("homeCardModel", () => {
     expect(entries[0]?.model.kind).toBe("crypto-up-down");
   });
 
+  it("maps the homepage crypto widget to the actual up side when the market outcomes are reversed", () => {
+    const reversedBitcoinFiveMinute = buildEvent(
+      "Bitcoin Up or Down - April 23, 1:50PM-1:55PM ET",
+      [
+        { id: "crypto", slug: "crypto", label: "Crypto" },
+        { id: "up-or-down", slug: "up-or-down", label: "Up / Down" },
+        { id: "bitcoin", slug: "bitcoin", label: "Bitcoin" },
+        { id: "5m", slug: "5m", label: "5M" },
+      ],
+      {
+        id: "btc-5m-reversed",
+        markets: [
+          buildMarket({
+            outcomes: ["Down", "Up"],
+            clobTokenIds: ["down-token", "up-token"],
+            outcomePrices: [0.43, 0.57],
+            lastTradePrice: 0.43,
+            bestBid: 0.42,
+            bestAsk: 0.44,
+          }),
+        ],
+      },
+    );
+
+    const entries = buildHomeExploreCardEntries({
+      events: [],
+      cryptoEvents: [reversedBitcoinFiveMinute],
+      sportsEvents: [],
+      limit: 1,
+    });
+
+    const model = entries[0]?.model;
+    expect(model?.kind).toBe("crypto-up-down");
+    if (!model || model.kind !== "crypto-up-down") {
+      return;
+    }
+
+    expect(model.price).toBe(0.57);
+    expect(model.tokenId).toBe("up-token");
+    expect(model.actions[0]).toMatchObject({
+      label: "Up",
+      price: 0.57,
+      tokenId: "up-token",
+    });
+    expect(model.actions[1]).toMatchObject({
+      label: "Down",
+      price: 0.43,
+      tokenId: "down-token",
+    });
+  });
+
   it("prefers the nearest upcoming bitcoin 5 minute contract over broader bitcoin up/down events", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-23T17:52:00.000Z"));
