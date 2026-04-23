@@ -5,7 +5,7 @@
   gap: 12px;
   min-height: 20px;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .meta {
@@ -14,7 +14,7 @@
   gap: 6px;
   min-width: 0;
   flex: 1 1 auto;
-  overflow: hidden;
+  overflow: visible;
   white-space: nowrap;
 }
 
@@ -45,13 +45,59 @@
 }
 
 .liveDot {
+  --live-dot-color: #ef4444;
+  --live-dot-pulse-duration: 1.2s;
+  --live-dot-ripple-scale-end: 1.19;
   width: 10px;
   height: 10px;
   min-width: 10px;
+  position: relative;
+  display: inline-block;
   border-radius: 999px;
-  background: #ef4444;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #ef4444 16%, transparent);
+  background: var(--live-dot-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--live-dot-color) 18%, transparent);
+  transform-origin: center;
+  animation: live-dot-core var(--live-dot-pulse-duration) ease-in-out infinite;
   flex: 0 0 auto;
+}
+
+.liveDot::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--live-dot-color) 48%, transparent);
+  opacity: 0;
+  transform: scale(0.72);
+  animation: live-dot-ripple var(--live-dot-pulse-duration) cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes live-dot-core {
+  0%,
+  100% {
+    transform: scale(0.9);
+  }
+
+  35%,
+  65% {
+    transform: scale(1);
+  }
+}
+
+@keyframes live-dot-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  24% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(var(--live-dot-ripple-scale-end));
+  }
 }
 
 .trailingText {
@@ -79,4 +125,16 @@
   color: var(--text-muted);
   flex: 0 0 auto;
   margin-left: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liveDot,
+  .liveDot::after {
+    animation: none;
+    transform: none;
+  }
+
+  .liveDot::after {
+    opacity: 0;
+  }
 }

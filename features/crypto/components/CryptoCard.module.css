@@ -231,10 +231,18 @@
 }
 
 .liveDot {
+  --live-dot-color: var(--accent-no);
+  --live-dot-pulse-duration: 1.2s;
+  --live-dot-ripple-scale-end: 1.19;
   width: 7px;
   height: 7px;
+  position: relative;
+  display: inline-block;
   border-radius: 999px;
-  background: var(--accent-no);
+  background: var(--live-dot-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--live-dot-color) 18%, transparent);
+  transform-origin: center;
+  animation: live-dot-core var(--live-dot-pulse-duration) ease-in-out infinite;
 }
 
 .liveLabel {
@@ -263,6 +271,45 @@
   }
 }
 
+.liveDot::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--live-dot-color) 48%, transparent);
+  opacity: 0;
+  transform: scale(0.72);
+  animation: live-dot-ripple var(--live-dot-pulse-duration) cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes live-dot-core {
+  0%,
+  100% {
+    transform: scale(0.9);
+  }
+
+  35%,
+  65% {
+    transform: scale(1);
+  }
+}
+
+@keyframes live-dot-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  24% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(var(--live-dot-ripple-scale-end));
+  }
+}
+
 @media (max-width: 599px) {
   .card {
     border-radius: 16px;
@@ -274,5 +321,17 @@
 
   .snippetActions {
     grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liveDot,
+  .liveDot::after {
+    animation: none;
+    transform: none;
+  }
+
+  .liveDot::after {
+    opacity: 0;
   }
 }
