@@ -6,6 +6,11 @@
   min-width: 0;
 }
 
+.root[data-price-swap="true"] {
+  min-inline-size: 4.5ch;
+  font-variant-numeric: tabular-nums;
+}
+
 .label,
 .price {
   grid-area: stack;
