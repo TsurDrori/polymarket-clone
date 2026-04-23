@@ -3,6 +3,11 @@ import type {
   PolymarketMarket,
   PolymarketTag,
 } from "@/features/events/types";
+import {
+  compareEventsForDiscovery,
+  getEventDiscoverySignal,
+  isEventHotDiscoveryCandidate,
+} from "@/shared/lib/discovery";
 import { formatEndDate, formatVolume } from "@/shared/lib/format";
 import { getVisibleTags, hasTagSlug } from "@/shared/lib/tags";
 
@@ -329,6 +334,8 @@ const getHomeFeedRankedEvents = (
   [...events].sort((left, right) => {
     const leftMarket = selectSpotlightMarket(left);
     const rightMarket = selectSpotlightMarket(right);
+    const leftSignal = getEventDiscoverySignal(left, leftMarket);
+    const rightSignal = getEventDiscoverySignal(right, rightMarket);
     const leftCentered = leftMarket ? getSpotlightProbabilityScore(leftMarket) : 0;
     const rightCentered = rightMarket ? getSpotlightProbabilityScore(rightMarket) : 0;
     const leftChange = leftMarket ? Math.abs(getMarketChange(leftMarket)) : 0;
@@ -337,6 +344,9 @@ const getHomeFeedRankedEvents = (
     const rightHasImage = Number(Boolean(right.image || right.icon || rightMarket?.image));
 
     return (
+      Number(rightSignal.isTradable) - Number(leftSignal.isTradable) ||
+      Number(rightSignal.isOpenPrice) - Number(leftSignal.isOpenPrice) ||
+      rightSignal.recencyBucket - leftSignal.recencyBucket ||
       compareNumbersDesc(leftCentered, rightCentered) ||
       compareNumbersDesc(leftChange, rightChange) ||
       compareNumbersDesc(leftHasImage, rightHasImage) ||
@@ -627,7 +637,7 @@ const buildTopicItems = (
   events: ReadonlyArray<PolymarketEvent>,
   limit = 5,
 ): HeroTopicItem[] =>
-  collectTrendingTopics(events, limit).map((topic) => ({
+  collectTrendingTopics(events.filter(isEventHotDiscoveryCandidate), limit).map((topic) => ({
     ...topic,
     href: buildHeroChipHref(topic.slug),
   }));
@@ -673,6 +683,7 @@ export const selectSpotlightEvents = (
   limit = HOME_HERO_SPOTLIGHT_LIMIT,
 ): PolymarketEvent[] => {
   const candidates = events
+    .filter(isEventHotDiscoveryCandidate)
     .map((event) => {
       const market = selectSpotlightMarket(event);
       const rank = market ? rankSpotlightEvent(event) : null;
@@ -700,6 +711,7 @@ export const selectSpotlightEvents = (
         compareNumbersDesc(left.rank.hasDescription, right.rank.hasDescription) ||
         compareNumbersDesc(left.rank.balancedPrimary, right.rank.balancedPrimary) ||
         compareNumbersDesc(left.rank.activePrimary, right.rank.activePrimary) ||
+        compareEventsForDiscovery(left.event, right.event) ||
         compareNumbersDesc(left.rank.eventVolume, right.rank.eventVolume) ||
         compareNumbersDesc(left.rank.marketVolume, right.rank.marketVolume) ||
         compareNumbersDesc(left.rank.marketChange, right.rank.marketChange) ||
@@ -728,6 +740,7 @@ export const selectHeroPulse = (
   const seenEventIds = new Set<string>();
 
   const rankedMarkets = events
+    .filter(isEventHotDiscoveryCandidate)
     .flatMap((event) =>
       event.markets
         .filter(isMarketEligibleForSpotlight)
@@ -853,7 +866,7 @@ const buildHomeMarketChips = (
   const chips: HeroChip[] = [{ slug: "all", label: "All" }];
   const topicMap = new Map<string, TopicSummary>();
 
-  for (const event of events) {
+  for (const event of events.filter(isEventHotDiscoveryCandidate)) {
     for (const tag of getVisibleTags(event)) {
       if (!canSurfaceMarketChipTopic(tag)) {
         continue;

@@ -128,6 +128,105 @@ describe("getHomeChipFeedEvents", () => {
     expect(page.nextCursor).toBeNull();
   });
 
+  it("filters stale resolved events out of fetched chip feeds", async () => {
+    listEventsKeyset.mockResolvedValueOnce({
+      events: [
+        {
+          id: "stale",
+          slug: "stale-market",
+          title: "Stale market",
+          ticker: "stale-market",
+          active: true,
+          closed: false,
+          archived: false,
+          ended: false,
+          featured: false,
+          restricted: false,
+          liquidity: 1,
+          volume: 1,
+          volume24hr: 999,
+          negRisk: false,
+          showAllOutcomes: false,
+          showMarketImages: false,
+          endDate: "2026-04-20T00:00:00.000Z",
+          markets: [
+            {
+              id: "market-stale",
+              question: "Stale market?",
+              conditionId: "condition-stale",
+              slug: "stale-market",
+              outcomes: ["Yes", "No"],
+              outcomePrices: [0.995, 0.005],
+              clobTokenIds: ["yes", "no"],
+              volumeNum: 1,
+              liquidityNum: 1,
+              lastTradePrice: 0.995,
+              bestBid: 0.99,
+              bestAsk: 1,
+              volume24hr: 999,
+              oneDayPriceChange: 0,
+              spread: 0.01,
+              acceptingOrders: true,
+              closed: false,
+            },
+          ],
+          tags: [{ id: "topic", slug: "nba", label: "NBA" }],
+        },
+        {
+          id: "current",
+          slug: "current-market",
+          title: "Current market",
+          ticker: "current-market",
+          active: true,
+          closed: false,
+          archived: false,
+          ended: false,
+          featured: false,
+          restricted: false,
+          liquidity: 1,
+          volume: 1,
+          volume24hr: 1,
+          negRisk: false,
+          showAllOutcomes: false,
+          showMarketImages: false,
+          endDate: "2026-04-24T00:00:00.000Z",
+          markets: [
+            {
+              id: "market-current",
+              question: "Current market?",
+              conditionId: "condition-current",
+              slug: "current-market",
+              outcomes: ["Yes", "No"],
+              outcomePrices: [0.55, 0.45],
+              clobTokenIds: ["yes", "no"],
+              volumeNum: 1,
+              liquidityNum: 1,
+              lastTradePrice: 0.55,
+              bestBid: 0.54,
+              bestAsk: 0.56,
+              volume24hr: 1,
+              oneDayPriceChange: 0,
+              spread: 0.01,
+              acceptingOrders: true,
+              closed: false,
+            },
+          ],
+          tags: [{ id: "topic", slug: "nba", label: "NBA" }],
+        },
+      ],
+      nextCursor: null,
+    });
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-23T18:00:00.000Z"));
+
+    const page = await getHomeChipFeedEvents("nba");
+
+    expect(page.events.map((event) => event.id)).toEqual(["current"]);
+
+    vi.useRealTimers();
+  });
+
   it("keeps fetching until it fills a 20-card visible batch or exhausts the cursor chain", async () => {
     const buildEvent = (id: string, hidden = false) => ({
       id,

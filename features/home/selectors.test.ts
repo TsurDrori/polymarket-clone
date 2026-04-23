@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
   PolymarketEvent,
   PolymarketMarket,
@@ -162,6 +162,55 @@ describe("selectHeroPulse", () => {
       "Medium Move",
       "Low Move",
     ]);
+  });
+});
+
+describe("selectHomeFeedEvents freshness", () => {
+  it("prefers unresolved tradable events over stale passed events with bigger old volume", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-23T18:00:00.000Z"));
+
+    const staleHighVolume = buildEvent(
+      "Bitcoin Up or Down on April 23?",
+      [{ id: "1", slug: "crypto", label: "Crypto" }],
+      {
+        id: "stale-high-volume",
+        volume24hr: 900_000,
+        endDate: "2026-04-23T16:00:00.000Z",
+        markets: [
+          buildMarket({
+            lastTradePrice: 0.995,
+            bestBid: 0.99,
+            bestAsk: 1,
+          }),
+        ],
+      },
+    );
+    const currentTradable = buildEvent(
+      "Bitcoin above ___ on April 24?",
+      [{ id: "2", slug: "crypto", label: "Crypto" }],
+      {
+        id: "current-tradable",
+        volume24hr: 200_000,
+        endDate: "2026-04-24T16:00:00.000Z",
+        markets: [
+          buildMarket({
+            lastTradePrice: 0.58,
+            bestBid: 0.57,
+            bestAsk: 0.59,
+          }),
+        ],
+      },
+    );
+
+    const selected = selectHomeFeedEvents([staleHighVolume, currentTradable], {
+      limit: 2,
+    });
+
+    expect(selected[0]?.id).toBe("current-tradable");
+    expect(selected[1]?.id).toBe("stale-high-volume");
+
+    vi.useRealTimers();
   });
 });
 

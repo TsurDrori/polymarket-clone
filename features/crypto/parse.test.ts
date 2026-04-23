@@ -127,7 +127,7 @@ describe("crypto parser", () => {
     expect(deriveCryptoTimeBucket(event)).toBe("5m");
   });
 
-  it("keeps the general crypto working set volume-led instead of forcing all 5 minute cards first", () => {
+  it("prefers current tradable crypto markets over far-future yearly targets", () => {
     const bitcoinYearlyTarget = buildEvent({
       id: "btc-yearly-target",
       slug: "what-price-will-bitcoin-hit-before-2027",
@@ -167,8 +167,8 @@ describe("crypto parser", () => {
 
     const workingSet = buildCryptoWorkingSet([bitcoinYearlyTarget, bitcoinFiveMinute]);
 
-    expect(workingSet.cards[0]?.id).toBe("btc-yearly-target");
-    expect(workingSet.cards[1]?.id).toBe("btc-five-minute");
+    expect(workingSet.cards[0]?.id).toBe("btc-five-minute");
+    expect(workingSet.cards[1]?.id).toBe("btc-yearly-target");
   });
 
   it("omits unsupported controls while keeping unsupported events in the all feed", () => {
@@ -511,6 +511,8 @@ describe("crypto parser", () => {
     });
 
     expect(seeds).toHaveLength(seededCardCount);
-    expect(seeds.at(-1)?.tokenId).toBe(`market-${seededCardCount}-yes`);
+    const seededTokenIds = new Set(seeds.map((seed) => seed.tokenId));
+    expect(seededTokenIds.has("market-1-yes")).toBe(true);
+    expect(seededTokenIds.has("market-40-yes")).toBe(false);
   });
 });

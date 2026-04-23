@@ -4,6 +4,7 @@ import type {
   PolymarketEvent,
   PolymarketMarket,
 } from "@/features/events/types";
+import { compareEventsForDiscovery } from "@/shared/lib/discovery";
 import { formatVolume } from "@/shared/lib/format";
 
 type SearchParamValue = string | string[] | undefined;
@@ -622,7 +623,7 @@ const buildAssetOptions = (
 export const buildCryptoWorkingSet = (
   events: ReadonlyArray<PolymarketEvent>,
 ): CryptoWorkingSet => {
-  const cards = events.map(buildCardModel);
+  const cards = [...events].sort(compareEventsForDiscovery).map(buildCardModel);
 
   return {
     cards,

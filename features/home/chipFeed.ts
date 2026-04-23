@@ -3,6 +3,7 @@ import {
   type ListEventsKeysetParams,
   type ListEventsKeysetResult,
 } from "@/features/events/api/gamma";
+import { isEventHotDiscoveryCandidate } from "@/shared/lib/discovery";
 import { isEventVisible } from "@/shared/lib/tags";
 
 export const HOME_CHIP_EVENT_LIMIT = 20;
@@ -34,7 +35,11 @@ export const getHomeChipFeedEvents = async (
     nextCursor = page.nextCursor;
 
     for (const event of page.events) {
-      if (!isEventVisible(event) || seenIds.has(event.id)) {
+      if (
+        !isEventVisible(event) ||
+        !isEventHotDiscoveryCandidate(event) ||
+        seenIds.has(event.id)
+      ) {
         continue;
       }
 
