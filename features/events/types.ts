@@ -23,7 +23,9 @@ export interface PolymarketMarket {
   question: string;
   conditionId: string;
   slug: string;
+  marketGroup?: number;
   groupItemTitle?: string;
+  groupItemThreshold?: string;
   image?: string;
   icon?: string;
   endDate?: string;
@@ -85,6 +87,7 @@ export interface PolymarketEvent {
   commentCount?: number;
   showAllOutcomes: boolean;
   showMarketImages: boolean;
+  marketStructure?: "single-binary" | "grouped-binary" | "multi-market";
 
   markets: PolymarketMarket[];
   tags: PolymarketTag[];

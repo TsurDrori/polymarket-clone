@@ -18,7 +18,9 @@ type RawMarket = {
   question?: unknown;
   conditionId?: unknown;
   slug?: unknown;
+  marketGroup?: unknown;
   groupItemTitle?: unknown;
+  groupItemThreshold?: unknown;
   image?: unknown;
   icon?: unknown;
   endDate?: unknown;
@@ -157,7 +159,14 @@ const parseMarket = (raw: RawMarket): PolymarketMarket => ({
   question: isString(raw.question) ? raw.question : "",
   conditionId: isString(raw.conditionId) ? raw.conditionId : "",
   slug: isString(raw.slug) ? raw.slug : "",
+  marketGroup:
+    raw.marketGroup === undefined || raw.marketGroup === null
+      ? undefined
+      : toNumber(raw.marketGroup),
   groupItemTitle: isString(raw.groupItemTitle) ? raw.groupItemTitle : undefined,
+  groupItemThreshold: isString(raw.groupItemThreshold)
+    ? raw.groupItemThreshold
+    : undefined,
   image: isString(raw.image) ? raw.image : undefined,
   icon: isString(raw.icon) ? raw.icon : undefined,
   endDate: isString(raw.endDate) ? raw.endDate : undefined,
@@ -183,6 +192,32 @@ const parseMarket = (raw: RawMarket): PolymarketMarket => ({
   closed: toBool(raw.closed),
 });
 
+const isBinaryMarket = (market: PolymarketMarket): boolean =>
+  market.question.trim().length > 0 &&
+  market.outcomes.length >= 2 &&
+  market.clobTokenIds.length >= 2;
+
+const hasGroupedMarketMetadata = (market: PolymarketMarket): boolean =>
+  market.marketGroup !== undefined ||
+  Boolean(market.groupItemTitle?.trim() || market.groupItemThreshold?.trim());
+
+const deriveMarketStructure = (
+  event: Pick<PolymarketEvent, "showAllOutcomes">,
+  markets: PolymarketMarket[],
+): PolymarketEvent["marketStructure"] => {
+  const binaryMarkets = markets.filter(isBinaryMarket);
+
+  if (binaryMarkets.length <= 1) {
+    return "single-binary";
+  }
+
+  if (event.showAllOutcomes || binaryMarkets.some(hasGroupedMarketMetadata)) {
+    return "grouped-binary";
+  }
+
+  return "multi-market";
+};
+
 export const isValidEvent = (raw: unknown): raw is RawEvent => {
   if (!raw || typeof raw !== "object") return false;
   const e = raw as RawEvent;
@@ -203,6 +238,8 @@ export const parseEvent = (raw: unknown): PolymarketEvent => {
   const rawMarkets = Array.isArray(e.markets) ? (e.markets as RawMarket[]) : [];
   const rawTags = Array.isArray(e.tags) ? (e.tags as RawTag[]) : [];
   const rawTeams = Array.isArray(e.teams) ? (e.teams as RawTeam[]) : [];
+  const showAllOutcomes = toBool(e.showAllOutcomes);
+  const markets = rawMarkets.map(parseMarket);
 
   return {
     id: String(e.id ?? ""),
@@ -242,10 +279,11 @@ export const parseEvent = (raw: unknown): PolymarketEvent => {
     negRisk: toBool(e.negRisk),
     commentCount:
       e.commentCount === undefined ? undefined : toNumber(e.commentCount),
-    showAllOutcomes: toBool(e.showAllOutcomes),
+    showAllOutcomes,
     showMarketImages: toBool(e.showMarketImages),
+    marketStructure: deriveMarketStructure({ showAllOutcomes }, markets),
 
-    markets: rawMarkets.map(parseMarket),
+    markets,
     tags: rawTags.map(parseTag),
     teams: rawTeams.map(parseTeam).filter((team) => team.name.length > 0),
     eventMetadata: parseEventMetadata(e.eventMetadata),

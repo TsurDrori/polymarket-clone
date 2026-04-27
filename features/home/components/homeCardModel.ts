@@ -1,4 +1,9 @@
 import { getEventImage } from "@/features/events/api/parse";
+import {
+  getGroupedBinaryMarkets,
+  selectGroupedBinaryPreviewMarkets,
+  shouldRenderGroupedBinaryCard,
+} from "@/features/events/groupedBinary";
 import type { SurfaceFeedItem } from "@/features/events/feed/types";
 import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types";
 import {
@@ -176,13 +181,13 @@ const getVisibleMarkets = (event: PolymarketEvent): PolymarketMarket[] => {
 };
 
 const getHomeCardMarkets = (event: PolymarketEvent): PolymarketMarket[] => {
-  const marketsToDisplay = getVisibleMarkets(event);
+  const marketsToDisplay = getGroupedBinaryMarkets(event);
 
-  if (event.showAllOutcomes && marketsToDisplay.length > 1) {
-    return marketsToDisplay.slice(0, HOME_GROUPED_ROW_LIMIT);
+  if (shouldRenderGroupedBinaryCard(event)) {
+    return selectGroupedBinaryPreviewMarkets(marketsToDisplay, HOME_GROUPED_ROW_LIMIT);
   }
 
-  return marketsToDisplay.slice(0, 1);
+  return getVisibleMarkets(event).slice(0, 1);
 };
 
 const getPrimaryHomeMarket = (
@@ -232,8 +237,10 @@ const buildActionPair = (
 };
 
 const buildGroupedRows = (event: PolymarketEvent): HomeCardRowModel[] =>
-  getVisibleMarkets(event)
-    .slice(0, HOME_GROUPED_ROW_LIMIT)
+  selectGroupedBinaryPreviewMarkets(
+    getGroupedBinaryMarkets(event),
+    HOME_GROUPED_ROW_LIMIT,
+  )
     .map((market) => ({
       id: market.id,
       label:
@@ -259,7 +266,7 @@ export const resolveHomeCardFamily = (event: PolymarketEvent): HomeCardFamily =>
     return "crypto-up-down";
   }
 
-  if (event.showAllOutcomes && getVisibleMarkets(event).length > 1) {
+  if (shouldRenderGroupedBinaryCard(event)) {
     return "grouped";
   }
 
@@ -588,6 +595,7 @@ const adaptSportsGameEventToPolymarketEvent = (event: SportsGameEvent): Polymark
   negRisk: false,
   showAllOutcomes: false,
   showMarketImages: false,
+  marketStructure: event.markets.length > 1 ? "multi-market" : "single-binary",
   tags: event.tags,
   teams: event.teams,
   eventMetadata: event.eventMetadata,

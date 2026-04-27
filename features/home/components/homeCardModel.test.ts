@@ -75,6 +75,7 @@ const buildEvent = (
   commentCount: overrides.commentCount,
   showAllOutcomes: overrides.showAllOutcomes ?? false,
   showMarketImages: overrides.showMarketImages ?? false,
+  marketStructure: overrides.marketStructure,
   markets: overrides.markets ?? [buildMarket()],
   tags,
   teams: overrides.teams,
@@ -141,6 +142,90 @@ describe("homeCardModel", () => {
     expect(model.kind === "grouped" ? model.rows.map((row) => row.label) : []).toEqual([
       "July 31",
       "June 30",
+    ]);
+  });
+
+  it("keeps general grouped cards on the grouped manifestation when the API omits showAllOutcomes", () => {
+    const event = buildEvent(
+      "Democratic Presidential Nominee 2028",
+      [{ id: "1", slug: "politics", label: "Politics" }],
+      {
+        showAllOutcomes: false,
+        marketStructure: "grouped-binary",
+        negRisk: true,
+        markets: [
+          buildMarket({
+            id: "candidate-a",
+            question: "Will Candidate A win the nomination?",
+            groupItemTitle: "Candidate A",
+            lastTradePrice: 0.31,
+          }),
+          buildMarket({
+            id: "candidate-b",
+            question: "Will Candidate B win the nomination?",
+            groupItemTitle: "Candidate B",
+            lastTradePrice: 0.24,
+          }),
+        ],
+      },
+    );
+
+    const model = buildHomeCardModel(event);
+
+    expect(resolveHomeCardFamily(event)).toBe("grouped");
+    expect(model.kind).toBe("grouped");
+    expect(model.kind === "grouped" ? model.rows.map((row) => row.label) : []).toEqual([
+      "Candidate A",
+      "Candidate B",
+    ]);
+  });
+
+  it("keeps grouped deadline cards grouped when only one child market is still open", () => {
+    const event = buildEvent(
+      "Jeffrey Epstein foul play confirmed by...?",
+      [{ id: "1", slug: "politics", label: "Politics" }],
+      {
+        showAllOutcomes: true,
+        marketStructure: "grouped-binary",
+        markets: [
+          buildMarket({
+            id: "deadline-2025",
+            question: "Jeffrey Epstein foul play confirmed in 2025?",
+            groupItemTitle: "December 31, 2025",
+            lastTradePrice: 0,
+            outcomePrices: [0, 1],
+            acceptingOrders: false,
+            closed: true,
+          }),
+          buildMarket({
+            id: "deadline-march-2026",
+            question: "Jeffrey Epstein foul play confirmed by March 31, 2026?",
+            groupItemTitle: "March 31, 2026",
+            lastTradePrice: 0,
+            outcomePrices: [0, 1],
+            acceptingOrders: false,
+            closed: true,
+          }),
+          buildMarket({
+            id: "deadline-december-2026",
+            question: "Jeffrey Epstein foul play confirmed by December 31, 2026?",
+            groupItemTitle: "December 31, 2026",
+            lastTradePrice: 0.11,
+            outcomePrices: [0.11, 0.89],
+            acceptingOrders: true,
+            closed: false,
+          }),
+        ],
+      },
+    );
+
+    const model = buildHomeCardModel(event);
+
+    expect(resolveHomeCardFamily(event)).toBe("grouped");
+    expect(model.kind).toBe("grouped");
+    expect(model.kind === "grouped" ? model.rows.map((row) => row.label) : []).toEqual([
+      "December 31, 2025",
+      "December 31, 2026",
     ]);
   });
 

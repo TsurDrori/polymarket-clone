@@ -51,6 +51,7 @@ describe("useProjectedSurfaceWindow", () => {
         { id: "b", score: 2 },
         { id: "c", score: 1 },
       ],
+      currentReducedMotion: false,
     });
 
     await waitFor(() => {
@@ -85,6 +86,7 @@ describe("useProjectedSurfaceWindow", () => {
         { id: "e", score: 3 },
         { id: "f", score: 2 },
       ],
+      currentReducedMotion: false,
     });
 
     expect(result.current.visibleIds).toEqual(["d", "e"]);

@@ -49,12 +49,14 @@ const buildEvent = ({
   slug,
   title,
   tags,
+  volume24hr,
   markets,
 }: {
   id: string;
   slug: string;
   title: string;
   tags: PolymarketTag[];
+  volume24hr?: number;
   markets?: PolymarketMarket[];
 }): PolymarketEvent => ({
   id,
@@ -68,7 +70,7 @@ const buildEvent = ({
   restricted: false,
   liquidity: 100_000,
   volume: 1_000_000,
-  volume24hr: 100_000,
+  volume24hr: volume24hr ?? 100_000,
   negRisk: false,
   showAllOutcomes: true,
   showMarketImages: false,

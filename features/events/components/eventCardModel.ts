@@ -1,4 +1,9 @@
 import { getEventImage } from "@/features/events/api/parse";
+import {
+  getGroupedBinaryMarkets,
+  selectGroupedBinaryPreviewMarkets,
+  shouldRenderGroupedBinaryCard,
+} from "@/features/events/groupedBinary";
 import type { PolymarketEvent, PolymarketMarket } from "@/features/events/types";
 import { formatEndDate, formatVolume } from "@/shared/lib/format";
 import { getVisibleTags } from "@/shared/lib/tags";
@@ -90,7 +95,11 @@ const buildGroupedRows = (
   event: PolymarketEvent,
 ): EventCardGroupedRowModel[] => {
   // Preserve source order so date and threshold ladders stay semantically correct.
-  return event.markets.filter(isListableMarket).slice(0, 2).map((market) => ({
+  return selectGroupedBinaryPreviewMarkets(
+    getGroupedBinaryMarkets(event).filter(isListableMarket),
+    2,
+  )
+    .map((market) => ({
     id: market.id,
     label: market.groupItemTitle || market.question,
     probabilityTokenId: market.clobTokenIds[0],
@@ -100,7 +109,7 @@ const buildGroupedRows = (
 };
 
 export const resolveEventCardFamily = (event: PolymarketEvent): EventCardFamily => {
-  if (event.showAllOutcomes && buildGroupedRows(event).length > 0) {
+  if (shouldRenderGroupedBinaryCard(event)) {
     return "grouped";
   }
 

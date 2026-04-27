@@ -95,6 +95,35 @@ describe("parseEvent", () => {
     expect(typeof ids[0]).toBe("string");
   });
 
+  it("derives grouped binary market structure from API group metadata", () => {
+    const base = raw as { markets: Record<string, unknown>[] };
+    const groupedEvent = parseEvent({
+      ...(raw as Record<string, unknown>),
+      showAllOutcomes: false,
+      markets: [
+        {
+          ...base.markets[0],
+          id: "candidate-a",
+          question: "Will Candidate A win?",
+          marketGroup: "42",
+          groupItemTitle: "Candidate A",
+          groupItemThreshold: "1",
+        },
+        {
+          ...base.markets[0],
+          id: "candidate-b",
+          question: "Will Candidate B win?",
+          groupItemTitle: "Candidate B",
+          groupItemThreshold: "2",
+        },
+      ],
+    });
+
+    expect(groupedEvent.marketStructure).toBe("grouped-binary");
+    expect(groupedEvent.markets[0]?.marketGroup).toBe(42);
+    expect(groupedEvent.markets[0]?.groupItemThreshold).toBe("1");
+  });
+
   it("coerces market volume and liquidity strings to numbers", () => {
     expect(event.markets[0].volumeNum).toBeCloseTo(13653342.234, 2);
     expect(event.markets[0].liquidityNum).toBeCloseTo(1471302.249, 2);

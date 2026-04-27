@@ -31,6 +31,7 @@ describe("eventCardModel", () => {
     const event: PolymarketEvent = {
       ...baseEvent,
       showAllOutcomes: true,
+      marketStructure: "grouped-binary",
       markets: [
         makeMarket({
           id: "apr-22",
@@ -54,10 +55,39 @@ describe("eventCardModel", () => {
     expect(resolveEventCardFamily(event)).toBe("grouped");
   });
 
+  it("resolves grouped cards from live multi-market structure even when showAllOutcomes is false", () => {
+    const event: PolymarketEvent = {
+      ...baseEvent,
+      showAllOutcomes: false,
+      marketStructure: "grouped-binary",
+      markets: [
+        makeMarket({
+          id: "candidate-a",
+          question: "Will Candidate A win?",
+          groupItemTitle: "Candidate A",
+          outcomes: ["Yes", "No"],
+          outcomePrices: [0.41, 0.59],
+          clobTokenIds: ["candidate-a-yes", "candidate-a-no"],
+        }),
+        makeMarket({
+          id: "candidate-b",
+          question: "Will Candidate B win?",
+          groupItemTitle: "Candidate B",
+          outcomes: ["Yes", "No"],
+          outcomePrices: [0.27, 0.73],
+          clobTokenIds: ["candidate-b-yes", "candidate-b-no"],
+        }),
+      ],
+    };
+
+    expect(resolveEventCardFamily(event)).toBe("grouped");
+  });
+
   it("preserves source order for grouped rows instead of sorting by volume", () => {
     const event: PolymarketEvent = {
       ...baseEvent,
       showAllOutcomes: true,
+      marketStructure: "grouped-binary",
       markets: [
         makeMarket({
           id: "first",

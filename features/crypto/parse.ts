@@ -4,7 +4,6 @@ import type {
   PolymarketEvent,
   PolymarketMarket,
 } from "@/features/events/types";
-import { compareEventsForDiscovery } from "@/shared/lib/discovery";
 import { formatVolume } from "@/shared/lib/format";
 
 type SearchParamValue = string | string[] | undefined;
@@ -534,12 +533,12 @@ export const compareCryptoEventsForDisplay = (
 
   return (
     Number(rightScore.isTradable) - Number(leftScore.isTradable) ||
-    rightScore.volume - leftScore.volume ||
     Number(rightScore.isLive) - Number(leftScore.isLive) ||
     Number(rightScore.isOpenPrice) - Number(leftScore.isOpenPrice) ||
     leftScore.timeBucketPriority - rightScore.timeBucketPriority ||
     Number(rightScore.isFuture) - Number(leftScore.isFuture) ||
-    leftScore.futureDistance - rightScore.futureDistance
+    leftScore.futureDistance - rightScore.futureDistance ||
+    rightScore.volume - leftScore.volume
   );
 };
 
@@ -623,7 +622,7 @@ const buildAssetOptions = (
 export const buildCryptoWorkingSet = (
   events: ReadonlyArray<PolymarketEvent>,
 ): CryptoWorkingSet => {
-  const cards = [...events].sort(compareEventsForDiscovery).map(buildCardModel);
+  const cards = [...events].sort(compareCryptoEventsForDisplay).map(buildCardModel);
 
   return {
     cards,
